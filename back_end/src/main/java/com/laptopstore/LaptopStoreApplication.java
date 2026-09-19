@@ -10,4 +10,7 @@ public class LaptopStoreApplication {
 		SpringApplication.run(LaptopStoreApplication.class, args);
 	}
 
+/* cd d:\LaptopStore\back_end
+.\mvnw spring-boot:run */
+
 }

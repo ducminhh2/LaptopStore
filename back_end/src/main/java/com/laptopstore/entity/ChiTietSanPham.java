@@ -1,5 +1,6 @@
 package com.laptopstore.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 import java.math.BigDecimal;
@@ -60,4 +61,10 @@ public class ChiTietSanPham {
     @Column(name = "trang_thai")
     @Builder.Default
     private Integer trangThai = 1;
+
+    @OneToMany(mappedBy = "chiTietSanPham", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JsonIgnoreProperties("chiTietSanPham")
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    private java.util.List<HinhAnhChiTiet> danhSachHinhAnh;
 }
