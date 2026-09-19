@@ -13,4 +13,5 @@ public class LaptopStoreApplication {
 /* cd d:\LaptopStore\back_end
 .\mvnw spring-boot:run */
 
+/* http://localhost:8080/swagger-ui/index.html#/ */
 }
