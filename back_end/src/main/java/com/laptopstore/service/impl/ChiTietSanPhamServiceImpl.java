@@ -4,16 +4,18 @@ import com.laptopstore.entity.ChiTietSanPham;
 import com.laptopstore.exception.ResourceNotFoundException;
 import com.laptopstore.repository.ChiTietSanPhamRepository;
 import com.laptopstore.service.ChiTietSanPhamService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
 public class ChiTietSanPhamServiceImpl implements ChiTietSanPhamService {
 
     private final ChiTietSanPhamRepository chiTietSanPhamRepository;
+
+    public ChiTietSanPhamServiceImpl(ChiTietSanPhamRepository chiTietSanPhamRepository) {
+        this.chiTietSanPhamRepository = chiTietSanPhamRepository;
+    }
 
     @Override
     public List<ChiTietSanPham> getAll() {
@@ -51,19 +53,17 @@ public class ChiTietSanPhamServiceImpl implements ChiTietSanPhamService {
     public ChiTietSanPham update(Integer id, ChiTietSanPham chiTietSanPham) {
         ChiTietSanPham existing = getById(id);
         existing.setMaCtsp(chiTietSanPham.getMaCtsp());
-        existing.setGia(chiTietSanPham.getGia());
+        existing.setSanPham(chiTietSanPham.getSanPham());
+        existing.setMauSac(chiTietSanPham.getMauSac());
+        existing.setCpu(chiTietSanPham.getCpu());
+        existing.setRam(chiTietSanPham.getRam());
+        existing.setOCung(chiTietSanPham.getOCung());
+        existing.setCardDoHoa(chiTietSanPham.getCardDoHoa());
+        existing.setManHinh(chiTietSanPham.getManHinh());
         existing.setSoLuong(chiTietSanPham.getSoLuong());
+        existing.setGia(chiTietSanPham.getGia());
         existing.setMoTa(chiTietSanPham.getMoTa());
         existing.setTrangThai(chiTietSanPham.getTrangThai());
-
-        if (chiTietSanPham.getSanPham() != null) existing.setSanPham(chiTietSanPham.getSanPham());
-        if (chiTietSanPham.getMauSac() != null) existing.setMauSac(chiTietSanPham.getMauSac());
-        if (chiTietSanPham.getCpu() != null) existing.setCpu(chiTietSanPham.getCpu());
-        if (chiTietSanPham.getRam() != null) existing.setRam(chiTietSanPham.getRam());
-        if (chiTietSanPham.getOCung() != null) existing.setOCung(chiTietSanPham.getOCung());
-        if (chiTietSanPham.getCardDoHoa() != null) existing.setCardDoHoa(chiTietSanPham.getCardDoHoa());
-        if (chiTietSanPham.getManHinh() != null) existing.setManHinh(chiTietSanPham.getManHinh());
-
         return chiTietSanPhamRepository.save(existing);
     }
 

@@ -67,4 +67,33 @@ public class ChiTietSanPham {
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
     private java.util.List<HinhAnhChiTiet> danhSachHinhAnh;
+
+    public Integer getId() { return id; }
+    public void setId(Integer id) { this.id = id; }
+    public String getMaCtsp() { return maCtsp; }
+    public void setMaCtsp(String maCtsp) { this.maCtsp = maCtsp; }
+    public SanPham getSanPham() { return sanPham; }
+    public void setSanPham(SanPham sanPham) { this.sanPham = sanPham; }
+    public MauSac getMauSac() { return mauSac; }
+    public void setMauSac(MauSac mauSac) { this.mauSac = mauSac; }
+    public Cpu getCpu() { return cpu; }
+    public void setCpu(Cpu cpu) { this.cpu = cpu; }
+    public Ram getRam() { return ram; }
+    public void setRam(Ram ram) { this.ram = ram; }
+    public OCung getOCung() { return oCung; }
+    public void setOCung(OCung oCung) { this.oCung = oCung; }
+    public CardDoHoa getCardDoHoa() { return cardDoHoa; }
+    public void setCardDoHoa(CardDoHoa cardDoHoa) { this.cardDoHoa = cardDoHoa; }
+    public ManHinh getManHinh() { return manHinh; }
+    public void setManHinh(ManHinh manHinh) { this.manHinh = manHinh; }
+    public Integer getSoLuong() { return soLuong; }
+    public void setSoLuong(Integer soLuong) { this.soLuong = soLuong; }
+    public BigDecimal getGia() { return gia; }
+    public void setGia(BigDecimal gia) { this.gia = gia; }
+    public String getMoTa() { return moTa; }
+    public void setMoTa(String moTa) { this.moTa = moTa; }
+    public Integer getTrangThai() { return trangThai; }
+    public void setTrangThai(Integer trangThai) { this.trangThai = trangThai; }
+    public java.util.List<HinhAnhChiTiet> getDanhSachHinhAnh() { return danhSachHinhAnh; }
+    public void setDanhSachHinhAnh(java.util.List<HinhAnhChiTiet> danhSachHinhAnh) { this.danhSachHinhAnh = danhSachHinhAnh; }
 }

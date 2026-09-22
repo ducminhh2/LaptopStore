@@ -31,4 +31,17 @@ public class KhuyenMai {
 
     @Column(name = "ngay_ket_thuc", nullable = false)
     private LocalDateTime ngayKetThuc;
+
+    public Integer getId() { return id; }
+    public void setId(Integer id) { this.id = id; }
+    public String getMa() { return ma; }
+    public void setMa(String ma) { this.ma = ma; }
+    public String getTenKm() { return tenKm; }
+    public void setTenKm(String tenKm) { this.tenKm = tenKm; }
+    public BigDecimal getPhanTramGiam() { return phanTramGiam; }
+    public void setPhanTramGiam(BigDecimal phanTramGiam) { this.phanTramGiam = phanTramGiam; }
+    public LocalDateTime getNgayBatDau() { return ngayBatDau; }
+    public void setNgayBatDau(LocalDateTime ngayBatDau) { this.ngayBatDau = ngayBatDau; }
+    public LocalDateTime getNgayKetThuc() { return ngayKetThuc; }
+    public void setNgayKetThuc(LocalDateTime ngayKetThuc) { this.ngayKetThuc = ngayKetThuc; }
 }

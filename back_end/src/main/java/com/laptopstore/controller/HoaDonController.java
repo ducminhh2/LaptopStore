@@ -2,7 +2,6 @@ package com.laptopstore.controller;
 
 import com.laptopstore.entity.HoaDon;
 import com.laptopstore.service.HoaDonService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -11,10 +10,13 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/hoa-don")
-@RequiredArgsConstructor
 public class HoaDonController {
 
     private final HoaDonService hoaDonService;
+
+    public HoaDonController(HoaDonService hoaDonService) {
+        this.hoaDonService = hoaDonService;
+    }
 
     @GetMapping
     public ResponseEntity<List<HoaDon>> getAll() {

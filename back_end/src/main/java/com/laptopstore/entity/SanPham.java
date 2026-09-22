@@ -42,4 +42,21 @@ public class SanPham {
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
     private java.util.List<HinhAnh> danhSachHinhAnh;
+
+    public Integer getId() { return id; }
+    public void setId(Integer id) { this.id = id; }
+    public String getMaSp() { return maSp; }
+    public void setMaSp(String maSp) { this.maSp = maSp; }
+    public String getTenSp() { return tenSp; }
+    public void setTenSp(String tenSp) { this.tenSp = tenSp; }
+    public BigDecimal getGiaCoBan() { return giaCoBan; }
+    public void setGiaCoBan(BigDecimal giaCoBan) { this.giaCoBan = giaCoBan; }
+    public String getMoTa() { return moTa; }
+    public void setMoTa(String moTa) { this.moTa = moTa; }
+    public DanhMuc getDanhMuc() { return danhMuc; }
+    public void setDanhMuc(DanhMuc danhMuc) { this.danhMuc = danhMuc; }
+    public ThuongHieu getThuongHieu() { return thuongHieu; }
+    public void setThuongHieu(ThuongHieu thuongHieu) { this.thuongHieu = thuongHieu; }
+    public java.util.List<HinhAnh> getDanhSachHinhAnh() { return danhSachHinhAnh; }
+    public void setDanhSachHinhAnh(java.util.List<HinhAnh> danhSachHinhAnh) { this.danhSachHinhAnh = danhSachHinhAnh; }
 }

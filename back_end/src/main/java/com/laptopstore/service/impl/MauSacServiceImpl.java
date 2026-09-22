@@ -4,16 +4,18 @@ import com.laptopstore.entity.MauSac;
 import com.laptopstore.exception.ResourceNotFoundException;
 import com.laptopstore.repository.MauSacRepository;
 import com.laptopstore.service.MauSacService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
 public class MauSacServiceImpl implements MauSacService {
 
     private final MauSacRepository mauSacRepository;
+
+    public MauSacServiceImpl(MauSacRepository mauSacRepository) {
+        this.mauSacRepository = mauSacRepository;
+    }
 
     @Override
     public List<MauSac> getAll() {

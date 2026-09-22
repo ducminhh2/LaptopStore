@@ -4,16 +4,18 @@ import com.laptopstore.entity.ThuongHieu;
 import com.laptopstore.exception.ResourceNotFoundException;
 import com.laptopstore.repository.ThuongHieuRepository;
 import com.laptopstore.service.ThuongHieuService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
 public class ThuongHieuServiceImpl implements ThuongHieuService {
 
     private final ThuongHieuRepository thuongHieuRepository;
+
+    public ThuongHieuServiceImpl(ThuongHieuRepository thuongHieuRepository) {
+        this.thuongHieuRepository = thuongHieuRepository;
+    }
 
     @Override
     public List<ThuongHieu> getAll() {

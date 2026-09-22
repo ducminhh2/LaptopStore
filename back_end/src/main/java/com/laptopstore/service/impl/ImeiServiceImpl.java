@@ -4,16 +4,18 @@ import com.laptopstore.entity.Imei;
 import com.laptopstore.exception.ResourceNotFoundException;
 import com.laptopstore.repository.ImeiRepository;
 import com.laptopstore.service.ImeiService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
 public class ImeiServiceImpl implements ImeiService {
 
     private final ImeiRepository imeiRepository;
+
+    public ImeiServiceImpl(ImeiRepository imeiRepository) {
+        this.imeiRepository = imeiRepository;
+    }
 
     @Override
     public List<Imei> getAll() {
@@ -56,10 +58,8 @@ public class ImeiServiceImpl implements ImeiService {
     public Imei update(Integer id, Imei imei) {
         Imei existing = getById(id);
         existing.setSoImei(imei.getSoImei());
+        existing.setChiTietSanPham(imei.getChiTietSanPham());
         existing.setTrangThai(imei.getTrangThai());
-        if (imei.getChiTietSanPham() != null) {
-            existing.setChiTietSanPham(imei.getChiTietSanPham());
-        }
         return imeiRepository.save(existing);
     }
 

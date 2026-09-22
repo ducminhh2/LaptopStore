@@ -4,16 +4,18 @@ import com.laptopstore.entity.HinhAnh;
 import com.laptopstore.exception.ResourceNotFoundException;
 import com.laptopstore.repository.HinhAnhRepository;
 import com.laptopstore.service.HinhAnhService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
 public class HinhAnhServiceImpl implements HinhAnhService {
 
     private final HinhAnhRepository hinhAnhRepository;
+
+    public HinhAnhServiceImpl(HinhAnhRepository hinhAnhRepository) {
+        this.hinhAnhRepository = hinhAnhRepository;
+    }
 
     @Override
     public List<HinhAnh> getAll() {
@@ -40,9 +42,7 @@ public class HinhAnhServiceImpl implements HinhAnhService {
     public HinhAnh update(Integer id, HinhAnh hinhAnh) {
         HinhAnh existing = getById(id);
         existing.setUrlHinhAnh(hinhAnh.getUrlHinhAnh());
-        if (hinhAnh.getSanPham() != null) {
-            existing.setSanPham(hinhAnh.getSanPham());
-        }
+        existing.setSanPham(hinhAnh.getSanPham());
         return hinhAnhRepository.save(existing);
     }
 

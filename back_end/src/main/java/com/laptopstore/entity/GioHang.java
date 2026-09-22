@@ -30,4 +30,15 @@ public class GioHang {
     @Column(name = "tong_so_luong")
     @Builder.Default
     private Integer tongSoLuong = 0;
+
+    public Integer getId() { return id; }
+    public void setId(Integer id) { this.id = id; }
+    public String getMa() { return ma; }
+    public void setMa(String ma) { this.ma = ma; }
+    public NguoiDung getKhachHang() { return khachHang; }
+    public void setKhachHang(NguoiDung khachHang) { this.khachHang = khachHang; }
+    public BigDecimal getTongSoTien() { return tongSoTien; }
+    public void setTongSoTien(BigDecimal tongSoTien) { this.tongSoTien = tongSoTien; }
+    public Integer getTongSoLuong() { return tongSoLuong; }
+    public void setTongSoLuong(Integer tongSoLuong) { this.tongSoLuong = tongSoLuong; }
 }

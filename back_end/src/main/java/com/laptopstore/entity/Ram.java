@@ -20,4 +20,11 @@ public class Ram {
 
     @Column(name = "loai_ram", length = 50)
     private String loaiRam;
+
+    public Integer getId() { return id; }
+    public void setId(Integer id) { this.id = id; }
+    public String getDungLuong() { return dungLuong; }
+    public void setDungLuong(String dungLuong) { this.dungLuong = dungLuong; }
+    public String getLoaiRam() { return loaiRam; }
+    public void setLoaiRam(String loaiRam) { this.loaiRam = loaiRam; }
 }

@@ -17,4 +17,9 @@ public class DanhMuc {
 
     @Column(name = "ten_danh_muc", nullable = false, length = 100)
     private String tenDanhMuc;
+
+    public Integer getId() { return id; }
+    public void setId(Integer id) { this.id = id; }
+    public String getTenDanhMuc() { return tenDanhMuc; }
+    public void setTenDanhMuc(String tenDanhMuc) { this.tenDanhMuc = tenDanhMuc; }
 }

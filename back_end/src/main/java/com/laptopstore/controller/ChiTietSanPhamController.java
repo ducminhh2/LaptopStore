@@ -2,7 +2,6 @@ package com.laptopstore.controller;
 
 import com.laptopstore.entity.ChiTietSanPham;
 import com.laptopstore.service.ChiTietSanPhamService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -11,10 +10,13 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/chi-tiet-san-pham")
-@RequiredArgsConstructor
 public class ChiTietSanPhamController {
 
     private final ChiTietSanPhamService chiTietSanPhamService;
+
+    public ChiTietSanPhamController(ChiTietSanPhamService chiTietSanPhamService) {
+        this.chiTietSanPhamService = chiTietSanPhamService;
+    }
 
     @GetMapping
     public ResponseEntity<List<ChiTietSanPham>> getAll() {

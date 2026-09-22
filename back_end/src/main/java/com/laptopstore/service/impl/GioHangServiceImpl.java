@@ -4,16 +4,18 @@ import com.laptopstore.entity.GioHang;
 import com.laptopstore.exception.ResourceNotFoundException;
 import com.laptopstore.repository.GioHangRepository;
 import com.laptopstore.service.GioHangService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
 public class GioHangServiceImpl implements GioHangService {
 
     private final GioHangRepository gioHangRepository;
+
+    public GioHangServiceImpl(GioHangRepository gioHangRepository) {
+        this.gioHangRepository = gioHangRepository;
+    }
 
     @Override
     public List<GioHang> getAll() {
@@ -41,11 +43,9 @@ public class GioHangServiceImpl implements GioHangService {
     public GioHang update(Integer id, GioHang gioHang) {
         GioHang existing = getById(id);
         existing.setMa(gioHang.getMa());
+        existing.setKhachHang(gioHang.getKhachHang());
         existing.setTongSoTien(gioHang.getTongSoTien());
         existing.setTongSoLuong(gioHang.getTongSoLuong());
-        if (gioHang.getKhachHang() != null) {
-            existing.setKhachHang(gioHang.getKhachHang());
-        }
         return gioHangRepository.save(existing);
     }
 

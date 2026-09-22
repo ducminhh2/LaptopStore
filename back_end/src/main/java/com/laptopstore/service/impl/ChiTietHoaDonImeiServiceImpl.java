@@ -4,16 +4,18 @@ import com.laptopstore.entity.ChiTietHoaDonImei;
 import com.laptopstore.exception.ResourceNotFoundException;
 import com.laptopstore.repository.ChiTietHoaDonImeiRepository;
 import com.laptopstore.service.ChiTietHoaDonImeiService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
 public class ChiTietHoaDonImeiServiceImpl implements ChiTietHoaDonImeiService {
 
     private final ChiTietHoaDonImeiRepository chiTietHoaDonImeiRepository;
+
+    public ChiTietHoaDonImeiServiceImpl(ChiTietHoaDonImeiRepository chiTietHoaDonImeiRepository) {
+        this.chiTietHoaDonImeiRepository = chiTietHoaDonImeiRepository;
+    }
 
     @Override
     public List<ChiTietHoaDonImei> getAll() {
@@ -27,8 +29,8 @@ public class ChiTietHoaDonImeiServiceImpl implements ChiTietHoaDonImeiService {
     }
 
     @Override
-    public List<ChiTietHoaDonImei> getByChiTietHoaDon(Integer cthdId) {
-        return chiTietHoaDonImeiRepository.findByChiTietHoaDonId(cthdId);
+    public List<ChiTietHoaDonImei> getByChiTietHoaDon(Integer chiTietHoaDonId) {
+        return chiTietHoaDonImeiRepository.findByChiTietHoaDonId(chiTietHoaDonId);
     }
 
     @Override

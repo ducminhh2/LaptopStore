@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LaptopStore - System Store & Administration</title>
+
+  <!-- Google Fonts & FontAwesome Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <!-- Custom CSS Design System -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- Navbar Navigation Header -->
+  <header class="navbar">
+    <div class="nav-brand" data-nav="shop">
+      <i class="fas fa-laptop-code"></i>
+      <span>LaptopStore</span>
+    </div>
+
+    <div class="nav-search">
+      <i class="fas fa-search"></i>
+      <input type="text" id="search-input" placeholder="Tìm kiếm theo tên laptop, thương hiệu, chip CPU...">
+    </div>
+
+    <div class="nav-menu">
+      <a href="#" class="nav-link active" data-nav="shop">
+        <i class="fas fa-store"></i> Cửa Hàng
+      </a>
+      <a href="#" class="nav-link" data-nav="orders">
+        <i class="fas fa-box"></i> Đơn Hàng
+      </a>
+      <a href="#" class="nav-link" data-nav="promotions">
+        <i class="fas fa-gift"></i> Khuyến Mãi
+      </a>
+      <a href="#" class="nav-link" id="nav-admin" data-nav="admin" style="display: none;">
+        <i class="fas fa-user-shield"></i> Quản Lý Hệ Thống
+      </a>
+
+      <!-- 2 Role Switcher Options -->
+      <select id="role-select" class="role-switcher">
+        <option value="customer">👤 Giao Diện Người Dùng (Khách Hàng)</option>
+        <option value="admin">👑 Giao Diện Quản Trị Viên & Nhân Viên</option>
+      </select>
+
+      <!-- Cart Button Badge -->
+      <button id="cart-btn" class="cart-btn">
+        <i class="fas fa-shopping-cart"></i>
+        <span id="cart-badge" class="cart-badge">0</span>
+      </button>
+
+      <button id="notification-btn" class="notification-btn" aria-label="Thông báo">
+        <i class="fas fa-bell"></i>
+        <span id="notification-badge" class="cart-badge">0</span>
+      </button>
+      <div id="notification-panel" class="notification-panel" hidden></div>
+    </div>
+  </header>
+
+  <!-- Hero Feature Showcase Section -->
+  <section id="hero-section" class="hero">
+    <div class="hero-banner">
+      <div class="hero-badge">
+        <i class="fas fa-bolt"></i> Siêu Bão Công Nghệ 2026
+      </div>
+      <h1 class="hero-title">Bứt Phá Hiệu Năng <span>Laptop Thế Hệ Mới</span></h1>
+      <p class="hero-desc">
+        Trải nghiệm thế hệ Laptop Gaming & Ultrabook mỏng nhẹ đỉnh cao với chip Intel Core Ultra & AMD Ryzen 8000 Series, màn hình OLED 120Hz rực rỡ và card đồ họa NVIDIA RTX 40 Series.
+      </p>
+      <div class="hero-actions">
+        <button class="btn btn-primary" onclick="switchView('shop')">
+          <i class="fas fa-fire"></i> Khám Phá Sản Phẩm
+        </button>
+        <button class="btn btn-secondary" onclick="switchView('promotions')">
+          <i class="fas fa-tags"></i> Xem Ưu Đãi Khuyến Mãi
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- AI Laptop Showcase Section -->
+  <section id="ai-section" class="ai-section">
+    <div class="ai-section-inner">
+      <div class="ai-header">
+        <div class="ai-header-text">
+          <span class="ai-badge"><i class="fas fa-robot"></i> AI-Powered</span>
+          <h2 class="ai-title">Laptop AI & Copilot+ PC</h2>
+          <p class="ai-desc">Thế hệ laptop tích hợp vi xử lý AI NPU chuyên dụng — xử lý trí tuệ nhân tạo trực tiếp trên máy, tăng tốc sáng tạo và năng suất vượt trội.</p>
+        </div>
+        <button class="btn btn-ai" onclick="filterByCategory(5)">
+          <i class="fas fa-arrow-right"></i> Xem Tất Cả Laptop AI
+        </button>
+      </div>
+      <div id="ai-products-grid" class="ai-products-grid">
+        <!-- Dynamically Rendered AI Product Cards -->
+      </div>
+    </div>
+  </section>
+
+  <!-- Category Filter Quick Chips -->
+  <section id="category-section" class="category-section">
+    <div id="category-bar" class="category-bar">
+      <!-- Dynamically Rendered -->
+    </div>
+  </section>
+
+  <!-- Main Grid Layout (Sidebar Filters + Catalog View) -->
+  <main id="main-content" class="main-container">
+    <aside id="sidebar-container">
+      <!-- Dynamically Rendered Sidebar -->
+    </aside>
+
+    <section id="catalog-view">
+      <!-- Dynamically Rendered Product Cards / Views -->
+    </section>
+  </main>
+
+  <!-- Product Details Modal -->
+  <div id="product-modal" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title"><i class="fas fa-laptop"></i> Chi Tiết Sản Phẩm & Cấu Hình</h3>
+        <button class="modal-close">&times;</button>
+      </div>
+      <div id="product-modal-body" class="modal-body">
+        <!-- Dynamically Rendered Details -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Cart Drawer Overlay -->
+  <div id="cart-overlay" class="cart-drawer-overlay"></div>
+  <aside id="cart-drawer" class="cart-drawer">
+    <div class="cart-drawer-header">
+      <h3 style="font-weight: 700; display: flex; align-items: center; gap: 0.5rem;">
+        <i class="fas fa-shopping-bag" style="color: var(--primary);"></i> Giỏ Hàng Của Bạn
+      </h3>
+      <button id="close-cart-btn" class="modal-close">&times;</button>
+    </div>
+    <div id="cart-drawer-body" class="cart-drawer-body">
+      <!-- Dynamically Rendered Cart Items -->
+    </div>
+    <div class="cart-drawer-footer">
+      <div style="display: flex; justify-content: space-between; align-items: center; font-size: 1.1rem; font-weight: 700;">
+        <span>Tổng cộng:</span>
+        <span id="cart-total-price" style="color: var(--primary); font-size: 1.3rem;">0 ₫</span>
+      </div>
+      <button class="btn btn-primary" style="width: 100%; justify-content: center;" onclick="openCheckoutModal()">
+        <i class="fas fa-credit-card"></i> Tiến Hành Thanh Toán
+      </button>
+    </div>
+  </aside>
+
+  <!-- Checkout Form Modal -->
+  <div id="checkout-modal" class="modal-overlay">
+    <div class="modal-card" style="max-width: 600px;">
+      <div class="modal-header">
+        <h3 class="modal-title"><i class="fas fa-cash-register"></i> Đặt Hàng & Thanh Toán</h3>
+        <button class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form onsubmit="processCheckout(event)">
+          <div class="form-group">
+            <label class="form-label">Họ và tên người nhận</label>
+            <input type="text" id="checkout-name" class="form-input" placeholder="Nguyễn Văn An" required value="Nguyễn Văn An">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Số điện thoại liên hệ</label>
+            <input type="tel" id="checkout-phone" class="form-input" placeholder="0901234567" required value="0901234567">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Địa chỉ giao hàng chi tiết</label>
+            <textarea id="checkout-address" class="form-input" rows="3" placeholder="Số nhà, Tên đường, Phường/Xã, Quận/Huyện, Tỉnh/TP" required>123 Đường Cầu Giấy, Phường Dịch Vọng, Quận Cầu Giấy, Hà Nội</textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Phương thức thanh toán</label>
+            <select id="checkout-payment" class="form-input">
+              <option value="Thanh toán khi nhận hàng (COD)">Thanh toán khi nhận hàng (COD)</option>
+              <option value="Chuyển khoản Ngân hàng (QR Code)">Chuyển khoản Ngân hàng qua QR Code</option>
+              <option value="Thẻ tín dụng / Ghi nợ Quốc tế">Thẻ tín dụng / Ghi nợ Visa / Mastercard</option>
+            </select>
+          </div>
+
+          <div style="background: var(--bg-surface); padding: 1rem; border-radius: var(--radius-sm); margin: 1.5rem 0; display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-weight: 600;">Tổng thanh toán:</span>
+            <span id="checkout-total-price" style="font-size: 1.4rem; font-weight: 800; color: var(--primary);">0 ₫</span>
+          </div>
+
+          <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center; font-size: 1.1rem; padding: 0.9rem;">
+            <i class="fas fa-check-circle"></i> Xác Nhận Đặt Hàng Ngay
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Admin Add / Edit Product & Price Modal -->
+  <div id="product-editor-modal" class="modal-overlay">
+    <div class="modal-card" style="max-width: 650px;">
+      <div class="modal-header">
+        <h3 id="product-editor-title" class="modal-title"><i class="fas fa-edit"></i> Thêm / Cập Nhật Sản Phẩm & Giá</h3>
+        <button class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form onsubmit="saveProductForm(event)">
+          <input type="hidden" id="edit-prod-id">
+          
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="form-group">
+              <label class="form-label">Mã Sản Phẩm</label>
+              <input type="text" id="edit-prod-code" class="form-input" placeholder="SP006" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Tên Laptop</label>
+              <input type="text" id="edit-prod-name" class="form-input" placeholder="ASUS ROG Strix G16" required>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="form-group">
+              <label class="form-label">Danh Mục</label>
+              <select id="edit-prod-category" class="form-input" required></select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Thương Hiệu</label>
+              <select id="edit-prod-brand" class="form-input" required></select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Giá Bán Cơ Bản (VNĐ)</label>
+            <input type="number" id="edit-prod-price" class="form-input" placeholder="25990000" min="0" step="100000" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Link Hình Ảnh (Nhiều URL cách nhau bằng dấu phẩy)</label>
+            <input type="text" id="edit-prod-image" class="form-input" placeholder="https://url1.jpg, https://url2.jpg, https://url3.jpg">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Mô Tả Sản Phẩm</label>
+            <textarea id="edit-prod-desc" class="form-input" rows="3" placeholder="Laptop gaming cao cấp màn hình 165Hz..."></textarea>
+          </div>
+
+          <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center; margin-top: 1rem;">
+            <i class="fas fa-save"></i> Lưu Thông Tin & Giá Sản Phẩm
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Admin Add / Edit Promotion Modal -->
+  <div id="promotion-editor-modal" class="modal-overlay">
+    <div class="modal-card" style="max-width: 600px;">
+      <div class="modal-header">
+        <h3 id="promo-editor-title" class="modal-title"><i class="fas fa-percentage"></i> Quản Lý Chương Trình Khuyến Mại</h3>
+        <button class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form onsubmit="savePromotionForm(event)">
+          <input type="hidden" id="edit-promo-id">
+
+          <div class="form-group">
+            <label class="form-label">Mã Khuyến Mại</label>
+            <input type="text" id="edit-promo-code" class="form-input" placeholder="KM_T9_2026" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Tên Chương Trình Khuyến Mại</label>
+            <input type="text" id="edit-promo-name" class="form-input" placeholder="Giảm Giá Mùa Khai Trường" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Phần Trăm Giảm Giá (%)</label>
+            <input type="number" id="edit-promo-discount" class="form-input" placeholder="15" min="1" max="100" required>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="form-group">
+              <label class="form-label">Ngày Bắt Đầu</label>
+              <input type="date" id="edit-promo-start" class="form-input" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Ngày Kết Thúc</label>
+              <input type="date" id="edit-promo-end" class="form-input" required>
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center; margin-top: 1rem;">
+            <i class="fas fa-check"></i> Lưu Khuyến Mại
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- Footer Section -->
+  <footer class="footer">
+    <div style="max-width: 1400px; margin: 0 auto; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 2rem; text-align: left; margin-bottom: 2rem;">
+      <div>
+        <div class="nav-brand" style="margin-bottom: 1rem;">
+          <i class="fas fa-laptop-code"></i> LaptopStore
+        </div>
+        <p style="max-width: 350px;">Hệ thống bán sỉ & lẻ laptop gaming, laptop văn phòng cao cấp chính hãng hàng đầu Việt Nam.</p>
+      </div>
+      <div>
+        <h4 style="color: var(--text-main); margin-bottom: 1rem;">Liên Hệ & Hỗ Trợ</h4>
+        <p><i class="fas fa-phone-alt"></i> Hotline: 1900 6868</p>
+        <p><i class="fas fa-envelope"></i> Email: support@laptopstore.vn</p>
+        <p><i class="fas fa-map-marker-alt"></i> Hà Nội & TP. Hồ Chí Minh</p>
+      </div>
+    </div>
+    <div style="border-top: 1px solid var(--border-color); padding-top: 1.5rem; font-size: 0.85rem;">
+      &copy; 2026 LaptopStore Management System. Designed for Spring Boot REST API & SSMS SQL Server.
+    </div>
+  </footer>
+
+  <!-- Application Logic Scripts -->
+  <script src="js/mock-data.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/app.js"></script>
+
+</body>
+</html>

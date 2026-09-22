@@ -4,16 +4,18 @@ import com.laptopstore.entity.ThanhToan;
 import com.laptopstore.exception.ResourceNotFoundException;
 import com.laptopstore.repository.ThanhToanRepository;
 import com.laptopstore.service.ThanhToanService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
 public class ThanhToanServiceImpl implements ThanhToanService {
 
     private final ThanhToanRepository thanhToanRepository;
+
+    public ThanhToanServiceImpl(ThanhToanRepository thanhToanRepository) {
+        this.thanhToanRepository = thanhToanRepository;
+    }
 
     @Override
     public List<ThanhToan> getAll() {
@@ -37,9 +39,7 @@ public class ThanhToanServiceImpl implements ThanhToanService {
         existing.setMa(thanhToan.getMa());
         existing.setPhuongThuc(thanhToan.getPhuongThuc());
         existing.setSoTien(thanhToan.getSoTien());
-        if (thanhToan.getNgayThanhToan() != null) {
-            existing.setNgayThanhToan(thanhToan.getNgayThanhToan());
-        }
+        existing.setNgayThanhToan(thanhToan.getNgayThanhToan());
         return thanhToanRepository.save(existing);
     }
 

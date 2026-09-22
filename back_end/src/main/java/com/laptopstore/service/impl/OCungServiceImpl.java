@@ -4,16 +4,18 @@ import com.laptopstore.entity.OCung;
 import com.laptopstore.exception.ResourceNotFoundException;
 import com.laptopstore.repository.OCungRepository;
 import com.laptopstore.service.OCungService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
 public class OCungServiceImpl implements OCungService {
 
     private final OCungRepository oCungRepository;
+
+    public OCungServiceImpl(OCungRepository oCungRepository) {
+        this.oCungRepository = oCungRepository;
+    }
 
     @Override
     public List<OCung> getAll() {

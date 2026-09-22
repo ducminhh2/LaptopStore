@@ -2,7 +2,6 @@ package com.laptopstore.controller;
 
 import com.laptopstore.entity.GioHang;
 import com.laptopstore.service.GioHangService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -11,10 +10,13 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/gio-hang")
-@RequiredArgsConstructor
 public class GioHangController {
 
     private final GioHangService gioHangService;
+
+    public GioHangController(GioHangService gioHangService) {
+        this.gioHangService = gioHangService;
+    }
 
     @GetMapping
     public ResponseEntity<List<GioHang>> getAll() {

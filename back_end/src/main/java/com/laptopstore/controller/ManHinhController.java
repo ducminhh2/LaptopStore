@@ -2,7 +2,6 @@ package com.laptopstore.controller;
 
 import com.laptopstore.entity.ManHinh;
 import com.laptopstore.service.ManHinhService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -11,10 +10,13 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/man-hinh")
-@RequiredArgsConstructor
 public class ManHinhController {
 
     private final ManHinhService manHinhService;
+
+    public ManHinhController(ManHinhService manHinhService) {
+        this.manHinhService = manHinhService;
+    }
 
     @GetMapping
     public ResponseEntity<List<ManHinh>> getAll() {

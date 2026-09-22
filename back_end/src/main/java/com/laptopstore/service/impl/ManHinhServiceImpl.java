@@ -4,16 +4,18 @@ import com.laptopstore.entity.ManHinh;
 import com.laptopstore.exception.ResourceNotFoundException;
 import com.laptopstore.repository.ManHinhRepository;
 import com.laptopstore.service.ManHinhService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
 public class ManHinhServiceImpl implements ManHinhService {
 
     private final ManHinhRepository manHinhRepository;
+
+    public ManHinhServiceImpl(ManHinhRepository manHinhRepository) {
+        this.manHinhRepository = manHinhRepository;
+    }
 
     @Override
     public List<ManHinh> getAll() {

@@ -2,7 +2,6 @@ package com.laptopstore.controller;
 
 import com.laptopstore.entity.Ram;
 import com.laptopstore.service.RamService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -11,10 +10,13 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/ram")
-@RequiredArgsConstructor
 public class RamController {
 
     private final RamService ramService;
+
+    public RamController(RamService ramService) {
+        this.ramService = ramService;
+    }
 
     @GetMapping
     public ResponseEntity<List<Ram>> getAll() {

@@ -4,16 +4,18 @@ import com.laptopstore.entity.ChiTietKhuyenMai;
 import com.laptopstore.exception.ResourceNotFoundException;
 import com.laptopstore.repository.ChiTietKhuyenMaiRepository;
 import com.laptopstore.service.ChiTietKhuyenMaiService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
 public class ChiTietKhuyenMaiServiceImpl implements ChiTietKhuyenMaiService {
 
     private final ChiTietKhuyenMaiRepository chiTietKhuyenMaiRepository;
+
+    public ChiTietKhuyenMaiServiceImpl(ChiTietKhuyenMaiRepository chiTietKhuyenMaiRepository) {
+        this.chiTietKhuyenMaiRepository = chiTietKhuyenMaiRepository;
+    }
 
     @Override
     public List<ChiTietKhuyenMai> getAll() {
@@ -27,13 +29,13 @@ public class ChiTietKhuyenMaiServiceImpl implements ChiTietKhuyenMaiService {
     }
 
     @Override
-    public List<ChiTietKhuyenMai> getByKhuyenMai(Integer khuyenMaiId) {
-        return chiTietKhuyenMaiRepository.findByKhuyenMaiId(khuyenMaiId);
+    public List<ChiTietKhuyenMai> getBySanPham(Integer sanPhamId) {
+        return chiTietKhuyenMaiRepository.findBySanPhamId(sanPhamId);
     }
 
     @Override
-    public List<ChiTietKhuyenMai> getBySanPham(Integer sanPhamId) {
-        return chiTietKhuyenMaiRepository.findBySanPhamId(sanPhamId);
+    public List<ChiTietKhuyenMai> getByKhuyenMai(Integer khuyenMaiId) {
+        return chiTietKhuyenMaiRepository.findByKhuyenMaiId(khuyenMaiId);
     }
 
     @Override

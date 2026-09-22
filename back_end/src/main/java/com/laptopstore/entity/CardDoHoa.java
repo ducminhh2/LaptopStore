@@ -17,4 +17,9 @@ public class CardDoHoa {
 
     @Column(name = "ten_card", nullable = false, length = 100)
     private String tenCard;
+
+    public Integer getId() { return id; }
+    public void setId(Integer id) { this.id = id; }
+    public String getTenCard() { return tenCard; }
+    public void setTenCard(String tenCard) { this.tenCard = tenCard; }
 }

@@ -4,16 +4,18 @@ import com.laptopstore.entity.Cpu;
 import com.laptopstore.exception.ResourceNotFoundException;
 import com.laptopstore.repository.CpuRepository;
 import com.laptopstore.service.CpuService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
 public class CpuServiceImpl implements CpuService {
 
     private final CpuRepository cpuRepository;
+
+    public CpuServiceImpl(CpuRepository cpuRepository) {
+        this.cpuRepository = cpuRepository;
+    }
 
     @Override
     public List<Cpu> getAll() {

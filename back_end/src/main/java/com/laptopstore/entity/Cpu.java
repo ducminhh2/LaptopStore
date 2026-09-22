@@ -17,4 +17,9 @@ public class Cpu {
 
     @Column(name = "ten_cpu", nullable = false, length = 100)
     private String tenCpu;
+
+    public Integer getId() { return id; }
+    public void setId(Integer id) { this.id = id; }
+    public String getTenCpu() { return tenCpu; }
+    public void setTenCpu(String tenCpu) { this.tenCpu = tenCpu; }
 }

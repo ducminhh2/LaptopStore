@@ -2,7 +2,6 @@ package com.laptopstore.controller;
 
 import com.laptopstore.entity.VaiTro;
 import com.laptopstore.service.VaiTroService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -11,10 +10,13 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/vai-tro")
-@RequiredArgsConstructor
 public class VaiTroController {
 
     private final VaiTroService vaiTroService;
+
+    public VaiTroController(VaiTroService vaiTroService) {
+        this.vaiTroService = vaiTroService;
+    }
 
     @GetMapping
     public ResponseEntity<List<VaiTro>> getAll() {

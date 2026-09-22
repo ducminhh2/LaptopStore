@@ -4,16 +4,18 @@ import com.laptopstore.entity.VaiTro;
 import com.laptopstore.exception.ResourceNotFoundException;
 import com.laptopstore.repository.VaiTroRepository;
 import com.laptopstore.service.VaiTroService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
 public class VaiTroServiceImpl implements VaiTroService {
 
     private final VaiTroRepository vaiTroRepository;
+
+    public VaiTroServiceImpl(VaiTroRepository vaiTroRepository) {
+        this.vaiTroRepository = vaiTroRepository;
+    }
 
     @Override
     public List<VaiTro> getAll() {

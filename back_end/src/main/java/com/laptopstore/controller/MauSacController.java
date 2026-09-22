@@ -2,7 +2,6 @@ package com.laptopstore.controller;
 
 import com.laptopstore.entity.MauSac;
 import com.laptopstore.service.MauSacService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -11,10 +10,13 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/mau-sac")
-@RequiredArgsConstructor
 public class MauSacController {
 
     private final MauSacService mauSacService;
+
+    public MauSacController(MauSacService mauSacService) {
+        this.mauSacService = mauSacService;
+    }
 
     @GetMapping
     public ResponseEntity<List<MauSac>> getAll() {

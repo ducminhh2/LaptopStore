@@ -29,4 +29,15 @@ public class ThanhToan {
     @Column(name = "ngay_thanh_toan")
     @Builder.Default
     private LocalDateTime ngayThanhToan = LocalDateTime.now();
+
+    public Integer getId() { return id; }
+    public void setId(Integer id) { this.id = id; }
+    public String getMa() { return ma; }
+    public void setMa(String ma) { this.ma = ma; }
+    public String getPhuongThuc() { return phuongThuc; }
+    public void setPhuongThuc(String phuongThuc) { this.phuongThuc = phuongThuc; }
+    public BigDecimal getSoTien() { return soTien; }
+    public void setSoTien(BigDecimal soTien) { this.soTien = soTien; }
+    public LocalDateTime getNgayThanhToan() { return ngayThanhToan; }
+    public void setNgayThanhToan(LocalDateTime ngayThanhToan) { this.ngayThanhToan = ngayThanhToan; }
 }

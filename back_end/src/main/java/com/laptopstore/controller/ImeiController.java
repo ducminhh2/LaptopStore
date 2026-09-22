@@ -2,7 +2,6 @@ package com.laptopstore.controller;
 
 import com.laptopstore.entity.Imei;
 import com.laptopstore.service.ImeiService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -11,10 +10,13 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/imei")
-@RequiredArgsConstructor
 public class ImeiController {
 
     private final ImeiService imeiService;
+
+    public ImeiController(ImeiService imeiService) {
+        this.imeiService = imeiService;
+    }
 
     @GetMapping
     public ResponseEntity<List<Imei>> getAll() {
@@ -36,12 +38,6 @@ public class ImeiController {
         return ResponseEntity.ok(imeiService.getByChiTietSanPham(ctspId));
     }
 
-    @GetMapping("/chi-tiet-san-pham/{ctspId}/trang-thai/{trangThai}")
-    public ResponseEntity<List<Imei>> getByChiTietSanPhamAndTrangThai(
-            @PathVariable Integer ctspId, @PathVariable Integer trangThai) {
-        return ResponseEntity.ok(imeiService.getByChiTietSanPhamAndTrangThai(ctspId, trangThai));
-    }
-
     @GetMapping("/trang-thai/{trangThai}")
     public ResponseEntity<List<Imei>> getByTrangThai(@PathVariable Integer trangThai) {
         return ResponseEntity.ok(imeiService.getByTrangThai(trangThai));
@@ -55,11 +51,6 @@ public class ImeiController {
     @PutMapping("/{id}")
     public ResponseEntity<Imei> update(@PathVariable Integer id, @RequestBody Imei imei) {
         return ResponseEntity.ok(imeiService.update(id, imei));
-    }
-
-    @PatchMapping("/{id}/trang-thai/{trangThai}")
-    public ResponseEntity<Imei> updateTrangThai(@PathVariable Integer id, @PathVariable Integer trangThai) {
-        return ResponseEntity.ok(imeiService.updateTrangThai(id, trangThai));
     }
 
     @DeleteMapping("/{id}")

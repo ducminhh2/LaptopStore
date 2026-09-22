@@ -2,7 +2,6 @@ package com.laptopstore.controller;
 
 import com.laptopstore.entity.BaoHanh;
 import com.laptopstore.service.BaoHanhService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -11,10 +10,13 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/bao-hanh")
-@RequiredArgsConstructor
 public class BaoHanhController {
 
     private final BaoHanhService baoHanhService;
+
+    public BaoHanhController(BaoHanhService baoHanhService) {
+        this.baoHanhService = baoHanhService;
+    }
 
     @GetMapping
     public ResponseEntity<List<BaoHanh>> getAll() {

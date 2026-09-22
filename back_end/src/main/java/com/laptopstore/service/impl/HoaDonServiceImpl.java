@@ -4,16 +4,18 @@ import com.laptopstore.entity.HoaDon;
 import com.laptopstore.exception.ResourceNotFoundException;
 import com.laptopstore.repository.HoaDonRepository;
 import com.laptopstore.service.HoaDonService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
 public class HoaDonServiceImpl implements HoaDonService {
 
     private final HoaDonRepository hoaDonRepository;
+
+    public HoaDonServiceImpl(HoaDonRepository hoaDonRepository) {
+        this.hoaDonRepository = hoaDonRepository;
+    }
 
     @Override
     public List<HoaDon> getAll() {
@@ -56,16 +58,14 @@ public class HoaDonServiceImpl implements HoaDonService {
     public HoaDon update(Integer id, HoaDon hoaDon) {
         HoaDon existing = getById(id);
         existing.setMa(hoaDon.getMa());
+        existing.setKhachHang(hoaDon.getKhachHang());
         existing.setDiaChi(hoaDon.getDiaChi());
         existing.setDienThoai(hoaDon.getDienThoai());
         existing.setTenNguoiNhan(hoaDon.getTenNguoiNhan());
         existing.setTrangThai(hoaDon.getTrangThai());
+        existing.setThanhToan(hoaDon.getThanhToan());
+        existing.setNhanVien(hoaDon.getNhanVien());
         existing.setMoTa(hoaDon.getMoTa());
-
-        if (hoaDon.getKhachHang() != null) existing.setKhachHang(hoaDon.getKhachHang());
-        if (hoaDon.getNhanVien() != null) existing.setNhanVien(hoaDon.getNhanVien());
-        if (hoaDon.getThanhToan() != null) existing.setThanhToan(hoaDon.getThanhToan());
-
         return hoaDonRepository.save(existing);
     }
 

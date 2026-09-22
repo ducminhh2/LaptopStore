@@ -4,16 +4,18 @@ import com.laptopstore.entity.SanPham;
 import com.laptopstore.exception.ResourceNotFoundException;
 import com.laptopstore.repository.SanPhamRepository;
 import com.laptopstore.service.SanPhamService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
 public class SanPhamServiceImpl implements SanPhamService {
 
     private final SanPhamRepository sanPhamRepository;
+
+    public SanPhamServiceImpl(SanPhamRepository sanPhamRepository) {
+        this.sanPhamRepository = sanPhamRepository;
+    }
 
     @Override
     public List<SanPham> getAll() {
@@ -59,12 +61,8 @@ public class SanPhamServiceImpl implements SanPhamService {
         existing.setTenSp(sanPham.getTenSp());
         existing.setGiaCoBan(sanPham.getGiaCoBan());
         existing.setMoTa(sanPham.getMoTa());
-        if (sanPham.getDanhMuc() != null) {
-            existing.setDanhMuc(sanPham.getDanhMuc());
-        }
-        if (sanPham.getThuongHieu() != null) {
-            existing.setThuongHieu(sanPham.getThuongHieu());
-        }
+        existing.setDanhMuc(sanPham.getDanhMuc());
+        existing.setThuongHieu(sanPham.getThuongHieu());
         return sanPhamRepository.save(existing);
     }
 

@@ -4,16 +4,18 @@ import com.laptopstore.entity.CardDoHoa;
 import com.laptopstore.exception.ResourceNotFoundException;
 import com.laptopstore.repository.CardDoHoaRepository;
 import com.laptopstore.service.CardDoHoaService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
 public class CardDoHoaServiceImpl implements CardDoHoaService {
 
     private final CardDoHoaRepository cardDoHoaRepository;
+
+    public CardDoHoaServiceImpl(CardDoHoaRepository cardDoHoaRepository) {
+        this.cardDoHoaRepository = cardDoHoaRepository;
+    }
 
     @Override
     public List<CardDoHoa> getAll() {

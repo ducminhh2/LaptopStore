@@ -4,16 +4,18 @@ import com.laptopstore.entity.KhuyenMai;
 import com.laptopstore.exception.ResourceNotFoundException;
 import com.laptopstore.repository.KhuyenMaiRepository;
 import com.laptopstore.service.KhuyenMaiService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
 public class KhuyenMaiServiceImpl implements KhuyenMaiService {
 
     private final KhuyenMaiRepository khuyenMaiRepository;
+
+    public KhuyenMaiServiceImpl(KhuyenMaiRepository khuyenMaiRepository) {
+        this.khuyenMaiRepository = khuyenMaiRepository;
+    }
 
     @Override
     public List<KhuyenMai> getAll() {

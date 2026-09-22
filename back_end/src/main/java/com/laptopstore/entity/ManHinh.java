@@ -23,4 +23,13 @@ public class ManHinh {
 
     @Column(name = "tan_so_quet", length = 50)
     private String tanSoQuet;
+
+    public Integer getId() { return id; }
+    public void setId(Integer id) { this.id = id; }
+    public String getKichThuoc() { return kichThuoc; }
+    public void setKichThuoc(String kichThuoc) { this.kichThuoc = kichThuoc; }
+    public String getDoPhanGiai() { return doPhanGiai; }
+    public void setDoPhanGiai(String doPhanGiai) { this.doPhanGiai = doPhanGiai; }
+    public String getTanSoQuet() { return tanSoQuet; }
+    public void setTanSoQuet(String tanSoQuet) { this.tanSoQuet = tanSoQuet; }
 }

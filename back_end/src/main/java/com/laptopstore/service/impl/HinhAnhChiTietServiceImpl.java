@@ -4,16 +4,18 @@ import com.laptopstore.entity.HinhAnhChiTiet;
 import com.laptopstore.exception.ResourceNotFoundException;
 import com.laptopstore.repository.HinhAnhChiTietRepository;
 import com.laptopstore.service.HinhAnhChiTietService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
 public class HinhAnhChiTietServiceImpl implements HinhAnhChiTietService {
 
     private final HinhAnhChiTietRepository hinhAnhChiTietRepository;
+
+    public HinhAnhChiTietServiceImpl(HinhAnhChiTietRepository hinhAnhChiTietRepository) {
+        this.hinhAnhChiTietRepository = hinhAnhChiTietRepository;
+    }
 
     @Override
     public List<HinhAnhChiTiet> getAll() {
@@ -40,9 +42,7 @@ public class HinhAnhChiTietServiceImpl implements HinhAnhChiTietService {
     public HinhAnhChiTiet update(Integer id, HinhAnhChiTiet hinhAnhChiTiet) {
         HinhAnhChiTiet existing = getById(id);
         existing.setUrlHinhAnh(hinhAnhChiTiet.getUrlHinhAnh());
-        if (hinhAnhChiTiet.getChiTietSanPham() != null) {
-            existing.setChiTietSanPham(hinhAnhChiTiet.getChiTietSanPham());
-        }
+        existing.setChiTietSanPham(hinhAnhChiTiet.getChiTietSanPham());
         return hinhAnhChiTietRepository.save(existing);
     }
 

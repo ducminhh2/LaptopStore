@@ -20,7 +20,7 @@ public class BaoHanh {
     private String maPhieu;
 
     @OneToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "id_imei", unique = true, nullable = false)
+    @JoinColumn(name = "id_imei", nullable = false, unique = true)
     private Imei imei;
 
     @Column(name = "ngay_kich_hoat")
@@ -32,5 +32,18 @@ public class BaoHanh {
 
     @Column(name = "trang_thai")
     @Builder.Default
-    private Integer trangThai = 1; // 1: Đang còn hạn bảo hành, 0: Hết hạn
+    private Integer trangThai = 1;
+
+    public Integer getId() { return id; }
+    public void setId(Integer id) { this.id = id; }
+    public String getMaPhieu() { return maPhieu; }
+    public void setMaPhieu(String maPhieu) { this.maPhieu = maPhieu; }
+    public Imei getImei() { return imei; }
+    public void setImei(Imei imei) { this.imei = imei; }
+    public LocalDateTime getNgayKichHoat() { return ngayKichHoat; }
+    public void setNgayKichHoat(LocalDateTime ngayKichHoat) { this.ngayKichHoat = ngayKichHoat; }
+    public LocalDateTime getNgayHetHan() { return ngayHetHan; }
+    public void setNgayHetHan(LocalDateTime ngayHetHan) { this.ngayHetHan = ngayHetHan; }
+    public Integer getTrangThai() { return trangThai; }
+    public void setTrangThai(Integer trangThai) { this.trangThai = trangThai; }
 }

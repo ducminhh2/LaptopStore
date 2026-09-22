@@ -17,4 +17,9 @@ public class VaiTro {
 
     @Column(name = "ten_vai_tro", nullable = false, length = 50)
     private String tenVaiTro;
+
+    public Integer getId() { return id; }
+    public void setId(Integer id) { this.id = id; }
+    public String getTenVaiTro() { return tenVaiTro; }
+    public void setTenVaiTro(String tenVaiTro) { this.tenVaiTro = tenVaiTro; }
 }

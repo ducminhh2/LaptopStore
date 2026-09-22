@@ -4,16 +4,18 @@ import com.laptopstore.entity.DanhMuc;
 import com.laptopstore.exception.ResourceNotFoundException;
 import com.laptopstore.repository.DanhMucRepository;
 import com.laptopstore.service.DanhMucService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
 public class DanhMucServiceImpl implements DanhMucService {
 
     private final DanhMucRepository danhMucRepository;
+
+    public DanhMucServiceImpl(DanhMucRepository danhMucRepository) {
+        this.danhMucRepository = danhMucRepository;
+    }
 
     @Override
     public List<DanhMuc> getAll() {
