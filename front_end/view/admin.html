@@ -329,10 +329,16 @@
                 </div>
               </div>
 
+              <!-- Customer Address -->
+              <div class="pos-form-group">
+                <label class="pos-form-label" for="posCustomerAddress">Địa Chỉ Nhận Hàng</label>
+                <input type="text" class="pos-form-input" id="posCustomerAddress" placeholder="Nhập địa chỉ giao hàng hoặc 'Tại quầy Store'..." value="Tại quầy Store" oninput="onPosAddressChange()">
+              </div>
+
               <!-- Payment Method -->
               <div class="pos-form-group">
                 <label class="pos-form-label">Hình Thức Thanh Toán</label>
-                <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px;">
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 8px;">
                   <label
                     style="display:flex; align-items:center; gap:6px; font-size:0.8rem; font-weight:600; cursor:pointer; background:#f8fafc; border:1px solid var(--admin-border); padding:8px 10px; border-radius:var(--radius-sm);">
                     <input type="radio" name="posPayMethod" value="TIEN_MAT" checked onchange="updatePosCalculations()">
@@ -342,11 +348,6 @@
                     style="display:flex; align-items:center; gap:6px; font-size:0.8rem; font-weight:600; cursor:pointer; background:#f8fafc; border:1px solid var(--admin-border); padding:8px 10px; border-radius:var(--radius-sm);">
                     <input type="radio" name="posPayMethod" value="CHUYEN_KHOAN" onchange="updatePosCalculations()">
                     <span>Chuyển khoản QR</span>
-                  </label>
-                  <label
-                    style="display:flex; align-items:center; gap:6px; font-size:0.8rem; font-weight:600; cursor:pointer; background:#f8fafc; border:1px solid var(--admin-border); padding:8px 10px; border-radius:var(--radius-sm);">
-                    <input type="radio" name="posPayMethod" value="QUET_THE" onchange="updatePosCalculations()">
-                    <span>Quẹt thẻ POS</span>
                   </label>
                 </div>
               </div>

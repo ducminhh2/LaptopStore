@@ -540,6 +540,8 @@ function populatePosCustomerAndCashierSelects() {
       custSelect.value = order.customerId;
       const phoneInput = document.getElementById('posCustomerPhone');
       if (phoneInput) phoneInput.value = order.customerPhone || '';
+      const addressInput = document.getElementById('posCustomerAddress');
+      if (addressInput) addressInput.value = order.customerAddress || 'Tại quầy Store';
     }
   }
 
@@ -716,14 +718,22 @@ function renderPosCart() {
   }
 
   const phoneInput = document.getElementById('posCustomerPhone');
+  const addressInput = document.getElementById('posCustomerAddress');
   const custSelect = document.getElementById('posCustomerSelect');
   const cashSelect = document.getElementById('posCashierSelect');
   const noteInput = document.getElementById('posOrderNote');
   const currentUser = getLoggedInUser();
 
   if (phoneInput) phoneInput.value = order.customerPhone || '';
+  if (addressInput) addressInput.value = order.customerAddress || 'Tại quầy Store';
   if (custSelect) custSelect.value = order.customerId || 1;
   if (noteInput) noteInput.value = order.note || '';
+
+  if (!order.payMethod || order.payMethod === 'QUET_THE') {
+    order.payMethod = 'TIEN_MAT';
+  }
+  const payRadio = document.querySelector(`input[name="posPayMethod"][value="${order.payMethod}"]`);
+  if (payRadio) payRadio.checked = true;
 
   if (cashSelect) {
     if (currentUser && currentUser.id) {
@@ -782,6 +792,7 @@ window.onPosCustomerChange = function() {
   const custSelect = document.getElementById('posCustomerSelect');
   const phoneInput = document.getElementById('posCustomerPhone');
   const order = getActivePosOrder();
+  const addressInput = document.getElementById('posCustomerAddress');
   if (!custSelect || !order) return;
 
   const opt = custSelect.options[custSelect.selectedIndex];
@@ -789,8 +800,17 @@ window.onPosCustomerChange = function() {
     order.customerId = parseInt(opt.value);
     order.customerName = opt.getAttribute('data-name');
     order.customerPhone = opt.getAttribute('data-phone');
-    order.customerAddress = opt.getAttribute('data-address');
+    order.customerAddress = opt.getAttribute('data-address') || 'Tại quầy Store';
     if (phoneInput) phoneInput.value = order.customerPhone || '';
+    if (addressInput) addressInput.value = order.customerAddress;
+  }
+};
+
+window.onPosAddressChange = function() {
+  const order = getActivePosOrder();
+  const addressInput = document.getElementById('posCustomerAddress');
+  if (order && addressInput) {
+    order.customerAddress = addressInput.value.trim() || 'Tại quầy Store';
   }
 };
 
@@ -1149,7 +1169,9 @@ window.submitPosCheckout = async function(isCompleted = true) {
   const phone = phoneInput?.value || '0988888888';
   const note = noteInput?.value || '';
   const customerName = custSelect?.options[custSelect.selectedIndex]?.getAttribute('data-name') || 'Khách lẻ tại quầy';
-  const customerAddress = custSelect?.options[custSelect.selectedIndex]?.getAttribute('data-address') || 'Tại quầy Store';
+  const addressInput = document.getElementById('posCustomerAddress');
+  const customerAddress = addressInput?.value?.trim() || order.customerAddress || custSelect?.options[custSelect.selectedIndex]?.getAttribute('data-address') || 'Tại quầy Store';
+  order.customerAddress = customerAddress;
 
   const orderCode = 'HD' + Math.floor(Date.now() / 1000);
 
@@ -1217,6 +1239,7 @@ window.submitPosCheckout = async function(isCompleted = true) {
       order.maVoucher = '';
       order.tienGiamVoucher = 0;
       order.note = '';
+      order.customerAddress = 'Tại quầy Store';
       renderPosOrderTabs();
       renderPosCart();
     }
@@ -2800,6 +2823,7 @@ function printReceiptDirectly(hoaDon, order) {
       <div style="font-size:0.8rem; margin-bottom:10px;">
         <div>Khách hàng: <strong>${hoaDon.tenNguoiNhan || 'Khách lẻ'}</strong></div>
         <div>SĐT: ${hoaDon.dienThoai || '---'}</div>
+        <div>Địa chỉ nhận: ${hoaDon.diaChi || order.customerAddress || 'Tại quầy Store'}</div>
         <div>Thu ngân: ${hoaDon.nhanVien?.ten || 'NV'} - LaptopStore</div>
       </div>
 
