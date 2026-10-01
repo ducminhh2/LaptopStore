@@ -2,6 +2,7 @@ package com.laptopstore.controller;
 
 import com.laptopstore.entity.ThanhToan;
 import com.laptopstore.service.ThanhToanService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -10,13 +11,10 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/thanh-toan")
+@RequiredArgsConstructor
 public class ThanhToanController {
 
     private final ThanhToanService thanhToanService;
-
-    public ThanhToanController(ThanhToanService thanhToanService) {
-        this.thanhToanService = thanhToanService;
-    }
 
     @GetMapping
     public ResponseEntity<List<ThanhToan>> getAll() {

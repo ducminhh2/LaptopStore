@@ -2,6 +2,7 @@ package com.laptopstore.controller;
 
 import com.laptopstore.entity.NguoiDung;
 import com.laptopstore.service.NguoiDungService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -10,13 +11,10 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/nguoi-dung")
+@RequiredArgsConstructor
 public class NguoiDungController {
 
     private final NguoiDungService nguoiDungService;
-
-    public NguoiDungController(NguoiDungService nguoiDungService) {
-        this.nguoiDungService = nguoiDungService;
-    }
 
     @GetMapping
     public ResponseEntity<List<NguoiDung>> getAll() {

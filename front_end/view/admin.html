@@ -1,0 +1,2254 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Laptop Store - Quản Trị Hệ Thống (Admin & POS)</title>
+  <meta name="description"
+    content="Trang quản trị bán hàng tại quầy (POS), quản lý hóa đơn, và quản lý các thuộc tính laptop.">
+
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+    rel="stylesheet">
+
+  <!-- Admin Stylesheet -->
+  <link rel="stylesheet" href="../css/admin.css?v=20260930_1548">
+
+  <style>
+    .custom-imei-scroll::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .custom-imei-scroll::-webkit-scrollbar-track {
+      background: #f1f5f9;
+      border-radius: 4px;
+    }
+
+    .custom-imei-scroll::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+
+    .custom-imei-scroll::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="admin-layout">
+    <!-- ======================================================================
+         SIDEBAR NAVIGATION
+         ====================================================================== -->
+    <aside class="admin-sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-logo-icon">LS</div>
+        <div>
+          <div class="sidebar-title">LAPTOP STORE</div>
+          <div class="sidebar-subtitle">Quản Trị Hệ Thống</div>
+        </div>
+      </div>
+
+      <ul class="sidebar-menu">
+        <li class="sidebar-menu-category">Bán Hàng & Đơn</li>
+        <li>
+          <a href="javascript:void(0)" class="sidebar-menu-item active" id="navPos" onclick="switchAdminTab('pos')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+              stroke-linejoin="round">
+              <circle cx="9" cy="21" r="1"></circle>
+              <circle cx="20" cy="21" r="1"></circle>
+              <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+            </svg>
+            <span>Bán Hàng Tại Quầy</span>
+          </a>
+        </li>
+        <li>
+          <a href="javascript:void(0)" class="sidebar-menu-item" id="navInvoices" onclick="switchAdminTab('invoices')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+              stroke-linejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="16" y1="13" x2="8" y2="13"></line>
+              <line x1="16" y1="17" x2="8" y2="17"></line>
+              <polyline points="10 9 9 9 8 9"></polyline>
+            </svg>
+            <span>Quản Lý Hóa Đơn</span>
+          </a>
+        </li>
+
+        <li class="sidebar-menu-category">Sản Phẩm & Cấu Hình</li>
+        <li>
+          <a href="javascript:void(0)" class="sidebar-menu-item" id="navProducts" onclick="switchAdminTab('products')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+              stroke-linejoin="round">
+              <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+              <line x1="8" y1="21" x2="16" y2="21"></line>
+              <line x1="12" y1="17" x2="12" y2="21"></line>
+            </svg>
+            <span>Quản Lý Sản Phẩm</span>
+          </a>
+        </li>
+        <li>
+          <a href="javascript:void(0)" class="sidebar-menu-item" id="navPromotions"
+            onclick="switchAdminTab('promotions')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+              stroke-linejoin="round">
+              <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
+              <line x1="7" y1="7" x2="7.01" y2="7"></line>
+            </svg>
+            <span>Khuyến Mãi</span>
+          </a>
+        </li>
+        <li>
+          <a href="javascript:void(0)" class="sidebar-menu-item" id="navVouchers" onclick="switchAdminTab('vouchers')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+              stroke-linejoin="round">
+              <rect x="2" y="5" width="20" height="14" rx="2"></rect>
+              <line x1="2" y1="10" x2="22" y2="10"></line>
+              <circle cx="7" cy="15" r="1.5" fill="currentColor"></circle>
+              <path d="M12 15h6"></path>
+            </svg>
+            <span>Quản Lý Voucher</span>
+          </a>
+        </li>
+
+        <li>
+          <a href="javascript:void(0)" class="sidebar-menu-item" id="navAttributes"
+            onclick="switchAdminTab('attributes')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+              stroke-linejoin="round">
+              <rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect>
+              <rect x="9" y="9" width="6" height="6"></rect>
+              <line x1="9" y1="1" x2="9" y2="4"></line>
+              <line x1="15" y1="1" x2="15" y2="4"></line>
+              <line x1="9" y1="20" x2="9" y2="23"></line>
+              <line x1="15" y1="20" x2="15" y2="23"></line>
+              <line x1="20" y1="9" x2="23" y2="9"></line>
+              <line x1="20" y1="14" x2="23" y2="14"></line>
+              <line x1="1" y1="9" x2="4" y2="9"></line>
+              <line x1="1" y1="14" x2="4" y2="14"></line>
+            </svg>
+            <span>Quản Lý Thuộc Tính</span>
+          </a>
+        </li>
+        <li>
+          <a href="javascript:void(0)" class="sidebar-menu-item" id="navImeis" onclick="switchAdminTab('imeis')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+              stroke-linejoin="round">
+              <path d="M3 5h2v14H3zM7 5h1v14H7zM10 5h2v14h-2zM14 5h1v14h-1zM17 5h3v14h-3z"></path>
+            </svg>
+            <span>Quản Lý IMEI</span>
+          </a>
+        </li>
+
+        <li class="sidebar-menu-category">Cửa Hàng</li>
+        <li>
+          <a href="index.html" class="sidebar-menu-item" target="_blank">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+              stroke-linejoin="round">
+              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+              <polyline points="15 3 21 3 21 9"></polyline>
+              <line x1="10" y1="14" x2="21" y2="3"></line>
+            </svg>
+            <span>Xem Web Bán Hàng</span>
+          </a>
+        </li>
+      </ul>
+
+      <div class="sidebar-footer" style="display:flex; flex-direction:column; gap:8px;">
+        <a href="index.html" class="btn-store-front">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+          </svg>
+          <span>Về Trang Khách Hàng</span>
+        </a>
+        <button type="button" onclick="handleAdminLogout()" class="btn-store-front"
+          style="color:#ef4444; background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.2); cursor:pointer; justify-content:center;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+            <polyline points="16 17 21 12 16 7"></polyline>
+            <line x1="21" y1="12" x2="9" y2="12"></line>
+          </svg>
+          <span>Đăng Xuất</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- ======================================================================
+         MAIN WORKSPACE
+         ====================================================================== -->
+    <main class="admin-main">
+      <!-- Topbar Header -->
+      <header class="admin-topbar">
+        <div class="topbar-left">
+          <h1 class="topbar-page-title" id="adminPageTitle">Bán Hàng Tại Quầy (POS)</h1>
+        </div>
+        <div class="topbar-right">
+          <div class="admin-badge" id="apiStatusBadge">
+            <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#10b981;"></span>
+            <span id="apiStatusText">API Sẵn Sàng (Port 8080)</span>
+          </div>
+          <div class="admin-user-pill" id="adminUserPill">
+            <div class="admin-avatar" id="adminAvatar">AD</div>
+            <div>
+              <div id="adminUserName" style="font-weight:700; font-size:0.86rem; color:var(--admin-text-main);">Admin
+              </div>
+              <div id="adminUserRole" style="font-size:0.72rem; color:var(--admin-text-muted);">Quản trị viên</div>
+            </div>
+            <button type="button" onclick="handleAdminLogout()" title="Đăng xuất khỏi hệ thống"
+              style="background:#f1f5f9; border:1px solid #e2e8f0; border-radius:6px; padding:5px 8px; cursor:pointer; display:inline-flex; align-items:center; color:#64748b; margin-left:6px; transition:all 0.2s;"
+              onmouseover="this.style.color='#ef4444'; this.style.borderColor='#fca5a5'; this.style.background='#fef2f2';"
+              onmouseout="this.style.color='#64748b'; this.style.borderColor='#e2e8f0'; this.style.background='#f1f5f9';">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                <polyline points="16 17 21 12 16 7"></polyline>
+                <line x1="21" y1="12" x2="9" y2="12"></line>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <div class="admin-content">
+
+        <!-- ==================================================================
+             SECTION 1: BÁN HÀNG TẠI QUẦY (POS)
+             ================================================================== -->
+        <section id="tabPanePos" class="admin-tab-pane active">
+          <!-- Order Tabs Bar -->
+          <div class="pos-order-tabs-bar" id="posOrderTabsBar">
+            <!-- Dynamic order tabs inserted here -->
+            <button class="btn-new-pos-order" id="btnNewOrderTab" onclick="posCreateNewOrderTab()" type="button">
+              + Thêm hóa đơn mới
+            </button>
+          </div>
+
+          <div class="pos-layout">
+            <!-- POS Left Column: Cart & Items -->
+            <div class="pos-cart-container">
+              <div class="admin-card" style="margin-bottom: 0;">
+                <div class="admin-card-header">
+                  <div class="admin-card-title">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="9" cy="21" r="1"></circle>
+                      <circle cx="20" cy="21" r="1"></circle>
+                      <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+                    </svg>
+                    <span>Giỏ Hàng Đang Chọn</span>
+                    <span id="posCurrentOrderBadge"
+                      style="font-size:0.78rem; font-weight:700; color:var(--admin-primary); margin-left:8px;">(Hóa đơn
+                      1)</span>
+                  </div>
+
+                  <div style="display:flex; gap:10px;">
+                    <button class="btn-admin btn-primary" onclick="openPosProductPickerModal()" type="button">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                      </svg>
+                      <span>+ Chọn Sản Phẩm</span>
+                    </button>
+                    <button class="btn-admin btn-outline btn-sm" onclick="posClearActiveCart()" type="button"
+                      title="Làm trống giỏ hàng">
+                      Xóa giỏ
+                    </button>
+                  </div>
+                </div>
+
+                <div class="admin-card-body" style="padding: 0;">
+                  <div class="table-responsive">
+                    <table class="admin-table">
+                      <thead>
+                        <tr>
+                          <th style="width: 40px; text-align: center;">#</th>
+                          <th style="min-width: 240px;">Sản phẩm Laptop</th>
+                          <th style="width: 130px; text-align: right;">Đơn giá</th>
+                          <th style="width: 120px; text-align: center;">Số lượng</th>
+                          <th style="width: 140px; text-align: right;">Thành tiền</th>
+                          <th style="width: 50px; text-align: center;">Xóa</th>
+                        </tr>
+                      </thead>
+                      <tbody id="posCartTableBody">
+                        <!-- Items rendered dynamically -->
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <!-- Empty state when cart is empty -->
+                  <div id="posCartEmptyNotice"
+                    style="padding: 40px 20px; text-align: center; color: var(--admin-text-muted);">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="1.5"
+                      style="margin-bottom: 10px;">
+                      <circle cx="9" cy="21" r="1"></circle>
+                      <circle cx="20" cy="21" r="1"></circle>
+                      <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+                    </svg>
+                    <div style="font-weight: 600; font-size: 0.95rem;">Đơn hàng chưa có sản phẩm nào</div>
+                    <div style="font-size: 0.8rem; margin-top: 4px;">Bấm nút "<strong>+ Chọn Sản Phẩm</strong>" ở trên
+                      để thêm laptop vào đơn</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- POS Right Column: Checkout & Payment Info -->
+            <div class="pos-checkout-panel">
+              <div class="pos-checkout-section-title">Thông Tin Thanh Toán Tại Quầy</div>
+
+              <!-- Customer info -->
+              <div class="pos-form-group">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
+                  <label class="pos-form-label" style="margin-bottom:0;" for="posCustomerSelect">Khách Hàng</label>
+                  <a href="javascript:void(0)" onclick="openQuickCustomerModal()"
+                    style="font-size:0.75rem; color:var(--admin-primary); font-weight:700; text-decoration:none;">+ Thêm
+                    khách mới</a>
+                </div>
+                <select class="pos-form-input" id="posCustomerSelect" onchange="onPosCustomerChange()">
+                  <!-- Dynamically populated -->
+                </select>
+              </div>
+
+              <!-- Phone & Delivery / Store Pickup -->
+              <div class="pos-form-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                <div>
+                  <label class="pos-form-label" for="posCustomerPhone">Số Điện Thoại</label>
+                  <input type="text" class="pos-form-input" id="posCustomerPhone" value="0988888888">
+                </div>
+                <div>
+                  <label class="pos-form-label" for="posCashierSelect">Nhân Viên Bán</label>
+                  <select class="pos-form-input" id="posCashierSelect" disabled
+                    style="background-color:#f1f5f9; cursor:not-allowed; font-weight:600; color:#1e293b;">
+                    <!-- Populated dynamically based on logged in user -->
+                  </select>
+                </div>
+              </div>
+
+              <!-- Payment Method -->
+              <div class="pos-form-group">
+                <label class="pos-form-label">Hình Thức Thanh Toán</label>
+                <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px;">
+                  <label
+                    style="display:flex; align-items:center; gap:6px; font-size:0.8rem; font-weight:600; cursor:pointer; background:#f8fafc; border:1px solid var(--admin-border); padding:8px 10px; border-radius:var(--radius-sm);">
+                    <input type="radio" name="posPayMethod" value="TIEN_MAT" checked onchange="updatePosCalculations()">
+                    <span>Tiền mặt</span>
+                  </label>
+                  <label
+                    style="display:flex; align-items:center; gap:6px; font-size:0.8rem; font-weight:600; cursor:pointer; background:#f8fafc; border:1px solid var(--admin-border); padding:8px 10px; border-radius:var(--radius-sm);">
+                    <input type="radio" name="posPayMethod" value="CHUYEN_KHOAN" onchange="updatePosCalculations()">
+                    <span>Chuyển khoản QR</span>
+                  </label>
+                  <label
+                    style="display:flex; align-items:center; gap:6px; font-size:0.8rem; font-weight:600; cursor:pointer; background:#f8fafc; border:1px solid var(--admin-border); padding:8px 10px; border-radius:var(--radius-sm);">
+                    <input type="radio" name="posPayMethod" value="QUET_THE" onchange="updatePosCalculations()">
+                    <span>Quẹt thẻ POS</span>
+                  </label>
+                </div>
+              </div>
+
+              <!-- Calculations -->
+              <div style="margin-top: 18px; border-top: 1px solid var(--admin-border); padding-top: 14px;">
+                <div class="pos-calc-row">
+                  <span class="pos-calc-label">Tổng tiền hàng:</span>
+                  <span class="pos-calc-value" id="posSubtotal">0 đ</span>
+                </div>
+                <div class="pos-form-group" style="margin-top: 10px; margin-bottom: 8px;">
+                  <label class="pos-form-label" for="posVoucherSelect" style="display:flex; justify-content:space-between; align-items:center;">
+                    <span>Voucher:</span>
+                  </label>
+                  <select class="pos-form-input" id="posVoucherSelect" onchange="onPosVoucherChange()" style="font-size:0.84rem; padding:6px 8px; font-weight:500;">
+                    <option value="">-- Không áp dụng Voucher --</option>
+                  </select>
+                </div>
+                <div class="pos-calc-row" style="margin-bottom: 6px;">
+                  <span class="pos-calc-label">Giảm Voucher:</span>
+                  <span class="pos-calc-value" id="posVoucherDiscount" style="color:#dc2626; font-weight:700;">-0 đ</span>
+                </div>
+                <div class="pos-calc-row pos-calc-total">
+                  <span class="pos-calc-label"
+                    style="font-size: 1rem; font-weight: 800; color: var(--admin-text-main);">Khách phải trả:</span>
+                  <span class="pos-calc-value" id="posTotal">0 đ</span>
+                </div>
+
+                <div class="pos-calc-row">
+                  <span class="pos-calc-label">Tiền khách đưa:</span>
+                  <div style="display:flex; align-items:center; gap:4px; max-width: 170px;">
+                    <input type="number" class="pos-form-input" id="posCustomerGivenInput" value="0" min="0" step="any"
+                      oninput="updatePosCalculations()"
+                      style="text-align:right; padding:6px 8px; font-weight:700; color:var(--admin-primary);">
+                    <span style="font-size:0.8rem; color:var(--admin-text-muted);">đ</span>
+                  </div>
+                </div>
+                <div class="pos-calc-row">
+                  <span class="pos-calc-label">Tiền trả lại:</span>
+                  <span class="pos-calc-value" id="posChangeDue" style="color:var(--admin-success); font-weight:800;">0
+                    đ</span>
+                </div>
+              </div>
+
+              <!-- Order Note -->
+              <div class="pos-form-group" style="margin-top: 12px;">
+                <label class="pos-form-label" for="posOrderNote">Ghi chú đơn hàng</label>
+                <input type="text" class="pos-form-input" id="posOrderNote">
+              </div>
+
+              <!-- POS Submit Buttons -->
+              <div style="display:flex; flex-direction:column; gap:10px; margin-top: 16px;">
+                <button class="btn-pos-pay" id="btnPosCheckout" onclick="submitPosCheckout(true)" type="button">
+                  THANH TOÁN & IN HÓA ĐƠN
+                </button>
+                <button class="btn-admin btn-outline" style="justify-content:center; width:100%; padding:10px;"
+                  onclick="submitPosCheckout(false)" type="button">
+                  Lưu Hóa Đơn Chờ (Chưa TT)
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================================================================
+             SECTION 2: QUẢN LÝ HÓA ĐƠN
+             ================================================================== -->
+        <section id="tabPaneInvoices" class="admin-tab-pane">
+          <!-- Quick Stats Cards -->
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-icon-box stat-icon-blue">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                  <polyline points="14 2 14 8 20 8"></polyline>
+                </svg>
+              </div>
+              <div class="stat-info">
+                <span class="stat-label">Tổng Số Hóa Đơn</span>
+                <span class="stat-value" id="statTotalInvoices">0</span>
+              </div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-icon-box stat-icon-amber">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>
+              </div>
+              <div class="stat-info">
+                <span class="stat-label">Chờ Xác Nhận</span>
+                <span class="stat-value" id="statPendingInvoices">0</span>
+              </div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-icon-box stat-icon-blue" style="background: linear-gradient(135deg, #6366f1, #8b5cf6);">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="1" y="3" width="15" height="13"></rect>
+                  <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
+                  <circle cx="5.5" cy="18.5" r="2.5"></circle>
+                  <circle cx="18.5" cy="18.5" r="2.5"></circle>
+                </svg>
+              </div>
+              <div class="stat-info">
+                <span class="stat-label">Đang Giao Hàng</span>
+                <span class="stat-value" id="statShippingInvoices">0</span>
+              </div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-icon-box stat-icon-green">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                  <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                </svg>
+              </div>
+              <div class="stat-info">
+                <span class="stat-label">Hoàn Thành / Doanh Thu</span>
+                <span class="stat-value" id="statRevenue" style="font-size:1.15rem; color:#15803d;">0 đ</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Invoices Main Card -->
+          <div class="admin-card">
+            <div class="admin-card-header" style="flex-direction: column; align-items: stretch; gap: 14px;">
+              <!-- Title & Header Controls -->
+              <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                <div class="admin-card-title">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                    <polyline points="10 9 9 9 8 9"></polyline>
+                  </svg>
+                  <span>Danh Sách Đơn Hàng & Hóa Đơn</span>
+                  <span id="invoiceCountBadge"
+                    style="font-size:0.75rem; background:#f1f5f9; color:var(--admin-text-muted); padding:2px 8px; border-radius:999px; margin-left:6px;">0
+                    hóa đơn</span>
+                </div>
+                <button class="btn-admin btn-outline btn-sm" onclick="loadInvoicesList()" type="button"
+                  style="display:inline-flex; align-items:center; gap:6px;">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="23 4 23 10 17 10"></polyline>
+                    <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+                  </svg>
+                  <span>Làm mới</span>
+                </button>
+              </div>
+
+              <!-- Filter Bar (Organized in 2 balanced rows) -->
+              <div class="invoice-filter-bar"
+                style="background: #f8fafc; padding: 14px 16px; border-radius: var(--radius-sm); border: 1px solid var(--admin-border);">
+                <!-- Row 1: Search & Categorical Status Filters -->
+                <div class="invoice-filter-row">
+                  <div class="invoice-filter-item" style="flex: 1.8; min-width: 240px;">
+                    <label for="searchInvoiceInput">Tìm kiếm</label>
+                    <input type="text" class="invoice-search-input" id="searchInvoiceInput"
+                      placeholder="Tìm theo mã HĐ, tên khách, nhân viên, SĐT..." oninput="filterInvoices()">
+                  </div>
+
+                  <div class="invoice-filter-item" style="flex: 1; min-width: 160px;">
+                    <label for="filterInvoiceStatus">Trạng thái đơn hàng</label>
+                    <select class="invoice-select-input" id="filterInvoiceStatus" onchange="filterInvoices()">
+                      <option value="ALL">Tất cả trạng thái</option>
+                      <option value="0">Chờ xác nhận</option>
+                      <option value="1">Đã xác nhận</option>
+                      <option value="2">Đang giao hàng</option>
+                      <option value="3">Hoàn thành</option>
+                      <option value="4">Đã hủy</option>
+                    </select>
+                  </div>
+
+                  <div class="invoice-filter-item" style="flex: 1; min-width: 160px;">
+                    <label for="filterInvoicePaymentStatus">Trạng thái thanh toán</label>
+                    <select class="invoice-select-input" id="filterInvoicePaymentStatus" onchange="filterInvoices()">
+                      <option value="ALL">Tất cả thanh toán</option>
+                      <option value="0">Chưa thanh toán</option>
+                      <option value="1">Đã thanh toán</option>
+                    </select>
+                  </div>
+
+                  <div class="invoice-filter-item" style="flex: 1; min-width: 160px;">
+                    <label for="filterInvoicePaymentMethod">Phương thức thanh toán</label>
+                    <select class="invoice-select-input" id="filterInvoicePaymentMethod" onchange="filterInvoices()">
+                      <option value="ALL">Tất cả phương thức</option>
+                      <option value="COD">COD (Nhận hàng trả tiền)</option>
+                      <option value="Chuyển khoản">Chuyển khoản</option>
+                      <option value="Tiền mặt">Tiền mặt</option>
+                    </select>
+                  </div>
+                </div>
+
+                <!-- Row 2: Date Range, Staff Filter & Action Buttons -->
+                <div class="invoice-filter-row" style="margin-top: 4px;">
+                  <div class="invoice-filter-item" style="width: 160px;">
+                    <label for="filterInvoiceFromDate">Từ ngày</label>
+                    <input type="date" class="invoice-date-input" id="filterInvoiceFromDate"
+                      onchange="filterInvoices()">
+                  </div>
+
+                  <div class="invoice-filter-item" style="width: 160px;">
+                    <label for="filterInvoiceToDate">Đến ngày</label>
+                    <input type="date" class="invoice-date-input" id="filterInvoiceToDate" onchange="filterInvoices()">
+                  </div>
+
+                  <div class="invoice-filter-item" style="width: 190px;">
+                    <label for="filterInvoiceStaff">Nhân viên xử lý</label>
+                    <select class="invoice-select-input" id="filterInvoiceStaff" onchange="filterInvoices()">
+                      <option value="ALL">Tất cả nhân viên</option>
+                    </select>
+                  </div>
+
+                  <div style="flex: 1; display: flex; justify-content: flex-end; align-items: flex-end; gap: 8px;">
+                    <button class="btn-admin btn-outline" onclick="resetInvoiceFilters()" type="button"
+                      style="height: 38px; padding: 0 16px; font-weight: 600;">
+                      Đặt lại
+                    </button>
+                    <button class="btn-admin btn-primary" onclick="filterInvoices()" type="button"
+                      style="height: 38px; padding: 0 20px; font-weight: 700;">
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        style="margin-right: 4px;">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                      </svg>
+                      Lọc hóa đơn
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="admin-card-body" style="padding: 0;">
+              <div class="table-responsive">
+                <table class="admin-table invoices-table">
+                  <thead>
+                    <tr>
+                      <th style="width: 4%; text-align: center;">STT</th>
+                      <th style="width: 9%; text-align: center;">Mã hóa đơn</th>
+                      <th style="width: 11%; text-align: center;">Ngày đặt</th>
+                      <th style="width: 15%; text-align: left;">Khách hàng</th>
+                      <th style="width: 14%; text-align: left;">Nhân viên xử lý</th>
+                      <th style="width: 12%; text-align: right; padding-right: 14px;">Tổng tiền</th>
+                      <th style="width: 8%; text-align: center;">Phương thức</th>
+                      <th style="width: 12%; text-align: center;">Trạng thái đơn hàng</th>
+                      <th style="width: 10%; text-align: center;">Trạng thái thanh toán</th>
+                      <th style="width: 5%; text-align: center;">Thao tác</th>
+                    </tr>
+                  </thead>
+                  <tbody id="invoicesTableBody">
+                    <!-- Populated dynamically -->
+                  </tbody>
+                </table>
+              </div>
+
+              <!-- Loading & Empty indicator -->
+              <div id="invoicesLoadingIndicator"
+                style="padding: 40px; text-align:center; color: var(--admin-text-muted);">
+                Đang tải dữ liệu hóa đơn từ API...
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================================================================
+             SECTION 3: QUẢN LÝ THUỘC TÍNH (CRUD 8 THUỘC TÍNH)
+             ================================================================== -->
+        <section id="tabPaneAttributes" class="admin-tab-pane">
+          <!-- Attribute Sub-tabs -->
+          <div class="attr-sub-tabs" id="attrSubTabsList">
+            <button class="attr-sub-tab active" onclick="switchAttrType('cpu')" data-attr="cpu">CPU (Vi Xử Lý)</button>
+            <button class="attr-sub-tab" onclick="switchAttrType('ram')" data-attr="ram">RAM</button>
+            <button class="attr-sub-tab" onclick="switchAttrType('o-cung')" data-attr="o-cung">Ổ Cứng</button>
+            <button class="attr-sub-tab" onclick="switchAttrType('card-do-hoa')" data-attr="card-do-hoa">Card Đồ Họa
+              (GPU)</button>
+            <button class="attr-sub-tab" onclick="switchAttrType('man-hinh')" data-attr="man-hinh">Màn Hình</button>
+            <button class="attr-sub-tab" onclick="switchAttrType('mau-sac')" data-attr="mau-sac">Màu Sắc</button>
+            <button class="attr-sub-tab" onclick="switchAttrType('danh-muc')" data-attr="danh-muc">Danh Mục</button>
+            <button class="attr-sub-tab" onclick="switchAttrType('thuong-hieu')" data-attr="thuong-hieu">Thương
+              Hiệu</button>
+          </div>
+
+          <!-- Attributes Card -->
+          <div class="admin-card">
+            <div class="admin-card-header">
+              <div class="admin-card-title">
+                <span id="activeAttrTitle">Quản Lý Danh Sách: CPU</span>
+                <span id="activeAttrCountBadge"
+                  style="font-size:0.75rem; background:#f1f5f9; color:var(--admin-text-muted); padding:2px 8px; border-radius:999px; margin-left:6px;">0
+                  mục</span>
+              </div>
+
+              <div style="display:flex; align-items:center; gap:10px;">
+                <input type="text" class="search-admin-input" id="searchAttrInput" placeholder="Tìm kiếm nhanh..."
+                  oninput="filterActiveAttributes()">
+                <button class="btn-admin btn-primary" id="btnAddNewAttribute" onclick="openAddAttributeModal()"
+                  type="button">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                  </svg>
+                  <span id="btnAddNewAttrText">+ Thêm CPU Mới</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="admin-card-body" style="padding:0;">
+              <div class="table-responsive">
+                <table class="admin-table">
+                  <thead id="attrTableHeader">
+                    <!-- Dynamic header based on attribute type -->
+                  </thead>
+                  <tbody id="attrTableBody">
+                    <!-- Dynamic rows based on attribute data -->
+                  </tbody>
+                </table>
+              </div>
+
+              <!-- Loading & Empty states -->
+              <div id="attrLoadingIndicator" style="padding: 40px; text-align:center; color: var(--admin-text-muted);">
+                Đang tải danh sách thuộc tính...
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================================================================
+             SECTION 4: QUẢN LÝ SẢN PHẨM (DÒNG MÁY LAPTOP)
+             ================================================================== -->
+        <section id="tabPaneProducts" class="admin-tab-pane">
+          <div class="admin-card">
+            <div class="admin-card-header">
+              <div class="admin-card-title">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                  <line x1="8" y1="21" x2="16" y2="21"></line>
+                  <line x1="12" y1="17" x2="12" y2="21"></line>
+                </svg>
+                <span>Danh Sách Dòng Sản Phẩm Laptop</span>
+                <span id="productCountBadge"
+                  style="font-size:0.75rem; background:#f1f5f9; color:var(--admin-text-muted); padding:2px 8px; border-radius:999px; margin-left:6px;">0
+                  dòng máy</span>
+              </div>
+
+              <div class="filter-bar" style="margin-bottom:0;">
+                <input type="text" class="search-admin-input" id="searchProductInput"
+                  placeholder="Tìm theo tên dòng máy, mã SP..." oninput="filterProductsTable()">
+                <select class="select-admin" id="filterProductCategory" onchange="filterProductsTable()">
+                  <option value="ALL">Tất cả danh mục</option>
+                </select>
+                <select class="select-admin" id="filterProductBrand" onchange="filterProductsTable()">
+                  <option value="ALL">Tất cả thương hiệu</option>
+                </select>
+                <button class="btn-admin btn-primary" onclick="openAddProductModal()" type="button">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                  </svg>
+                  <span>+ Thêm Sản Phẩm Mới</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="admin-card-body" style="padding:0;">
+              <div class="table-responsive">
+                <table class="admin-table">
+                  <thead>
+                    <tr>
+                      <th style="width: 40px; text-align: center;">STT</th>
+                      <th style="width: 60px; text-align: center;">Ảnh</th>
+                      <th style="width: 100px;">Mã SP</th>
+                      <th style="min-width: 220px;">Tên Dòng Laptop</th>
+                      <th>Danh Mục</th>
+                      <th>Thương Hiệu</th>
+                      <th style="text-align: right; width: 140px;">Giá Cơ Bản</th>
+                      <th style="width: 150px; text-align: center;">Thao Tác</th>
+                    </tr>
+                  </thead>
+                  <tbody id="productsTableBody">
+                    <!-- Populated dynamically -->
+                  </tbody>
+                </table>
+              </div>
+
+              <div id="productsLoadingIndicator"
+                style="padding: 40px; text-align:center; color: var(--admin-text-muted);">
+                Đang tải danh sách sản phẩm...
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================================================================
+             SECTION 5: QUẢN LÝ CHI TIẾT SẢN PHẨM (VARIANTS / CTSP)
+             ================================================================== -->
+        <section id="tabPaneVariants" class="admin-tab-pane">
+          <div class="admin-card">
+            <div class="admin-card-header">
+              <div class="admin-card-title" style="flex-wrap: wrap; gap: 12px; align-items: center;">
+                <button type="button" class="btn-admin btn-outline btn-sm" onclick="switchAdminTab('products')"
+                  title="Quay lại danh sách sản phẩm"
+                  style="font-weight: 700; display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px;">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="19" y1="12" x2="5" y2="12"></line>
+                    <polyline points="12 19 5 12 12 5"></polyline>
+                  </svg>
+                  <span>Quay lại DS Sản Phẩm</span>
+                </button>
+                <div style="display:inline-flex; align-items:center; gap:8px;">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+                    <polyline points="2 17 12 22 22 17"></polyline>
+                    <polyline points="2 12 12 17 22 12"></polyline>
+                  </svg>
+                  <span>Cấu Hình Chi Tiết:</span>
+                  <span id="variantFilterProductName"
+                    style="font-weight: 800; color: var(--admin-primary); font-size: 1.05rem;">...</span>
+                  <span id="variantCountBadge"
+                    style="font-size:0.75rem; background:#f1f5f9; color:var(--admin-text-muted); padding:2px 8px; border-radius:999px;">0
+                    cấu hình</span>
+                </div>
+              </div>
+
+              <div class="filter-bar" style="margin-bottom:0;">
+                <input type="text" class="search-admin-input" id="searchVariantInput"
+                  placeholder="Tìm theo mã CTSP, CPU, RAM, GPU..." oninput="filterVariantsTable()">
+                <select class="select-admin" id="filterVariantStatus" onchange="filterVariantsTable()">
+                  <option value="ALL">Tất cả trạng thái</option>
+                  <option value="1">Đang kinh doanh</option>
+                  <option value="0">Ngừng kinh doanh</option>
+                </select>
+                <button class="btn-admin btn-primary" onclick="openAddVariantModal()" type="button">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                  </svg>
+                  <span>+ Thêm Phiên Bản Cấu Hình</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="admin-card-body" style="padding:0;">
+              <div class="table-responsive">
+                <table class="admin-table">
+                  <thead>
+                    <tr>
+                      <th style="width: 40px; text-align: center;">STT</th>
+                      <th style="width: 60px; text-align: center;">Ảnh</th>
+                      <th style="width: 90px;">Mã CTSP</th>
+                      <th style="min-width: 170px;">Dòng Laptop</th>
+                      <th style="min-width: 250px;">Cấu Hình Chi Tiết</th>
+                      <th style="width: 80px; text-align: center;">Kho</th>
+                      <th style="min-width: 130px; text-align: right;">Giá Bán</th>
+                      <th style="width: 110px; text-align: center;">Khuyến Mãi</th>
+                      <th style="width: 120px; text-align: center;">Trạng Thái</th>
+                      <th style="width: 90px; text-align: center;">Thao Tác</th>
+                    </tr>
+                  </thead>
+                  <tbody id="variantsTableBody">
+                    <!-- Populated dynamically -->
+                  </tbody>
+                </table>
+              </div>
+
+              <div id="variantsLoadingIndicator"
+                style="padding: 40px; text-align:center; color: var(--admin-text-muted);">
+                Đang tải danh sách phiên bản chi tiết...
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================================================================
+             SECTION 7: QUẢN LÝ KHUYẾN MÃI SẢN PHẨM
+             ================================================================== -->
+        <section id="tabPanePromotions" class="admin-tab-pane">
+          <div class="admin-card">
+            <div class="admin-card-header" style="flex-wrap:wrap; gap:14px; align-items:center;">
+              <div class="admin-card-title" style="display:flex; align-items:center; gap:8px;">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
+                  <line x1="7" y1="7" x2="7.01" y2="7"></line>
+                </svg>
+                <span style="font-weight:800; font-size:1.15rem; letter-spacing:0.5px;">QUẢN LÝ KHUYẾN MÃI SẢN
+                  PHẨM</span>
+                <span id="promotionCountBadge"
+                  style="font-size:0.75rem; background:#f1f5f9; color:var(--admin-text-muted); padding:3px 10px; border-radius:999px; margin-left:6px; font-weight:700;">0
+                  chương trình</span>
+              </div>
+
+              <!-- Header Search, Filter & Add Button -->
+              <div class="admin-card-actions" style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+                <div class="search-admin-box">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                  </svg>
+                  <input type="text" class="search-admin-input" id="searchPromotionInput"
+                    placeholder="Tìm mã hoặc tên khuyến mãi..." oninput="filterPromotionsTable()">
+                </div>
+
+                <select class="pos-form-input" id="filterPromotionStatus"
+                  style="width: auto; min-width: 160px; height: 38px; padding: 4px 10px; font-size: 0.85rem;"
+                  onchange="filterPromotionsTable()">
+                  <option value="ALL">Tất cả trạng thái</option>
+                  <option value="Đang diễn ra">Đang diễn ra</option>
+                  <option value="Sắp diễn ra">Sắp diễn ra</option>
+                  <option value="Đã kết thúc">Đã kết thúc</option>
+                  <option value="Ngừng hoạt động">Ngừng hoạt động</option>
+                </select>
+
+                <button class="btn-admin btn-outline btn-sm" onclick="loadPromotionsTable()" type="button"
+                  title="Làm mới danh sách khuyến mãi"
+                  style="height: 38px; padding: 0 12px; font-weight: 600; display: inline-flex; align-items: center; gap: 5px;">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="23 4 23 10 17 10"></polyline>
+                    <polyline points="1 20 1 14 7 14"></polyline>
+                    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                  </svg>
+                  <span>Làm mới</span>
+                </button>
+
+                <button class="btn-admin btn-primary" onclick="openAddPromotionModal()" type="button">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                  </svg>
+                  <span>+ Thêm Khuyến Mãi</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="admin-card-body" style="padding:0;">
+              <div class="table-responsive">
+                <table class="admin-table">
+                  <thead>
+                    <tr>
+                      <th style="width: 40px; text-align: center;">STT</th>
+                      <th style="width: 100px;">Mã KM</th>
+                      <th style="min-width: 180px;">Tên Khuyến Mãi</th>
+                      <th style="width: 110px; text-align: center;">Loại Giảm</th>
+                      <th style="width: 120px; text-align: right;">Giá Trị Giảm</th>
+                      <th style="min-width: 260px; text-align: center; white-space: nowrap;">Thời Gian Áp Dụng</th>
+                      <th style="width: 100px; text-align: center;">Số CTSP</th>
+                      <th style="width: 140px; text-align: center; white-space: nowrap;">Trạng Thái</th>
+                      <th style="width: 180px; text-align: center; white-space: nowrap;">Thao Tác</th>
+                    </tr>
+                  </thead>
+                  <tbody id="promotionsTableBody">
+                    <!-- Populated dynamically -->
+                  </tbody>
+                </table>
+              </div>
+
+              <div id="promotionsLoadingIndicator"
+                style="padding: 40px; text-align:center; color: var(--admin-text-muted);">
+                Đang tải danh sách khuyến mãi...
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================================================================
+             SECTION: QUẢN LÝ VOUCHER HÓA ĐƠN
+             ================================================================== -->
+        <section id="tabPaneVouchers" class="admin-tab-pane">
+          <div class="admin-card">
+            <div class="admin-card-header" style="flex-wrap:wrap; gap:14px; align-items:center;">
+              <div class="admin-card-title" style="display:flex; align-items:center; gap:8px;">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="2" y="5" width="20" height="14" rx="2"></rect>
+                  <line x1="2" y1="10" x2="22" y2="10"></line>
+                  <circle cx="7" cy="15" r="1.5" fill="currentColor"></circle>
+                  <path d="M12 15h6"></path>
+                </svg>
+                <span style="font-weight:800; font-size:1.15rem; letter-spacing:0.5px;">QUẢN LÝ VOUCHER HÓA ĐƠN</span>
+                <span id="voucherCountBadge"
+                  style="font-size:0.75rem; background:#f1f5f9; color:var(--admin-text-muted); padding:3px 10px; border-radius:999px; margin-left:6px; font-weight:700;">0
+                  voucher</span>
+              </div>
+
+              <!-- Header Search, Filter & Add Button -->
+              <div class="admin-card-actions" style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+                <div class="search-admin-box">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                  </svg>
+                  <input type="text" class="search-admin-input" id="searchVoucherInput"
+                    placeholder="Tìm mã hoặc tên voucher..." oninput="filterVouchersTable()">
+                </div>
+
+                <select class="pos-form-input" id="filterVoucherStatus"
+                  style="width: auto; min-width: 160px; height: 38px; padding: 4px 10px; font-size: 0.85rem;"
+                  onchange="filterVouchersTable()">
+                  <option value="ALL">Tất cả trạng thái</option>
+                  <option value="Đang diễn ra">Đang diễn ra</option>
+                  <option value="Sắp diễn ra">Sắp diễn ra</option>
+                  <option value="Đã kết thúc">Đã kết thúc</option>
+                  <option value="Ngừng hoạt động">Ngừng hoạt động</option>
+                </select>
+
+                <button class="btn-admin btn-outline btn-sm" onclick="loadVouchersTable()" type="button"
+                  title="Làm mới danh sách voucher"
+                  style="height: 38px; padding: 0 12px; font-weight: 600; display: inline-flex; align-items: center; gap: 5px;">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="23 4 23 10 17 10"></polyline>
+                    <polyline points="1 20 1 14 7 14"></polyline>
+                    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                  </svg>
+                  <span>Làm mới</span>
+                </button>
+
+                <button class="btn-admin btn-primary" onclick="openAddVoucherModal()" type="button">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                  </svg>
+                  <span>+ Thêm Voucher</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="admin-card-body" style="padding:0;">
+              <div class="table-responsive">
+                <table class="admin-table">
+                  <thead>
+                    <tr>
+                      <th style="width: 45px; text-align: center;">STT</th>
+                      <th style="width: 120px;">Mã Voucher</th>
+                      <th style="min-width: 180px;">Tên Voucher</th>
+                      <th style="width: 120px; text-align: center;">Loại Giảm</th>
+                      <th style="width: 130px; text-align: right;">Giá Trị Giảm</th>
+                      <th style="width: 140px; text-align: right;">Đơn Tối Thiểu</th>
+                      <th style="width: 130px; text-align: right;">Giảm Tối Đa</th>
+                      <th style="min-width: 270px; text-align: center; white-space: nowrap;">Thời Gian Áp Dụng</th>
+                      <th style="width: 140px; text-align: center; white-space: nowrap;">Trạng Thái</th>
+                      <th style="width: 200px; text-align: center; white-space: nowrap;">Thao Tác</th>
+                    </tr>
+                  </thead>
+                  <tbody id="vouchersTableBody">
+                    <!-- Populated dynamically -->
+                  </tbody>
+                </table>
+              </div>
+
+              <div id="vouchersLoadingIndicator"
+                style="padding: 40px; text-align:center; color: var(--admin-text-muted);">
+                Đang tải danh sách voucher...
+              </div>
+            </div>
+          </div>
+        </section>
+
+
+        <!-- ==================================================================
+             SECTION 6: QUẢN LÝ IMEI
+             ================================================================== -->
+        <section id="tabPaneImeis" class="admin-tab-pane">
+          <div class="admin-card">
+            <div class="admin-card-header" style="flex-wrap:wrap; gap:14px; align-items:center;">
+              <div class="admin-card-title" style="display:flex; align-items:center; gap:8px;">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 5h2v14H3zM7 5h1v14H7zM10 5h2v14h-2zM14 5h1v14h-1zM17 5h3v14h-3z"></path>
+                </svg>
+                <span style="font-weight:800; font-size:1.15rem; letter-spacing:0.5px;">QUẢN LÝ IMEI</span>
+                <span id="imeiCountBadge"
+                  style="font-size:0.75rem; background:#f1f5f9; color:var(--admin-text-muted); padding:3px 10px; border-radius:999px; margin-left:6px; font-weight:700;">0
+                  IMEI</span>
+              </div>
+
+              <!-- Filter Bar: [Tìm IMEI................] [Trạng thái ▼] [Sản phẩm ▼] -->
+              <div class="filter-bar"
+                style="margin-bottom:0; display:flex; flex-wrap:wrap; gap:10px; align-items:center;">
+                <!-- Tìm IMEI -->
+                <div style="position:relative;">
+                  <input type="text" class="search-admin-input" id="searchImeiInput" placeholder="Tìm IMEI..."
+                    oninput="filterImeisTable()" style="min-width:230px;">
+                </div>
+
+                <!-- Lọc Trạng Thái -->
+                <select class="select-admin" id="filterImeiStatus" onchange="filterImeisTable()"
+                  style="min-width:140px;">
+                  <option value="ALL">Trạng thái (Tất cả)</option>
+                  <option value="0">Còn hàng</option>
+                  <option value="1">Đã bán</option>
+                  <option value="2">Bảo hành</option>
+                </select>
+
+                <!-- Lọc Sản Phẩm -->
+                <select class="select-admin" id="filterImeiProduct" onchange="filterImeisTable()"
+                  style="min-width:180px;">
+                  <option value="ALL">Sản phẩm (Tất cả)</option>
+                </select>
+
+                <button class="btn-admin btn-outline btn-sm" onclick="loadImeisTable()" type="button"
+                  title="Làm mới dữ liệu IMEI">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M23 4v6h-6"></path>
+                    <path d="M1 20v-6h6"></path>
+                    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                  </svg>
+                  <span>Làm mới</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="admin-card-body" style="padding:0;">
+              <div class="table-responsive">
+                <table class="admin-table">
+                  <thead>
+                    <tr>
+                      <th style="min-width: 170px; font-weight:700;">IMEI</th>
+                      <th style="min-width: 220px; font-weight:700;">Sản phẩm</th>
+                      <th style="min-width: 200px; font-weight:700;">Cấu hình</th>
+                      <th style="width: 150px; text-align: center; font-weight:700;">Trạng thái</th>
+                    </tr>
+                  </thead>
+                  <tbody id="imeisTableBody">
+                    <!-- Populated dynamically -->
+                  </tbody>
+                </table>
+              </div>
+
+              <div id="imeisLoadingIndicator" style="padding: 40px; text-align:center; color: var(--admin-text-muted);">
+                Đang tải danh sách IMEI...
+              </div>
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- ======================================================================
+       MODAL 1: POS PRODUCT SELECTOR MODAL
+       ====================================================================== -->
+  <div class="admin-modal-overlay" id="posProductPickerModal">
+    <div class="admin-modal-container" style="max-width: 850px;">
+      <div class="admin-modal-header">
+        <div class="admin-modal-title">Chọn Laptop Thêm Vào Đơn Hàng</div>
+        <button class="admin-modal-close" onclick="closePosProductPickerModal()" type="button">&times;</button>
+      </div>
+
+      <div style="margin-bottom: 16px;">
+        <input type="text" class="pos-form-input" id="posProductSearchInput"
+          placeholder="Tìm kiếm tên laptop, hãng, cấu hình..." oninput="filterPosPickerProducts()">
+      </div>
+
+      <div class="pos-picker-grid" id="posPickerGrid">
+        <!-- Laptop cards rendered dynamically -->
+      </div>
+
+      <div class="admin-modal-footer">
+        <button class="btn-admin btn-outline" onclick="closePosProductPickerModal()" type="button">Đóng</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================================
+       MODAL 2: INVOICE DETAIL MODAL (CHI TIẾT HÓA ĐƠN - THEO THIẾT KẾ)
+       ====================================================================== -->
+  <div class="admin-modal-overlay" id="invoiceDetailModal" style="z-index: 2000;">
+    <div class="admin-modal-container"
+      style="max-width: 860px; max-height: 92vh; display: flex; flex-direction: column;">
+      <div class="admin-modal-header" style="padding: 16px 20px; border-bottom: 1px solid var(--admin-border);">
+        <div class="admin-modal-title"
+          style="font-size: 1.15rem; font-weight: 800; display: flex; align-items: center; gap: 6px;">
+          <span>Chi tiết hóa đơn</span>
+          <span id="detailInvoiceMa" style="color:var(--admin-primary);">#HD003</span>
+        </div>
+        <button class="admin-modal-close" onclick="closeInvoiceDetailModal()" type="button">&times;</button>
+      </div>
+
+      <div class="admin-modal-body" style="padding: 20px; overflow-y: auto; flex: 1;">
+        <!-- Thông tin đơn hàng (2 cột theo ảnh) -->
+        <div style="font-weight: 800; font-size: 0.95rem; margin-bottom: 10px; color: #0f172a;">Thông tin đơn hàng</div>
+        <div class="order-detail-info-grid">
+          <div>
+            <div class="order-info-row">
+              <span class="order-info-label">Mã hóa đơn:</span>
+              <span class="order-info-val" id="dtlMa">HD003</span>
+            </div>
+            <div class="order-info-row">
+              <span class="order-info-label">Ngày đặt:</span>
+              <span class="order-info-val" id="dtlNgayDat">27/09/2026 16:30</span>
+            </div>
+            <div class="order-info-row">
+              <span class="order-info-label">Khách hàng:</span>
+              <span class="order-info-val" id="dtlKhachHang">Lê Minh C (0862720415)</span>
+            </div>
+            <div class="order-info-row">
+              <span class="order-info-label">Nhân viên xử lý:</span>
+              <span class="order-info-val" id="dtlNhanVien" style="font-weight: 700; color: #1e293b;">Chưa có</span>
+            </div>
+            <div class="order-info-row">
+              <span class="order-info-label">Địa chỉ:</span>
+              <span class="order-info-val" id="dtlDiaChi">123 Nguyễn Trãi, Hà Nội</span>
+            </div>
+            <div class="order-info-row">
+              <span class="order-info-label">Ghi chú:</span>
+              <span class="order-info-val" id="dtlGhiChu" style="font-weight: 500; color: #475569;">Giao giờ hành
+                chính</span>
+            </div>
+          </div>
+
+          <div>
+            <div class="order-info-row">
+              <span class="order-info-label">Phương thức thanh toán:</span>
+              <span class="order-info-val">
+                <span id="dtlPhuongThucBadge" class="badge-status"
+                  style="background:#fef3c7; color:#b45309; border:1px solid #fde68a; font-weight:700;">COD</span>
+              </span>
+            </div>
+            <div class="order-info-row">
+              <span class="order-info-label">Trạng thái đơn hàng:</span>
+              <span class="order-info-val">
+                <span id="dtlTrangThaiDonBadge" class="badge-status badge-order-2">Đang giao hàng</span>
+              </span>
+            </div>
+            <div class="order-info-row">
+              <span class="order-info-label">Trạng thái thanh toán:</span>
+              <span class="order-info-val">
+                <span id="dtlTrangThaiTTBadge" class="badge-status badge-pay-unpaid">Chưa thanh toán</span>
+              </span>
+            </div>
+            <div class="order-info-row" id="dtlNgayTTRow" style="display:none;">
+              <span class="order-info-label">Ngày thanh toán:</span>
+              <span class="order-info-val" id="dtlNgayTT" style="color:#15803d;">---</span>
+            </div>
+            <div class="order-info-row" id="dtlVoucherRow" style="display:none;">
+              <span class="order-info-label">Voucher:</span>
+              <span class="order-info-val" id="dtlVoucherCode" style="color:var(--admin-primary); font-weight:700;">---</span>
+            </div>
+            <div class="order-info-row" id="dtlTienGiamVoucherRow" style="display:none;">
+              <span class="order-info-label">Giảm Voucher:</span>
+              <span class="order-info-val" id="dtlTienGiamVoucher" style="color:#dc2626; font-weight:700;">-0 đ</span>
+            </div>
+            <div class="order-info-row" style="margin-top: 6px; align-items: baseline;">
+              <span class="order-info-label" style="font-size: 0.95rem;">Tổng tiền:</span>
+              <span class="order-info-val" id="dtlTongTien"
+                style="font-size: 1.3rem; font-weight: 900; color: #dc2626;">45.980.000 đ</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Stepper Lịch sử trạng thái / Tiến trình -->
+        <div id="orderStepperContainer" class="order-stepper-wrapper">
+          <!-- Rendered dynamically -->
+        </div>
+
+        <!-- Danh Sách Sản Phẩm -->
+        <div style="font-weight: 800; font-size: 0.95rem; margin-bottom: 10px; color: #0f172a;">Danh sách sản phẩm</div>
+        <div class="table-responsive"
+          style="border: 1px solid var(--admin-border); border-radius: var(--radius-sm); margin-bottom: 10px;">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th style="width: 40px; text-align: center;">STT</th>
+                <th style="min-width: 170px;">Sản phẩm</th>
+                <th style="min-width: 200px;">Cấu hình</th>
+                <th style="min-width: 140px;">IMEI</th>
+                <th style="width: 120px; text-align: right;">Đơn giá</th>
+                <th style="width: 130px; text-align: right;">Thành tiền</th>
+              </tr>
+            </thead>
+            <tbody id="detailItemsTableBody">
+              <!-- Rendered dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="admin-modal-footer"
+        style="padding: 14px 20px; background: #ffffff; border-top: 1px solid var(--admin-border); display: flex; justify-content: space-between; align-items: center;">
+        <button class="btn-admin btn-outline" onclick="closeInvoiceDetailModal()" type="button"
+          style="font-weight: 600;">
+          &larr; Quay lại
+        </button>
+
+        <div style="display: flex; gap: 8px; align-items: center;" id="detailActionButtonsContainer">
+          <!-- Rendered dynamically -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================================
+       MODAL 8: XÁC NHẬN ĐÃ GIAO & THU TIỀN (CHO ĐƠN COD)
+       ====================================================================== -->
+  <div class="admin-modal-overlay" id="confirmCodModal" style="z-index: 2150;">
+    <div class="admin-modal-container" style="max-width: 500px;">
+      <div class="admin-modal-header" style="border-bottom: 1px solid var(--admin-border);">
+        <div class="admin-modal-title" style="font-size: 1.05rem; font-weight: 800;">Xác nhận đã giao & thu tiền</div>
+        <button class="admin-modal-close" onclick="closeConfirmCodModal()" type="button">&times;</button>
+      </div>
+
+      <div style="padding: 18px 20px;">
+        <!-- Yellow alert box -->
+        <div class="alert-warning-cod">
+          <div class="icon">!</div>
+          <div>
+            <div style="font-weight: 700; margin-bottom: 4px;">Bạn đang xác nhận đơn hàng đã được giao thành công và đã
+              thu tiền từ khách hàng.</div>
+            <div style="font-size: 0.8rem; line-height: 1.5;">
+              Sau khi xác nhận:<br>
+              &bull; Trạng thái đơn hàng sẽ chuyển thành <strong>"Hoàn thành"</strong><br>
+              &bull; Trạng thái thanh toán sẽ chuyển thành <strong>"Đã thanh toán"</strong><br>
+              &bull; Các IMEI trong đơn sẽ được cập nhật thành <strong>"Đã bán"</strong>
+            </div>
+          </div>
+        </div>
+
+        <!-- Order info box -->
+        <div
+          style="background: #f8fafc; border: 1px solid var(--admin-border); border-radius: 8px; padding: 14px 16px; margin-bottom: 16px;">
+          <div style="font-weight: 700; font-size: 0.88rem; margin-bottom: 8px; color: #1e293b;">Thông tin đơn hàng
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 6px; font-size: 0.86rem;">
+            <div style="display: flex; justify-content: space-between;">
+              <span style="color: var(--admin-text-muted);">Mã hóa đơn:</span>
+              <strong id="codModalMa">HD003</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+              <span style="color: var(--admin-text-muted);">Khách hàng:</span>
+              <strong id="codModalKhach">Lê Minh C (0862720415)</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="color: var(--admin-text-muted);">Phương thức thanh toán:</span>
+              <span class="badge-status"
+                style="background: #fef3c7; color: #b45309; border: 1px solid #fde68a; font-weight: 700;">COD</span>
+            </div>
+            <div
+              style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px; border-top: 1px dashed var(--admin-border); padding-top: 6px;">
+              <span style="color: var(--admin-text-muted);">Tổng tiền:</span>
+              <strong id="codModalTotal" style="color: #dc2626; font-size: 1.15rem; font-weight: 900;">45.980.000
+                đ</strong>
+            </div>
+          </div>
+        </div>
+
+        <!-- Confirmation Checkbox -->
+        <div style="margin-bottom: 8px;">
+          <div style="font-weight: 700; font-size: 0.88rem; margin-bottom: 4px; color: #1e293b;">Xác nhận thu tiền</div>
+          <div style="font-size: 0.83rem; color: var(--admin-text-muted); margin-bottom: 8px;">
+            Tôi xác nhận đã giao hàng thành công và đã thu đủ số tiền <strong id="codModalTotalText"
+              style="color: #dc2626;">45.980.000 đ</strong> từ khách hàng.
+          </div>
+          <label
+            style="display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 0.9rem; cursor: pointer; color: #0f172a; background: #eff6ff; padding: 10px 12px; border-radius: 6px; border: 1px solid #bfdbfe;">
+            <input type="checkbox" id="chkCodCollected" onchange="toggleCodConfirmBtn(this.checked)"
+              style="width: 18px; height: 18px; cursor: pointer; accent-color: var(--admin-primary);">
+            <span>Đã thu đủ tiền từ khách hàng</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="admin-modal-footer"
+        style="padding: 12px 20px; border-top: 1px solid var(--admin-border); display: flex; justify-content: flex-end; gap: 8px;">
+        <button class="btn-admin btn-outline" onclick="closeConfirmCodModal()" type="button">Hủy</button>
+        <button class="btn-admin btn-primary" id="btnSubmitCodConfirm" onclick="submitCodPaymentConfirmation()"
+          type="button" disabled style="opacity: 0.5; cursor: not-allowed; font-weight: 700;">
+          ✓ Xác nhận
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================================
+       MODAL 9: XÁC NHẬN ĐƠN HÀNG (TIẾP NHẬN XỬ LÝ & CHỌN IMEI)
+       ====================================================================== -->
+  <div class="admin-modal-overlay" id="confirmAcceptOrderModal" style="z-index: 2200;">
+    <div class="admin-modal-container"
+      style="max-width: 660px; max-height: 90vh; display: flex; flex-direction: column;">
+      <div class="admin-modal-header" style="border-bottom: 1px solid var(--admin-border); padding: 14px 18px;">
+        <div class="admin-modal-title"
+          style="font-size: 1.05rem; font-weight: 800; color: #1e293b; display: flex; align-items: center; gap: 8px;">
+          <span>XÁC NHẬN ĐƠN HÀNG</span>
+          <span id="confirmAcceptOrderMa" style="color: #2563eb;">#HD001</span>
+        </div>
+        <button class="admin-modal-close" onclick="closeConfirmAcceptOrderModal()" type="button">&times;</button>
+      </div>
+
+      <div style="padding: 18px 20px; overflow-y: auto; flex: 1;">
+        <!-- Danh sách sản phẩm & Chọn IMEI -->
+        <div id="acceptOrderItemsContainer" style="display: flex; flex-direction: column; gap: 16px;">
+          <!-- Dynamically populated -->
+        </div>
+
+        <!-- Thông tin nhân viên xử lý -->
+        <div
+          style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px 14px; margin-top: 16px;">
+          <div style="font-size: 0.82rem; color: #64748b; margin-bottom: 4px; font-weight: 600;">Nhân viên xử lý:</div>
+          <div
+            style="font-weight: 700; font-size: 0.95rem; color: #0f172a; display: flex; align-items: center; gap: 8px;">
+            <div
+              style="width: 28px; height: 28px; border-radius: 50%; background: #eff6ff; color: #2563eb; display: flex; align-items: center; justify-content: center; font-size: 12px;">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+              </svg>
+            </div>
+            <span id="acceptOrderStaffName">Nguyễn Thị Mai (NV001)</span>
+          </div>
+        </div>
+
+        <!-- Hướng dẫn & Lưu ý -->
+        <div
+          style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 12px 14px; margin-top: 12px; font-size: 0.83rem; color: #1e40af; line-height: 1.6;">
+          <div style="font-weight: 700; margin-bottom: 4px;">Sau khi xác nhận:</div>
+          <div>&bull; IMEI được phân bổ cho đơn hàng.</div>
+          <div>&bull; Bạn trở thành nhân viên xử lý.</div>
+          <div>&bull; Đơn hàng chuyển sang <strong>"Đã xác nhận"</strong>.</div>
+        </div>
+      </div>
+
+      <div class="admin-modal-footer"
+        style="padding: 12px 18px; border-top: 1px solid var(--admin-border); display: flex; justify-content: flex-end; gap: 10px;">
+        <button class="btn-admin btn-outline" onclick="closeConfirmAcceptOrderModal()" type="button"
+          style="font-weight: 600;">
+          Hủy
+        </button>
+        <button class="btn-admin btn-primary" id="btnSubmitAcceptOrder" onclick="executeConfirmAcceptOrder()"
+          type="button" disabled style="font-weight: 700; opacity: 0.5; cursor: not-allowed;">
+          Xác nhận đơn hàng
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================================
+       MODAL 3: ATTRIBUTE ADD / EDIT MODAL
+       ====================================================================== -->
+  <div class="admin-modal-overlay" id="attributeModal" style="z-index: 2100;">
+    <div class="admin-modal-container" style="max-width: 520px;">
+      <div class="admin-modal-header">
+        <div class="admin-modal-title" id="attrModalTitle">Thêm Thuộc Tính Mới</div>
+        <button class="admin-modal-close" onclick="closeAttributeModal()" type="button">&times;</button>
+      </div>
+
+      <form id="attributeForm" onsubmit="handleAttributeFormSubmit(event)">
+        <input type="hidden" id="attrFieldId">
+
+        <!-- Dynamic form fields injected here -->
+        <div id="attrFormFieldsContainer"></div>
+
+        <div class="admin-modal-footer">
+          <button class="btn-admin btn-outline" onclick="closeAttributeModal()" type="button">Hủy</button>
+          <button class="btn-admin btn-primary" type="submit" id="btnSaveAttr">Lưu Dữ Liệu</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ======================================================================
+       MODAL 4: QUICK ADD CUSTOMER MODAL
+       ====================================================================== -->
+  <div class="admin-modal-overlay" id="quickCustomerModal">
+    <div class="admin-modal-container" style="max-width: 480px;">
+      <div class="admin-modal-header">
+        <div class="admin-modal-title">Thêm Nhanh Khách Hàng</div>
+        <button class="admin-modal-close" onclick="closeQuickCustomerModal()" type="button">&times;</button>
+      </div>
+
+      <form id="quickCustomerForm" onsubmit="handleQuickCustomerSubmit(event)">
+        <div class="pos-form-group">
+          <label class="pos-form-label" for="qcTen">Họ và Tên (*)</label>
+          <input type="text" class="pos-form-input" id="qcTen" required>
+        </div>
+        <div class="pos-form-group">
+          <label class="pos-form-label" for="qcDienThoai">Số Điện Thoại (*)</label>
+          <input type="text" class="pos-form-input" id="qcDienThoai" required>
+        </div>
+        <div class="pos-form-group">
+          <label class="pos-form-label" for="qcDiaChi">Địa Chỉ</label>
+          <input type="text" class="pos-form-input" id="qcDiaChi">
+        </div>
+
+        <div class="admin-modal-footer">
+          <button class="btn-admin btn-outline" onclick="closeQuickCustomerModal()" type="button">Hủy</button>
+          <button class="btn-admin btn-primary" type="submit">Thêm Khách Hàng</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ======================================================================
+       MODAL 5: PRODUCT (SAN PHAM) ADD / EDIT MODAL
+       ====================================================================== -->
+  <div class="admin-modal-overlay" id="productModal">
+    <div class="admin-modal-container" style="max-width: 600px;">
+      <div class="admin-modal-header">
+        <div class="admin-modal-title" id="productModalTitle">Thêm Dòng Sản Phẩm Mới</div>
+        <button class="admin-modal-close" onclick="closeProductModal()" type="button">&times;</button>
+      </div>
+
+      <form id="productForm" onsubmit="handleProductFormSubmit(event)">
+        <input type="hidden" id="prodEditId">
+
+        <div class="pos-form-group" style="display:grid; grid-template-columns: 1fr 2fr; gap:12px;">
+          <div>
+            <label class="pos-form-label" for="prodMaSp">Mã Sản Phẩm (*)</label>
+            <input type="text" class="pos-form-input" id="prodMaSp" required>
+          </div>
+          <div>
+            <label class="pos-form-label" for="prodTenSp">Tên Dòng Laptop (*)</label>
+            <input type="text" class="pos-form-input" id="prodTenSp" required>
+          </div>
+        </div>
+
+        <div class="pos-form-group" style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+          <div>
+            <label class="pos-form-label" for="prodDanhMucSelect">Danh Mục (*)</label>
+            <select class="pos-form-input" id="prodDanhMucSelect" required>
+              <!-- Loaded dynamically -->
+            </select>
+          </div>
+          <div>
+            <label class="pos-form-label" for="prodThuongHieuSelect">Thương Hiệu (*)</label>
+            <select class="pos-form-input" id="prodThuongHieuSelect" required>
+              <!-- Loaded dynamically -->
+            </select>
+          </div>
+        </div>
+
+        <div class="pos-form-group">
+          <label class="pos-form-label" for="prodGiaCoBan">Giá Cơ Bản (VNĐ)</label>
+          <input type="number" class="pos-form-input" id="prodGiaCoBan" min="0" step="any"
+            placeholder="Nhập giá cơ bản tham khảo">
+        </div>
+
+        <div class="pos-form-group" style="margin-bottom: 18px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 6px;">
+            <label class="pos-form-label" style="margin-bottom:0;">
+              <i class="fa fa-images" style="color:var(--admin-primary); margin-right:6px;"></i>Hình Ảnh Sản Phẩm
+            </label>
+            <span id="prodImageCountBadge" class="badge-status badge-info" style="font-size:11px; padding:2px 8px;">0
+              ảnh</span>
+          </div>
+
+          <!-- Input chọn file từ máy (cho phép chọn nhiều ảnh) -->
+          <input type="file" id="prodImageFiles" multiple accept="image/*" style="display:none;"
+            onchange="handleProductFilesSelect(event)">
+
+          <!-- Nút chọn ảnh từ máy tính -->
+          <div style="margin-bottom: 8px;">
+            <button type="button" class="btn-admin btn-outline btn-sm" id="btnSelectProductImages"
+              onclick="document.getElementById('prodImageFiles').click()"
+              style="display:inline-flex; align-items:center; gap:6px; padding:6px 14px; border-radius:6px; font-weight:600; cursor:pointer;">
+              <i class="fa fa-folder-open" style="color:var(--admin-primary);"></i> Chọn từ máy
+            </button>
+          </div>
+
+          <!-- Danh sách ảnh đã chọn hoặc có sẵn, hiển thị ngay bên dưới với nút xóa dạng 1 hàng ngang -->
+          <div id="prodImagesPreviewGrid" class="variant-images-preview-grid"
+            style="display:flex; flex-direction:row; flex-wrap:nowrap; align-items:center; gap:12px; overflow-x:auto; overflow-y:hidden; padding:6px 4px 10px 4px; min-height:96px; max-width:100%;">
+          </div>
+        </div>
+
+        <div class="pos-form-group">
+          <label class="pos-form-label" for="prodMoTa">Mô Tả Sản Phẩm</label>
+          <textarea class="pos-form-input" id="prodMoTa" rows="3"></textarea>
+        </div>
+
+        <div class="admin-modal-footer">
+          <button class="btn-admin btn-outline" onclick="closeProductModal()" type="button">Hủy</button>
+          <button class="btn-admin btn-primary" type="submit" id="btnSaveProduct">Lưu Sản Phẩm</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ======================================================================
+       MODAL 6: VARIANT (CHI TIET SAN PHAM) ADD / EDIT MODAL
+       ====================================================================== -->
+  <div class="admin-modal-overlay" id="variantModal">
+    <div class="admin-modal-container" style="max-width: 680px;">
+      <div class="admin-modal-header">
+        <div class="admin-modal-title" id="variantModalTitle">Thêm Phiên Bản Cấu Hình (CTSP)</div>
+        <button class="admin-modal-close" onclick="closeVariantModal()" type="button">&times;</button>
+      </div>
+
+      <form id="variantForm" onsubmit="handleVariantFormSubmit(event)">
+        <input type="hidden" id="varEditId">
+
+        <div class="pos-form-group" style="display:grid; grid-template-columns: 1fr 2fr; gap:12px;">
+          <div>
+            <label class="pos-form-label" for="varMaCtsp">Mã CTSP (*)</label>
+            <input type="text" class="pos-form-input" id="varMaCtsp" required>
+          </div>
+          <div>
+            <label class="pos-form-label" for="varSanPhamSelect">Dòng Laptop (*)</label>
+            <select class="pos-form-input" id="varSanPhamSelect" disabled
+              style="background:#f1f5f9; cursor:not-allowed; font-weight:700; color:#1e293b; opacity:1;" required>
+              <!-- Loaded dynamically -->
+            </select>
+          </div>
+        </div>
+
+        <div class="pos-form-group" style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+          <div>
+            <label class="pos-form-label" for="varCpuSelect">CPU (Vi Xử Lý) (*)</label>
+            <div style="display:flex; gap:6px; align-items:center;">
+              <select class="pos-form-input" id="varCpuSelect" required style="flex:1;"></select>
+              <button type="button" class="btn-quick-attr" onclick="quickAddAttribute('cpu')"
+                title="Thêm nhanh CPU mới">+</button>
+            </div>
+          </div>
+          <div>
+            <label class="pos-form-label" for="varRamSelect">RAM (*)</label>
+            <div style="display:flex; gap:6px; align-items:center;">
+              <select class="pos-form-input" id="varRamSelect" required style="flex:1;"></select>
+              <button type="button" class="btn-quick-attr" onclick="quickAddAttribute('ram')"
+                title="Thêm nhanh RAM mới">+</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="pos-form-group" style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+          <div>
+            <label class="pos-form-label" for="varOCungSelect">Ổ Cứng (*)</label>
+            <div style="display:flex; gap:6px; align-items:center;">
+              <select class="pos-form-input" id="varOCungSelect" required style="flex:1;"></select>
+              <button type="button" class="btn-quick-attr" onclick="quickAddAttribute('o-cung')"
+                title="Thêm nhanh Ổ Cứng mới">+</button>
+            </div>
+          </div>
+          <div>
+            <label class="pos-form-label" for="varCardDoHoaSelect">Card Đồ Họa (GPU) (*)</label>
+            <div style="display:flex; gap:6px; align-items:center;">
+              <select class="pos-form-input" id="varCardDoHoaSelect" required style="flex:1;"></select>
+              <button type="button" class="btn-quick-attr" onclick="quickAddAttribute('card-do-hoa')"
+                title="Thêm nhanh Card Đồ Họa mới">+</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="pos-form-group" style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+          <div>
+            <label class="pos-form-label" for="varManHinhSelect">Màn Hình (*)</label>
+            <div style="display:flex; gap:6px; align-items:center;">
+              <select class="pos-form-input" id="varManHinhSelect" required style="flex:1;"></select>
+              <button type="button" class="btn-quick-attr" onclick="quickAddAttribute('man-hinh')"
+                title="Thêm nhanh Màn Hình mới">+</button>
+            </div>
+          </div>
+          <div>
+            <label class="pos-form-label" for="varMauSacSelect">Màu Sắc (*)</label>
+            <div style="display:flex; gap:6px; align-items:center;">
+              <select class="pos-form-input" id="varMauSacSelect" required style="flex:1;"></select>
+              <button type="button" class="btn-quick-attr" onclick="quickAddAttribute('mau-sac')"
+                title="Thêm nhanh Màu Sắc mới">+</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="pos-form-group" style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:12px;">
+          <div>
+            <label class="pos-form-label" for="varGia"
+              style="display:flex; justify-content:space-between; align-items:center;">
+              <span>Giá Bán (VNĐ) (*)</span>
+              <span id="varGiaPreview" style="font-size:0.8rem; font-weight:800; color:var(--admin-danger);"></span>
+            </label>
+            <input type="number" class="pos-form-input" id="varGia" required min="0" step="any"
+              oninput="updateVarGiaPreview(this.value)">
+            <div id="varPromoNotice" style="display:none;"></div>
+          </div>
+          <div>
+            <label class="pos-form-label" for="varSoLuong">Số Lượng Kho (*)</label>
+            <input type="number" class="pos-form-input" id="varSoLuong" value="1" min="1"
+              oninput="onVarSoLuongChange(this.value)">
+          </div>
+          <div>
+            <label class="pos-form-label" for="varTrangThai">Trạng Thái</label>
+            <select class="pos-form-input" id="varTrangThai">
+              <option value="1">Đang kinh doanh</option>
+              <option value="0">Ngừng kinh doanh</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Khu vực: Danh Sách IMEI (Phụ thuộc vào Số Lượng Kho) -->
+        <div id="varImeiSection" class="pos-form-group" style="margin-bottom: 18px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 8px;">
+            <label class="pos-form-label"
+              style="margin-bottom:0; font-weight:700; display:flex; align-items:center; gap:6px;">
+              <i class="fa fa-barcode" style="color:var(--admin-primary);"></i> Danh Sách IMEI (*)
+            </label>
+            <div style="display:flex; align-items:center; gap:10px;">
+              <span id="varImeiCountBadge" class="badge-status badge-info" style="font-size:11px; padding:3px 9px;">0 /
+                1 IMEI</span>
+              <button type="button" id="btnOpenAddImeiModal" class="btn-admin btn-primary btn-sm"
+                onclick="openAddImeiModal()"
+                style="display:none; align-items:center; gap:5px; padding:4px 10px; font-size:12px; font-weight:700; border-radius:6px; cursor:pointer;"
+                title="Thêm IMEI mới vào cấu hình này">
+                <i class="fa fa-plus" style="font-size:10px;"></i> Thêm IMEI
+              </button>
+            </div>
+          </div>
+
+          <div id="varImeiContainer"
+            style="max-height: 220px; overflow-y: auto; padding: 12px 14px; border: 1px solid var(--admin-border, #e2e8f0); border-radius: 8px; background: #f8fafc;">
+            <div id="varImeiList" style="display: flex; flex-direction: column; gap: 10px;">
+              <!-- Danh sách ô nhập IMEI được sinh tự động theo Số Lượng Kho -->
+            </div>
+          </div>
+          <div id="varImeiGlobalError"
+            style="display:none; color:#ef4444; font-size:12px; margin-top:6px; font-weight:600;"></div>
+        </div>
+
+        <div class="pos-form-group" style="margin-bottom: 18px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 6px;">
+            <label class="pos-form-label" style="margin-bottom:0;">
+              <i class="fa fa-images" style="color:var(--admin-primary); margin-right:6px;"></i>Hình Ảnh Phiên Bản Cấu
+              Hình
+            </label>
+            <span id="varImageCountBadge" class="badge-status badge-info" style="font-size:11px; padding:2px 8px;">0
+              ảnh</span>
+          </div>
+
+          <!-- Input chọn file từ máy (cho phép chọn nhiều ảnh) -->
+          <input type="file" id="varImageFiles" multiple accept="image/*" style="display:none;"
+            onchange="handleVariantFilesSelect(event)">
+
+          <!-- Nút chọn ảnh từ máy tính -->
+          <div style="margin-bottom: 8px;">
+            <button type="button" class="btn-admin btn-outline btn-sm" id="btnSelectVariantImages"
+              onclick="document.getElementById('varImageFiles').click()"
+              style="display:inline-flex; align-items:center; gap:6px; padding:6px 14px; border-radius:6px; font-weight:600; cursor:pointer;">
+              <i class="fa fa-folder-open" style="color:var(--admin-primary);"></i> Chọn từ máy
+            </button>
+          </div>
+
+          <!-- Danh sách ảnh đã chọn hoặc có sẵn, hiển thị ngay bên dưới với nút xóa dạng 1 hàng ngang -->
+          <div id="varImagesPreviewGrid" class="variant-images-preview-grid"
+            style="display:flex; flex-direction:row; flex-wrap:nowrap; align-items:center; gap:12px; overflow-x:auto; overflow-y:hidden; padding:6px 4px 10px 4px; min-height:96px; max-width:100%;">
+          </div>
+        </div>
+
+        <div class="admin-modal-footer">
+          <button class="btn-admin btn-outline" onclick="closeVariantModal()" type="button">Hủy</button>
+          <button class="btn-admin btn-primary" type="submit" id="btnSaveVariant">Lưu Cấu Hình</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ======================================================================
+       MODAL 7: THÊM IMEI MỚI (CHO PHIÊN BẢN CẤU HÌNH ĐANG CHỈNH SỬA)
+       ====================================================================== -->
+  <div class="admin-modal-overlay" id="addImeiModal" style="z-index: 2100;">
+    <div class="admin-modal-container" style="max-width: 480px;">
+      <div class="admin-modal-header">
+        <div class="admin-modal-title" style="font-size: 1.05rem; font-weight: 800;">THÊM IMEI MỚI</div>
+        <button class="admin-modal-close" onclick="closeAddImeiModal()" type="button">&times;</button>
+      </div>
+
+      <form id="addImeiForm" onsubmit="submitAddImeiForm(event)">
+        <div class="pos-form-group" style="margin-bottom: 12px;">
+          <label class="pos-form-label" style="margin-bottom: 4px; font-weight: 600;">Phiên bản:</label>
+          <div id="addImeiVariantInfo"
+            style="font-weight: 700; font-size: 0.92rem; color: var(--admin-primary); background: #eff6ff; padding: 8px 12px; border-radius: 6px; border: 1px solid #bfdbfe;">
+            <!-- Rendered dynamically -->
+          </div>
+        </div>
+
+        <div class="pos-form-group" style="margin-bottom: 14px;">
+          <label class="pos-form-label" for="addImeiQty" style="font-weight: 600;">Số lượng thêm:</label>
+          <input type="number" class="pos-form-input" id="addImeiQty" value="2" min="1" max="100" required
+            oninput="onAddImeiQtyChange(this.value)">
+        </div>
+
+        <div class="pos-form-group" style="margin-bottom: 16px;">
+          <label class="pos-form-label" style="font-weight: 700; margin-bottom: 6px;">Danh sách IMEI:</label>
+          <div id="addImeiContainer"
+            style="max-height: 240px; overflow-y: auto; padding: 10px; border: 1px solid var(--admin-border, #e2e8f0); border-radius: 8px; background: #f8fafc;">
+            <div id="addImeiList" style="display: flex; flex-direction: column; gap: 10px;">
+              <!-- Dynamic input fields -->
+            </div>
+          </div>
+          <div id="addImeiGlobalError"
+            style="display:none; color:#ef4444; font-size:12px; margin-top:6px; font-weight:600;"></div>
+        </div>
+
+        <div class="admin-modal-footer"
+          style="padding-top: 12px; border-top: 1px solid #e2e8f0; display: flex; justify-content: flex-end; gap: 8px;">
+          <button class="btn-admin btn-outline" onclick="closeAddImeiModal()" type="button">Hủy</button>
+          <button class="btn-admin btn-primary" type="submit" id="btnSubmitAddImei">Thêm IMEI</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ======================================================================
+       MODAL 8: THÊM / SỬA KHUYẾN MÃI
+       ====================================================================== -->
+  <div class="admin-modal-overlay" id="promotionModal" style="z-index: 2100;">
+    <div class="admin-modal-container"
+      style="max-width: 820px; max-height: 92vh; display: flex; flex-direction: column;">
+      <div class="admin-modal-header">
+        <div class="admin-modal-title" id="promoModalTitle"
+          style="font-size: 1.15rem; font-weight: 800; display:flex; align-items:center; gap:8px;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
+            <line x1="7" y1="7" x2="7.01" y2="7"></line>
+          </svg>
+          <span>THÊM KHUYẾN MÃI MỚI</span>
+        </div>
+        <button class="admin-modal-close" onclick="closePromotionModal()" type="button">&times;</button>
+      </div>
+
+      <form id="promotionForm" onsubmit="handlePromotionFormSubmit(event)"
+        style="overflow-y: auto; padding: 20px 24px; display: flex; flex-direction: column; gap: 16px;">
+        <input type="hidden" id="promoId">
+
+        <!-- Error alert message -->
+        <div id="promoFormError"
+          style="display:none; padding: 10px 14px; background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; color: #dc2626; font-size: 0.88rem; font-weight: 600; line-height: 1.4;">
+        </div>
+
+        <!-- Mã & Tên khuyến mãi -->
+        <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 16px;">
+          <div class="pos-form-group">
+            <label class="pos-form-label" for="promoMa">Mã Khuyến Mãi (*)</label>
+            <input type="text" class="pos-form-input" id="promoMa" placeholder="VD: KM001, SALE50..." required
+              maxlength="50" style="text-transform: uppercase;">
+          </div>
+          <div class="pos-form-group">
+            <label class="pos-form-label" for="promoTen">Tên Chương Trình Khuyến Mãi (*)</label>
+            <input type="text" class="pos-form-input" id="promoTen" placeholder="VD: Khai Xuân Đắc Lộc, Tựu Trường..."
+              required maxlength="255">
+          </div>
+        </div>
+
+        <!-- Loại giảm & Giá trị giảm & Trạng thái -->
+        <div style="display: grid; grid-template-columns: 1.2fr 1fr 1fr; gap: 16px; align-items: start;">
+          <div class="pos-form-group">
+            <label class="pos-form-label">Loại Giảm (*)</label>
+            <div style="display: flex; gap: 16px; align-items: center; margin-top: 6px;">
+              <label
+                style="display: flex; align-items: center; gap: 6px; font-size: 0.88rem; font-weight: 600; cursor: pointer;">
+                <input type="radio" name="promoLoaiGiam" id="promoLoaiGiamPercent" value="1" checked
+                  onchange="onPromoLoaiGiamChange()">
+                <span>Giảm phần trăm (%)</span>
+              </label>
+              <label
+                style="display: flex; align-items: center; gap: 6px; font-size: 0.88rem; font-weight: 600; cursor: pointer;">
+                <input type="radio" name="promoLoaiGiam" id="promoLoaiGiamAmount" value="2"
+                  onchange="onPromoLoaiGiamChange()">
+                <span>Giảm số tiền (đ)</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="pos-form-group">
+            <label class="pos-form-label" for="promoGiaTri" style="display: flex; justify-content: space-between;">
+              <span>Mức Giảm (*)</span>
+              <span id="promoGiaTriFormatted"
+                style="font-size: 0.8rem; font-weight: 700; color: var(--admin-primary);"></span>
+            </label>
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <input type="number" class="pos-form-input" id="promoGiaTri" placeholder="VD: 10" required min="1"
+                step="any" oninput="onPromoGiaTriInput()">
+              <span id="promoUnitBadge"
+                style="font-weight: 700; font-size: 0.95rem; color: #475569; min-width: 24px;">%</span>
+            </div>
+          </div>
+
+          <div class="pos-form-group">
+            <label class="pos-form-label" for="promoTrangThai">Trạng Thái (*)</label>
+            <select class="pos-form-input" id="promoTrangThai" required>
+              <option value="1">Hoạt động</option>
+              <option value="0">Ngừng hoạt động</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Ngày bắt đầu & Ngày kết thúc -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+          <div class="pos-form-group">
+            <label class="pos-form-label" for="promoNgayBatDau">Ngày Bắt Đầu (*)</label>
+            <input type="datetime-local" class="pos-form-input" id="promoNgayBatDau" required>
+          </div>
+          <div class="pos-form-group">
+            <label class="pos-form-label" for="promoNgayKetThuc">Ngày Kết Thúc (*)</label>
+            <input type="datetime-local" class="pos-form-input" id="promoNgayKetThuc" required>
+          </div>
+        </div>
+
+        <!-- Cấu hình sản phẩm áp dụng (Chọn CTSP) -->
+        <div class="pos-form-group" style="margin-top: 4px;">
+          <div
+            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 8px;">
+            <label class="pos-form-label"
+              style="margin-bottom: 0; font-weight: 800; font-size: 0.92rem; display: flex; align-items: center; gap: 6px;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                <line x1="8" y1="21" x2="16" y2="21"></line>
+                <line x1="12" y1="17" x2="12" y2="21"></line>
+              </svg>
+              <span>CẤU HÌNH SẢN PHẨM ÁP DỤNG (CHỌN CTSP)</span>
+              <span style="font-weight: 500; font-size: 0.8rem; color: var(--admin-text-muted);">(Tùy chọn)</span>
+            </label>
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <span id="promoSelectedCtspBadge" class="badge-status badge-info"
+                style="font-size: 0.8rem; font-weight: 700; padding: 4px 10px;">Đã chọn: 0 CTSP</span>
+            </div>
+          </div>
+
+          <!-- Tìm nhanh sản phẩm / CTSP -->
+          <div style="margin-bottom: 10px; display:flex; gap: 10px; align-items:center;">
+            <input type="text" class="search-admin-input" id="searchPromoCtspInput"
+              placeholder="Tìm sản phẩm / mã SP / mã CTSP / cấu hình..." oninput="filterPromoCtspList()"
+              style="width: 100%;">
+          </div>
+
+          <!-- Danh sách nhóm theo Sản phẩm với fixed height scroll -->
+          <div id="promoCtspSelectionContainer"
+            style="max-height: 290px; overflow-y: auto; padding: 12px; border: 1px solid var(--admin-border, #e2e8f0); border-radius: 8px; background: #f8fafc; display: flex; flex-direction: column; gap: 12px;">
+            <div id="promoCtspGroupList" style="display: flex; flex-direction: column; gap: 12px;">
+              <!-- Groups rendered dynamically -->
+            </div>
+          </div>
+          <small style="color: var(--admin-text-muted); font-size: 0.78rem; margin-top: 4px; display: block;">
+            * Lưu ý: Mỗi CTSP chỉ được áp dụng 1 khuyến mãi hoạt động trong cùng một khoảng thời gian.
+          </small>
+        </div>
+
+        <div class="admin-modal-footer"
+          style="padding-top: 14px; border-top: 1px solid #e2e8f0; display: flex; justify-content: flex-end; gap: 10px; margin-top: 4px;">
+          <button class="btn-admin btn-outline" onclick="closePromotionModal()" type="button">Hủy</button>
+          <button class="btn-admin btn-primary" type="submit" id="btnSavePromotion">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+              <polyline points="17 21 17 13 7 13 7 21"></polyline>
+              <polyline points="7 3 7 8 15 8"></polyline>
+            </svg>
+            <span>Lưu Khuyến Mãi</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ======================================================================
+       MODAL 9: CHI TIẾT KHUYẾN MÃI
+       ====================================================================== -->
+  <div class="admin-modal-overlay" id="promotionDetailModal" style="z-index: 2100;">
+    <div class="admin-modal-container"
+      style="max-width: 860px; max-height: 92vh; display: flex; flex-direction: column;">
+      <div class="admin-modal-header">
+        <div class="admin-modal-title"
+          style="font-size: 1.15rem; font-weight: 800; display:flex; align-items:center; gap:8px;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="16" x2="12" y2="12"></line>
+            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+          </svg>
+          <span>CHI TIẾT CHƯƠNG TRÌNH KHUYẾN MÃI</span>
+        </div>
+        <button class="admin-modal-close" onclick="closePromotionDetailModal()" type="button">&times;</button>
+      </div>
+
+      <div style="overflow-y: auto; padding: 20px 24px; display: flex; flex-direction: column; gap: 18px;">
+        <!-- Overview summary cards -->
+        <div
+          style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px;">
+          <div>
+            <div
+              style="font-size: 0.78rem; color: var(--admin-text-muted); font-weight: 600; text-transform: uppercase;">
+              Mã khuyến mãi</div>
+            <div id="promoDetailMa"
+              style="font-size: 1.05rem; font-weight: 800; color: var(--admin-text-main); margin-top: 2px;">--</div>
+          </div>
+          <div>
+            <div
+              style="font-size: 0.78rem; color: var(--admin-text-muted); font-weight: 600; text-transform: uppercase;">
+              Tên chương trình</div>
+            <div id="promoDetailTen"
+              style="font-size: 1.05rem; font-weight: 700; color: var(--admin-primary); margin-top: 2px;">--</div>
+          </div>
+          <div>
+            <div
+              style="font-size: 0.78rem; color: var(--admin-text-muted); font-weight: 600; text-transform: uppercase;">
+              Mức giảm</div>
+            <div id="promoDetailGiaTri" style="font-size: 1.15rem; font-weight: 800; color: #ef4444; margin-top: 2px;">
+              --</div>
+          </div>
+          <div>
+            <div
+              style="font-size: 0.78rem; color: var(--admin-text-muted); font-weight: 600; text-transform: uppercase;">
+              Thời gian áp dụng</div>
+            <div id="promoDetailThoiGian"
+              style="font-size: 0.88rem; font-weight: 700; color: var(--admin-text-main); margin-top: 2px;">--</div>
+          </div>
+          <div>
+            <div
+              style="font-size: 0.78rem; color: var(--admin-text-muted); font-weight: 600; text-transform: uppercase;">
+              Trạng thái</div>
+            <div id="promoDetailTrangThaiBadge" style="margin-top: 4px;">--</div>
+          </div>
+          <div>
+            <div
+              style="font-size: 0.78rem; color: var(--admin-text-muted); font-weight: 600; text-transform: uppercase;">
+              Số CTSP áp dụng</div>
+            <div id="promoDetailSoCtspBadge"
+              style="font-size: 1.05rem; font-weight: 800; color: var(--admin-text-main); margin-top: 2px;">--</div>
+          </div>
+        </div>
+
+        <!-- Section: Applied CTSPs list -->
+        <div>
+          <div
+            style="font-weight: 800; font-size: 0.95rem; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between;">
+            <span>DANH SÁCH CHI TIẾT SẢN PHẨM (CTSP) ĐƯỢC ÁP DỤNG</span>
+            <span style="font-size: 0.78rem; font-weight: 500; color: var(--admin-text-muted);">(Giá sau giảm mang tính
+              chất minh họa theo giá CTSP hiện tại)</span>
+          </div>
+
+          <div class="table-responsive"
+            style="max-height: 320px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 8px;">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th style="width: 40px; text-align: center;">STT</th>
+                  <th style="width: 90px;">Mã CTSP</th>
+                  <th style="min-width: 180px;">Dòng Laptop</th>
+                  <th style="min-width: 200px;">Cấu Hình Chi Tiết</th>
+                  <th style="width: 130px; text-align: right;">Giá Gốc</th>
+                  <th style="width: 140px; text-align: right;">Giá Sau Giảm</th>
+                </tr>
+              </thead>
+              <tbody id="promoDetailCtspTableBody">
+                <!-- Dynamically rendered -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="admin-modal-footer"
+        style="padding: 14px 24px; border-top: 1px solid #e2e8f0; display: flex; justify-content: flex-end; gap: 10px;">
+        <button class="btn-admin btn-outline" onclick="closePromotionDetailModal()" type="button">Đóng</button>
+        <button class="btn-admin btn-primary" id="btnEditFromDetail" onclick="openEditPromotionModalFromDetail()"
+          type="button">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+          </svg>
+          <span>Chỉnh Sửa Khuyến Mãi Này</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================================
+       MODAL: THÊM / SỬA VOUCHER HÓA ĐƠN
+       ====================================================================== -->
+  <div class="admin-modal-overlay" id="voucherModal" style="z-index: 2100;">
+    <div class="admin-modal-container"
+      style="max-width: 680px; max-height: 92vh; display: flex; flex-direction: column;">
+      <div class="admin-modal-header">
+        <div class="admin-modal-title" id="voucherModalTitle"
+          style="font-size: 1.15rem; font-weight: 800; display:flex; align-items:center; gap:8px;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="5" width="20" height="14" rx="2"></rect>
+            <line x1="2" y1="10" x2="22" y2="10"></line>
+            <circle cx="7" cy="15" r="1.5" fill="currentColor"></circle>
+            <path d="M12 15h6"></path>
+          </svg>
+          <span id="voucherModalTitleText">THÊM VOUCHER HÓA ĐƠN MỚI</span>
+        </div>
+        <button class="admin-modal-close" onclick="closeVoucherModal()" type="button">&times;</button>
+      </div>
+
+      <form id="voucherForm" onsubmit="handleVoucherFormSubmit(event)"
+        style="overflow-y: auto; padding: 20px 24px; display: flex; flex-direction: column; gap: 16px;">
+        <input type="hidden" id="voucherId">
+
+        <!-- Error alert message -->
+        <div id="voucherFormError"
+          style="display:none; padding: 10px 14px; background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; color: #dc2626; font-size: 0.88rem; font-weight: 600; line-height: 1.4;">
+        </div>
+
+        <!-- Mã & Tên voucher -->
+        <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 16px;">
+          <div>
+            <label class="pos-form-label" style="font-weight: 700; margin-bottom: 6px; display: block;">Mã Voucher
+              (*)</label>
+            <input type="text" class="pos-form-input" id="voucherMa" placeholder="VD: SALE10" required
+              style="font-weight: 700; text-transform: uppercase;">
+            <small id="voucherMaHint"
+              style="display:block; margin-top:4px; font-size:0.75rem; color:var(--admin-text-muted);">Viết liền, không
+              trùng lặp</small>
+          </div>
+          <div>
+            <label class="pos-form-label" style="font-weight: 700; margin-bottom: 6px; display: block;">Tên Voucher
+              (*)</label>
+            <input type="text" class="pos-form-input" id="voucherTen" placeholder="VD: Voucher Sale tháng 10" required>
+          </div>
+        </div>
+
+        <!-- Loại giảm giá -->
+        <div>
+          <label class="pos-form-label" style="font-weight: 700; margin-bottom: 8px; display: block;">Loại Giảm Giá
+            (*)</label>
+          <div
+            style="display: flex; gap: 20px; align-items: center; background: #f8fafc; padding: 10px 16px; border-radius: 8px; border: 1px solid #e2e8f0;">
+            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 600;">
+              <input type="radio" name="voucherLoaiGiam" id="voucherLoaiGiam1" value="1" checked
+                onchange="onVoucherLoaiGiamChange()">
+              <span>Giảm theo phần trăm (%)</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 600;">
+              <input type="radio" name="voucherLoaiGiam" id="voucherLoaiGiam2" value="2"
+                onchange="onVoucherLoaiGiamChange()">
+              <span>Giảm theo số tiền cố định (VNĐ)</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Mức giảm, Đơn tối thiểu & Giảm tối đa -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px;">
+          <div>
+            <label class="pos-form-label" id="voucherGiaTriGiamLabel"
+              style="font-weight: 700; margin-bottom: 6px; display: block;">Mức Giảm (%) (*)</label>
+            <div style="position: relative;">
+              <input type="text" class="pos-form-input" id="voucherGiaTriGiam" placeholder="VD: 10" required
+                style="padding-right: 36px; font-weight: 700; text-align: right;" oninput="onVoucherMoneyInput(this)">
+              <span id="voucherGiaTriGiamSuffix"
+                style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); font-weight: 700; color: #64748b;">%</span>
+            </div>
+            <small id="voucherGiaTriGiamHint"
+              style="display:block; margin-top:4px; font-size:0.75rem; color:var(--admin-text-muted);">Từ 1 đến
+              100%</small>
+          </div>
+
+          <div>
+            <label class="pos-form-label" style="font-weight: 700; margin-bottom: 6px; display: block;">Đơn Tối Thiểu
+              (VNĐ)</label>
+            <div style="position: relative;">
+              <input type="text" class="pos-form-input" id="voucherDonToiThieu" placeholder="0" value="0"
+                style="padding-right: 36px; font-weight: 600; text-align: right;" oninput="onVoucherMoneyInput(this)">
+              <span
+                style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); font-weight: 700; color: #64748b;">đ</span>
+            </div>
+            <small style="display:block; margin-top:4px; font-size:0.75rem; color:var(--admin-text-muted);">0 nếu không
+              yêu cầu</small>
+          </div>
+
+          <div id="voucherGiamToiDaGroup">
+            <label class="pos-form-label" id="voucherGiamToiDaLabel"
+              style="font-weight: 700; margin-bottom: 6px; display: block;">Giảm Tối Đa (VNĐ)</label>
+            <div style="position: relative;">
+              <input type="text" class="pos-form-input" id="voucherGiamToiDa" placeholder="Không giới hạn"
+                style="padding-right: 36px; font-weight: 600; text-align: right;" oninput="onVoucherMoneyInput(this)">
+              <span id="voucherGiamToiDaSuffix"
+                style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); font-weight: 700; color: #64748b;">đ</span>
+            </div>
+            <small id="voucherGiamToiDaHint"
+              style="display:block; margin-top:4px; font-size:0.75rem; color:var(--admin-text-muted);">Bỏ trống nếu
+              không giới hạn</small>
+          </div>
+        </div>
+
+        <!-- Thời gian áp dụng & Trạng thái -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px;">
+          <div>
+            <label class="pos-form-label" style="font-weight: 700; margin-bottom: 6px; display: block;">Ngày Bắt Đầu
+              (*)</label>
+            <input type="datetime-local" class="pos-form-input" id="voucherNgayBatDau" required>
+          </div>
+          <div>
+            <label class="pos-form-label" style="font-weight: 700; margin-bottom: 6px; display: block;">Ngày Kết Thúc
+              (*)</label>
+            <input type="datetime-local" class="pos-form-input" id="voucherNgayKetThuc" required>
+          </div>
+          <div>
+            <label class="pos-form-label" style="font-weight: 700; margin-bottom: 6px; display: block;">Trạng Thái Kích
+              Hoạt</label>
+            <select class="pos-form-input" id="voucherTrangThai">
+              <option value="1">Hoạt động</option>
+              <option value="0">Ngừng hoạt động</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Action buttons -->
+        <div
+          style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 10px; padding-top: 16px; border-top: 1px solid #e2e8f0;">
+          <button class="btn-admin btn-outline" onclick="closeVoucherModal()" type="button">Hủy</button>
+          <button class="btn-admin btn-primary" type="submit" id="btnSaveVoucher">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+              <polyline points="17 21 17 13 7 13 7 21"></polyline>
+              <polyline points="7 3 7 8 15 8"></polyline>
+            </svg>
+            <span id="btnSaveVoucherText">Lưu Voucher</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ======================================================================
+       MODAL: CHI TIẾT VOUCHER HÓA ĐƠN
+       ====================================================================== -->
+  <div class="admin-modal-overlay" id="voucherDetailModal" style="z-index: 2100;">
+    <div class="admin-modal-container"
+      style="max-width: 600px; max-height: 90vh; display: flex; flex-direction: column;">
+      <div class="admin-modal-header">
+        <div class="admin-modal-title"
+          style="font-size: 1.15rem; font-weight: 800; display:flex; align-items:center; gap:8px;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="16" x2="12" y2="12"></line>
+            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+          </svg>
+          <span>CHI TIẾT VOUCHER HÓA ĐƠN</span>
+        </div>
+        <button class="admin-modal-close" onclick="closeVoucherDetailModal()" type="button">&times;</button>
+      </div>
+
+      <div style="overflow-y: auto; padding: 24px; display: flex; flex-direction: column; gap: 16px;">
+        <div
+          style="display: flex; justify-content: space-between; align-items: flex-start; padding-bottom: 14px; border-bottom: 1px solid #e2e8f0;">
+          <div>
+            <div id="voucherDetailMa"
+              style="font-size: 1.35rem; font-weight: 900; color: #2563eb; letter-spacing: 0.5px;">-</div>
+            <div id="voucherDetailTen" style="font-size: 1.05rem; font-weight: 700; color: #1e293b; margin-top: 4px;">-
+            </div>
+          </div>
+          <div id="voucherDetailBadgeContainer"></div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+          <div style="background: #f8fafc; padding: 12px 16px; border-radius: 8px; border: 1px solid #f1f5f9;">
+            <div style="font-size: 0.8rem; color: #64748b; font-weight: 600;">Loại giảm giá</div>
+            <div id="voucherDetailLoaiGiam" style="font-size: 1rem; font-weight: 700; color: #0f172a; margin-top: 4px;">
+              -</div>
+          </div>
+          <div style="background: #f8fafc; padding: 12px 16px; border-radius: 8px; border: 1px solid #f1f5f9;">
+            <div style="font-size: 0.8rem; color: #64748b; font-weight: 600;">Mức giảm</div>
+            <div id="voucherDetailGiaTriGiam"
+              style="font-size: 1.15rem; font-weight: 800; color: #dc2626; margin-top: 4px;">-</div>
+          </div>
+          <div style="background: #f8fafc; padding: 12px 16px; border-radius: 8px; border: 1px solid #f1f5f9;">
+            <div style="font-size: 0.8rem; color: #64748b; font-weight: 600;">Đơn hàng tối thiểu</div>
+            <div id="voucherDetailDonToiThieu"
+              style="font-size: 1rem; font-weight: 700; color: #0f172a; margin-top: 4px;">-</div>
+          </div>
+          <div style="background: #f8fafc; padding: 12px 16px; border-radius: 8px; border: 1px solid #f1f5f9;">
+            <div style="font-size: 0.8rem; color: #64748b; font-weight: 600;">Giảm tối đa</div>
+            <div id="voucherDetailGiamToiDa"
+              style="font-size: 1rem; font-weight: 700; color: #0f172a; margin-top: 4px;">-</div>
+          </div>
+        </div>
+
+        <div style="background: #f8fafc; padding: 14px 16px; border-radius: 8px; border: 1px solid #f1f5f9;">
+          <div style="font-size: 0.8rem; color: #64748b; font-weight: 600;">Thời gian áp dụng</div>
+          <div id="voucherDetailThoiGian"
+            style="font-size: 0.95rem; font-weight: 700; color: #0f172a; margin-top: 4px; display:flex; align-items:center; gap:8px;">
+            -</div>
+        </div>
+      </div>
+
+      <div class="admin-modal-footer"
+        style="padding: 14px 24px; border-top: 1px solid #e2e8f0; display: flex; justify-content: flex-end; gap: 10px;">
+        <button class="btn-admin btn-outline" onclick="closeVoucherDetailModal()" type="button">Đóng</button>
+        <button class="btn-admin btn-primary" id="btnEditVoucherFromDetail" onclick="openEditVoucherFromDetail()"
+          type="button">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+          </svg>
+          <span>Chỉnh Sửa Voucher Này</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================================
+       PRINT RECEIPT CONTAINER (VISIBLE ONLY DURING PRINT)
+       ====================================================================== -->
+  <div id="printReceiptSection" style="display:none;"></div>
+
+  <!-- ======================================================================
+       ADMIN JAVASCRIPT LOGIC
+       ====================================================================== -->
+  <script src="../js/admin.js?v=20261001_0155"></script>
+</body>
+
+</html>

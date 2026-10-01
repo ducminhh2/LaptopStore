@@ -1,5 +1,6 @@
 package com.laptopstore.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -18,14 +19,10 @@ public class HinhAnhChiTiet {
     @Column(name = "url_hinh_anh", nullable = false, length = 500)
     private String urlHinhAnh;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_ctsp", nullable = false)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "danhSachHinhAnh"})
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private ChiTietSanPham chiTietSanPham;
-
-    public Integer getId() { return id; }
-    public void setId(Integer id) { this.id = id; }
-    public String getUrlHinhAnh() { return urlHinhAnh; }
-    public void setUrlHinhAnh(String urlHinhAnh) { this.urlHinhAnh = urlHinhAnh; }
-    public ChiTietSanPham getChiTietSanPham() { return chiTietSanPham; }
-    public void setChiTietSanPham(ChiTietSanPham chiTietSanPham) { this.chiTietSanPham = chiTietSanPham; }
 }

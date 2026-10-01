@@ -19,19 +19,10 @@ public class ChiTietKhuyenMai {
     private String maCtkm;
 
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "id_sp", nullable = false)
-    private SanPham sanPham;
+    @JoinColumn(name = "id_ctsp", nullable = false)
+    private ChiTietSanPham chiTietSanPham;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "id_khuyen_mai", nullable = false)
     private KhuyenMai khuyenMai;
-
-    public Integer getId() { return id; }
-    public void setId(Integer id) { this.id = id; }
-    public String getMaCtkm() { return maCtkm; }
-    public void setMaCtkm(String maCtkm) { this.maCtkm = maCtkm; }
-    public SanPham getSanPham() { return sanPham; }
-    public void setSanPham(SanPham sanPham) { this.sanPham = sanPham; }
-    public KhuyenMai getKhuyenMai() { return khuyenMai; }
-    public void setKhuyenMai(KhuyenMai khuyenMai) { this.khuyenMai = khuyenMai; }
 }

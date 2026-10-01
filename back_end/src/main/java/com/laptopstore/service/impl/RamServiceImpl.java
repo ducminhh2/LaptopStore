@@ -4,18 +4,16 @@ import com.laptopstore.entity.Ram;
 import com.laptopstore.exception.ResourceNotFoundException;
 import com.laptopstore.repository.RamRepository;
 import com.laptopstore.service.RamService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class RamServiceImpl implements RamService {
 
     private final RamRepository ramRepository;
-
-    public RamServiceImpl(RamRepository ramRepository) {
-        this.ramRepository = ramRepository;
-    }
 
     @Override
     public List<Ram> getAll() {

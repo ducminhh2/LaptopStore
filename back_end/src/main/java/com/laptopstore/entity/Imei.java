@@ -25,20 +25,9 @@ public class Imei {
 
     @Column(name = "trang_thai")
     @Builder.Default
-    private Integer trangThai = 0;
+    private Integer trangThai = 0; // 0: Trong kho, 1: Đã bán, 2: Đang giao, 3: Lỗi/Đổi trả, 4: Bảo hành
 
     @Column(name = "ngay_nhap")
     @Builder.Default
     private LocalDateTime ngayNhap = LocalDateTime.now();
-
-    public Integer getId() { return id; }
-    public void setId(Integer id) { this.id = id; }
-    public String getSoImei() { return soImei; }
-    public void setSoImei(String soImei) { this.soImei = soImei; }
-    public ChiTietSanPham getChiTietSanPham() { return chiTietSanPham; }
-    public void setChiTietSanPham(ChiTietSanPham chiTietSanPham) { this.chiTietSanPham = chiTietSanPham; }
-    public Integer getTrangThai() { return trangThai; }
-    public void setTrangThai(Integer trangThai) { this.trangThai = trangThai; }
-    public LocalDateTime getNgayNhap() { return ngayNhap; }
-    public void setNgayNhap(LocalDateTime ngayNhap) { this.ngayNhap = ngayNhap; }
 }

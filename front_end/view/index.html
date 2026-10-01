@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Laptop Store - Hệ Thống Bán Lẻ Laptop & Linh Kiện Chính Hãng</title>
+  <meta name="description" content="Hệ thống bán lẻ Laptop Gaming, Laptop Đồ họa, Laptop Văn phòng chính hãng giá tốt nhất với nhiều ưu đãi hấp dẫn.">
+
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <!-- CSS Stylesheet -->
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+
+  <!-- ==========================================================================
+       TOP ANNOUNCEMENT BAR
+       ========================================================================== -->
+  <div class="top-notice-bar">
+    <div class="container">
+      <div class="notice-highlights">
+        <div class="notice-item">
+          <svg style="width: 14px; height: 14px;" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9v-2h2v2zm0-4H9V7h2v5z"/></svg>
+          <span>Cam kết 100% hàng chính hãng - Đổi trả trong 30 ngày nếu có lỗi</span>
+        </div>
+        <div class="notice-item">
+          <svg style="width: 14px; height: 14px;" fill="currentColor" viewBox="0 0 24 24"><path d="M20 8h-3V4H3c-1.1 0-2 .9-2 2v11h2c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-5l-3-4zM6 18.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm13.5-9l1.96 2.5H17V9.5h2.5zm-1.5 9c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>
+          <span>Miễn phí giao hàng toàn quốc đơn từ 5.000.000 VNĐ</span>
+        </div>
+      </div>
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <div class="backend-status-badge" id="backendStatusBadge">
+          <span class="status-dot"></span> Đang kết nối Backend API...
+        </div>
+        <div id="topbarAuthSlot" style="display: flex; align-items: center; gap: 8px;">
+          <!-- Dynamically populated login/admin/logout buttons -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       MAIN HEADER (MATCHING SCREENSHOT)
+       ========================================================================== -->
+  <header class="main-header">
+    <div class="container">
+      <div class="header-inner">
+        
+        <!-- Category Dropdown Button [☰ DANH MỤC SẢN PHẨM] -->
+        <div class="category-btn-wrapper">
+          <button class="category-dropdown-btn" id="categoryDropdownBtn" type="button">
+            <div class="hamburger-icon">
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+            <span>DANH MỤC SẢN PHẨM</span>
+          </button>
+          
+          <!-- Category Popup Menu -->
+          <div class="category-menu-popup" id="categoryMenuPopup">
+            <a href="javascript:void(0)" class="category-menu-item" onclick="filterByCategory('Laptop Gaming')">
+              <svg fill="currentColor" viewBox="0 0 24 24"><path d="M21 6H3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-10 7H8v3H6v-3H3v-2h3V8h2v3h3v2zm4.5 2c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm4-3c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>
+              Laptop Gaming
+            </a>
+            <a href="javascript:void(0)" class="category-menu-item" onclick="filterByCategory('Laptop Văn phòng')">
+              <svg fill="currentColor" viewBox="0 0 24 24"><path d="M20 18c1.1 0 1.99-.9 1.99-2L22 6c0-1.1-.9-2-2-2H4c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2H0v2h24v-2h-4zM4 6h16v10H4V6z"/></svg>
+              Laptop Văn phòng
+            </a>
+            <a href="javascript:void(0)" class="category-menu-item" onclick="filterByCategory('Laptop Đồ họa')">
+              <svg fill="currentColor" viewBox="0 0 24 24"><path d="M21 3H3C2 3 1 4 1 5v14c0 1.1.9 2 2 2h18c1 0 2-1 2-2V5c0-1-1-2-2-2zm0 16H3V5h18v14zM5 15l3.5-4.5 2.5 3.01L14.5 9l4.5 6H5z"/></svg>
+              Laptop Đồ họa - Kỹ thuật
+            </a>
+            <a href="javascript:void(0)" class="category-menu-item" onclick="filterByCategory('Laptop Mỏng nhẹ')">
+              <svg fill="currentColor" viewBox="0 0 24 24"><path d="M4 6h16v12H4z"/><path d="M20 2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H4V4h16v12z"/></svg>
+              Laptop Mỏng nhẹ Cao cấp
+            </a>
+          </div>
+        </div>
+
+        <!-- Search Bar: [Tất cả danh mục v] | [Tìm kiếm sản phẩm...] [🔍] -->
+        <div class="search-container">
+          <select class="search-category-select" id="searchCategorySelect">
+            <option value="ALL">Tất cả danh mục</option>
+            <option value="1">Laptop Gaming</option>
+            <option value="2">Laptop Văn phòng</option>
+            <option value="3">Laptop Đồ họa</option>
+            <option value="4">Laptop Mỏng nhẹ</option>
+          </select>
+          <div class="search-divider"></div>
+          <input type="text" class="search-input" id="searchInput" placeholder="Tìm kiếm sản phẩm theo tên, CPU, GPU, mã SP...">
+          <button class="search-btn" type="button" onclick="handleSearch()" title="Tìm kiếm">
+            <svg fill="currentColor" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+          </button>
+        </div>
+
+        <!-- Header Actions: Hotline, Build PC/Laptop, Cart -->
+        <div class="header-actions">
+          
+          <!-- Hotline Mua Hàng -->
+          <div class="action-item" onclick="window.location.href='tel:0886976868'">
+            <div class="action-icon-circle">
+              <svg fill="currentColor" viewBox="0 0 24 24"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>
+            </div>
+            <div class="action-text">
+              <span class="action-label">Hotline mua hàng</span>
+              <span class="action-value">088.697.6868</span>
+            </div>
+          </div>
+
+          <!-- Giỏ hàng -->
+          <div class="action-item" onclick="openCartDrawer()">
+            <div class="action-icon-circle">
+              <svg fill="currentColor" viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>
+              <span class="cart-count-badge" id="cartCountBadge">0</span>
+            </div>
+            <div class="action-text">
+              <span class="action-label">Giỏ hàng</span>
+              <span class="action-value">Xem ngay</span>
+            </div>
+          </div>
+
+          <!-- Tài khoản / Đăng nhập -->
+          <div class="action-item" id="headerAuthAction" style="cursor: pointer;">
+            <!-- Rendered by renderHeaderAuth() -->
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+  </header>
+
+  <!-- ==========================================================================
+       MAIN CONTENT CONTAINER
+       ========================================================================== -->
+  <main class="container">
+
+    <!-- ==========================================================================
+         SECTION 1: PC GAMING / LAPTOP GAMING (EXACT SCREENSHOT LAYOUT)
+         ========================================================================== -->
+    <section class="product-section" id="gamingSection">
+      
+      <!-- Section Header Bar with Red Angled Ribbon -->
+      <div class="section-header-bar">
+        
+        <!-- Angular Ribbon Title: PC GAMING / LAPTOP GAMING -->
+        <div class="section-banner-title">
+          LAPTOP GAMING
+        </div>
+
+        <!-- Filter tag pills -->
+        <div class="section-filter-tags">
+          <button class="filter-tag-pill active" onclick="applySubFilter('gaming', 'ALL', this)">TẤT CẢ</button>
+          <button class="filter-tag-pill" onclick="applySubFilter('gaming', 'GIA_RE', this)">GAMING GIÁ RẺ</button>
+          <button class="filter-tag-pill" onclick="applySubFilter('gaming', 'STREAM', this)">STREAM GAME</button>
+          <button class="filter-tag-pill" onclick="applySubFilter('gaming', 'PREMIUM', this)">GAMING PREMIUM</button>
+          <button class="filter-tag-pill" onclick="applySubFilter('gaming', 'CORE_ULTRA', this)">Core Ultra / Ryzen AI</button>
+          <button class="filter-tag-pill" onclick="applySubFilter('gaming', 'CAO_CAP', this)">GAMING CAO CẤP</button>
+        </div>
+
+        <!-- View All Link (Xem tất cả >>) -->
+        <a href="javascript:void(0)" class="view-all-link" onclick="applySubFilter('gaming', 'ALL', this)">
+          Xem tất cả &gt;&gt;
+        </a>
+
+      </div>
+
+      <!-- Slider Wrapper with Carousel Arrows & Cards Grid -->
+      <div class="product-slider-wrapper">
+        <button class="section-nav-arrow prev" onclick="scrollSection('sectionGamingCards', -300)" title="Trước">❮</button>
+        
+        <!-- Product Cards Grid (5 items per row) -->
+        <div class="product-cards-grid" id="sectionGamingCards">
+          <!-- Dynamically populated from /api/chi-tiet-san-pham -->
+          <div style="grid-column: 1/-1; padding: 40px; text-align: center; color: var(--text-muted);">
+            Đang tải danh sách sản phẩm từ hệ thống...
+          </div>
+        </div>
+
+        <button class="section-nav-arrow next" onclick="scrollSection('sectionGamingCards', 300)" title="Sau">❯</button>
+      </div>
+
+    </section>
+
+
+    <!-- ==========================================================================
+         SECTION 2: PC WORKSTATION 2D 3D / LAPTOP ĐỒ HỌA
+         ========================================================================== -->
+    <section class="product-section" id="workstationSection">
+      
+      <!-- Section Header Bar with Red Angled Ribbon -->
+      <div class="section-header-bar">
+        
+        <!-- Angular Ribbon Title: PC WORKSTATION 2D 3D -->
+        <div class="section-banner-title">
+          LAPTOP WORKSTATION / ĐỒ HỌA 2D 3D
+        </div>
+
+        <!-- Filter tag pills -->
+        <div class="section-filter-tags">
+          <button class="filter-tag-pill active" onclick="applySubFilter('workstation', 'ALL', this)">TẤT CẢ</button>
+          <button class="filter-tag-pill" onclick="applySubFilter('workstation', 'RTX_4060', this)">RTX 4060 8GB</button>
+          <button class="filter-tag-pill" onclick="applySubFilter('workstation', 'CORE_ULTRA', this)">Intel Core i7 / Ultra</button>
+          <button class="filter-tag-pill" onclick="applySubFilter('workstation', 'CAO_CAP', this)">RAM 32GB Chuyên Đồ Họa</button>
+        </div>
+
+        <!-- View All Link (Xem tất cả >>) -->
+        <a href="javascript:void(0)" class="view-all-link" onclick="applySubFilter('workstation', 'ALL', this)">
+          Xem tất cả &gt;&gt;
+        </a>
+
+      </div>
+
+      <!-- Slider Wrapper with Carousel Arrows & Cards Grid -->
+      <div class="product-slider-wrapper">
+        <button class="section-nav-arrow prev" onclick="scrollSection('sectionWorkstationCards', -300)" title="Trước">❮</button>
+        
+        <!-- Product Cards Grid (5 items per row) -->
+        <div class="product-cards-grid" id="sectionWorkstationCards">
+          <!-- Dynamically populated from /api/chi-tiet-san-pham -->
+        </div>
+
+        <button class="section-nav-arrow next" onclick="scrollSection('sectionWorkstationCards', 300)" title="Sau">❯</button>
+      </div>
+
+    </section>
+
+
+    <!-- ==========================================================================
+         SECTION 3: LAPTOP VĂN PHÒNG & MỎNG NHẸ
+         ========================================================================== -->
+    <section class="product-section" id="officeSection">
+      
+      <!-- Section Header Bar -->
+      <div class="section-header-bar">
+        
+        <!-- Angular Ribbon Title -->
+        <div class="section-banner-title blue-gradient">
+          LAPTOP VĂN PHÒNG &amp; MỎNG NHẸ
+        </div>
+
+        <!-- Filter tag pills -->
+        <div class="section-filter-tags">
+          <button class="filter-tag-pill active" onclick="applySubFilter('office', 'ALL', this)">TẤT CẢ</button>
+          <button class="filter-tag-pill" onclick="applySubFilter('office', 'GIA_RE', this)">DƯỚI 20 TRIỆU</button>
+          <button class="filter-tag-pill" onclick="applySubFilter('office', 'CORE_ULTRA', this)">MÀN HÌNH OLED 120HZ</button>
+          <button class="filter-tag-pill" onclick="applySubFilter('office', 'CAO_CAP', this)">PIN TRÂU MỎNG NHẸ</button>
+        </div>
+
+        <!-- View All Link -->
+        <a href="javascript:void(0)" class="view-all-link" onclick="applySubFilter('office', 'ALL', this)">
+          Xem tất cả &gt;&gt;
+        </a>
+
+      </div>
+
+      <!-- Slider Wrapper -->
+      <div class="product-slider-wrapper">
+        <button class="section-nav-arrow prev" onclick="scrollSection('sectionOfficeCards', -300)" title="Trước">❮</button>
+        
+        <div class="product-cards-grid" id="sectionOfficeCards">
+          <!-- Dynamically populated -->
+        </div>
+
+        <button class="section-nav-arrow next" onclick="scrollSection('sectionOfficeCards', 300)" title="Sau">❯</button>
+      </div>
+
+    </section>
+
+  </main>
+
+
+  <!-- ==========================================================================
+       PRODUCT QUICK VIEW MODAL (Chi tiết cấu hình Laptop)
+       ========================================================================== -->
+  <div class="modal-overlay" id="productQuickViewModal">
+    <div class="modal-container">
+      
+      <button class="modal-close-btn" onclick="closeQuickView()" title="Đóng">
+        <svg style="width: 20px; height: 20px;" fill="currentColor" viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+      </button>
+
+      <div class="modal-grid">
+        
+        <!-- Left: Image Gallery -->
+        <div class="modal-gallery">
+          <div class="modal-gallery-main">
+            <img src="" id="modalMainImage" alt="Laptop Preview">
+          </div>
+          <div class="modal-gallery-thumbs" id="modalGalleryThumbs">
+            <!-- Thumbs generated here -->
+          </div>
+        </div>
+
+        <!-- Right: Information & Full Specs -->
+        <div class="modal-info">
+          
+          <h2 class="modal-product-title" id="modalProductTitle">Tên sản phẩm</h2>
+          
+          <div class="modal-meta-row">
+            <span>Mã CTSP: <strong id="modalMaSp">CTSP001</strong></span>
+            <span>Thương hiệu: <strong id="modalBrand">ASUS</strong></span>
+            <span>Danh mục: <strong id="modalCategory">Laptop Gaming</strong></span>
+          </div>
+
+          <!-- Price box -->
+          <div class="modal-price-box">
+            <span class="modal-current-price" id="modalCurrentPrice">0 VNĐ</span>
+            <span class="modal-old-price" id="modalOldPrice">0 VNĐ</span>
+            <span class="discount-badge" id="modalDiscountBadge">-10%</span>
+          </div>
+
+          <!-- Specs Table -->
+          <table class="modal-specs-table">
+            <tbody>
+              <tr>
+                <td>Bộ vi xử lý (CPU)</td>
+                <td id="modalCpu">AMD Ryzen 7</td>
+              </tr>
+              <tr>
+                <td>Bộ nhớ RAM</td>
+                <td id="modalRam">16GB DDR5</td>
+              </tr>
+              <tr>
+                <td>Ổ cứng lưu trữ</td>
+                <td id="modalStorage">SSD 512GB NVMe</td>
+              </tr>
+              <tr>
+                <td>Card đồ họa (GPU)</td>
+                <td id="modalGpu">NVIDIA GeForce RTX 4060 8GB</td>
+              </tr>
+              <tr>
+                <td>Màn hình hiển thị</td>
+                <td id="modalScreen">15.6 inch FHD 144Hz</td>
+              </tr>
+              <tr>
+                <td>Màu sắc</td>
+                <td id="modalColor">Đen Graphite</td>
+              </tr>
+              <tr>
+                <td>Tình trạng kho</td>
+                <td id="modalStock" style="color: #15803d; font-weight: 700;">Còn hàng</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <!-- Action & Quantity -->
+          <div class="modal-actions-row">
+            <div class="quantity-control">
+              <button class="quantity-btn" onclick="let el=document.getElementById('modalQtyInput'); if(el.value>1) el.value--">-</button>
+              <input type="number" class="quantity-input" id="modalQtyInput" value="1" min="1" max="20" readonly>
+              <button class="quantity-btn" onclick="document.getElementById('modalQtyInput').value++">+</button>
+            </div>
+
+            <button class="btn-modal-add" id="modalAddToCartBtn">
+              <svg style="width: 18px; height: 18px;" fill="currentColor" viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>
+              THÊM VÀO GIỎ HÀNG
+            </button>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+
+  <!-- ==========================================================================
+       CART SLIDE-IN DRAWER
+       ========================================================================== -->
+  <div class="cart-drawer-overlay" id="cartDrawerOverlay" onclick="closeCartDrawer()"></div>
+  <div class="cart-drawer" id="cartDrawer">
+    
+    <div class="cart-drawer-header">
+      <h3>
+        <svg style="width: 22px; height: 22px; color: var(--primary-red);" fill="currentColor" viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>
+        Giỏ Hàng Của Bạn
+      </h3>
+      <button class="modal-close-btn" onclick="closeCartDrawer()">✕</button>
+    </div>
+
+    <div class="cart-drawer-items" id="cartDrawerItems">
+      <!-- Items dynamically populated -->
+    </div>
+
+    <div class="cart-drawer-footer">
+      <div class="cart-total-row">
+        <span class="cart-total-label">Tổng cộng:</span>
+        <span class="cart-total-amount" id="cartTotalAmount">0 VNĐ</span>
+      </div>
+      <button class="btn-checkout" onclick="alert('Cảm ơn bạn! Đơn hàng đã được ghi nhận vào hệ thống.')">
+        TIẾN HÀNH ĐẶT HÀNG
+      </button>
+    </div>
+
+  </div>
+
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- ==========================================================================
+       FOOTER
+       ========================================================================== -->
+  <footer class="main-footer">
+    <div class="container">
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 24px; margin-bottom: 20px;">
+        <div>
+          <h4 style="color: var(--text-main); font-weight: 800; margin-bottom: 12px; font-size: 1rem;">HỆ THỐNG LAPTOP STORE</h4>
+          <p>Chuyên cung cấp Laptop Gaming, Laptop Đồ họa, Laptop Văn phòng, linh kiện máy tính hàng đầu Việt Nam.</p>
+          <p style="margin-top: 8px;"><strong>Hotline:</strong> 088.697.6868 (8:00 - 21:30)</p>
+          <p><strong>Email:</strong> hotro@laptopstore.vn</p>
+        </div>
+        <div>
+          <h4 style="color: var(--text-main); font-weight: 700; margin-bottom: 12px;">CHÍNH SÁCH MUA HÀNG</h4>
+          <p>• Chính sách bảo hành đổi trả</p>
+          <p>• Giao hàng toàn quốc</p>
+          <p>• Hướng dẫn mua hàng trả góp 0%</p>
+          <p>• Chính sách bảo mật thông tin</p>
+        </div>
+        <div>
+          <h4 style="color: var(--text-main); font-weight: 700; margin-bottom: 12px;">KẾT NỐI VỚI CHÚNG TÔI</h4>
+          <p>Facebook Fanpage: Laptop Store VN</p>
+          <p>Youtube: Review Laptop & Công Nghệ</p>
+          <p>TikTok: @laptopstore_official</p>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>© 2026 LaptopStore. All rights reserved. Hệ thống bán lẻ Laptop uy tín chất lượng.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Script for scrolling section horizontally -->
+  <script>
+    function scrollSection(containerId, distance) {
+      const el = document.getElementById(containerId);
+      if (el) {
+        el.scrollBy({ left: distance, behavior: 'smooth' });
+      }
+    }
+  </script>
+
+  <!-- Main JavaScript File -->
+  <script src="../js/app.js"></script>
+
+</body>
+</html>

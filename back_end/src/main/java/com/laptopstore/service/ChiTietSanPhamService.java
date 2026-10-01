@@ -1,5 +1,6 @@
 package com.laptopstore.service;
 
+import com.laptopstore.dto.ChiTietSanPhamCreateRequest;
 import com.laptopstore.entity.ChiTietSanPham;
 import java.util.List;
 
@@ -10,6 +11,7 @@ public interface ChiTietSanPhamService {
     List<ChiTietSanPham> getBySanPham(Integer sanPhamId);
     List<ChiTietSanPham> getByTrangThai(Integer trangThai);
     ChiTietSanPham create(ChiTietSanPham chiTietSanPham);
+    ChiTietSanPham createWithImeis(ChiTietSanPhamCreateRequest request);
     ChiTietSanPham update(Integer id, ChiTietSanPham chiTietSanPham);
     void delete(Integer id);
 }

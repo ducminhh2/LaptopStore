@@ -7,7 +7,7 @@ public interface ChiTietKhuyenMaiService {
     List<ChiTietKhuyenMai> getAll();
     ChiTietKhuyenMai getById(Integer id);
     List<ChiTietKhuyenMai> getByKhuyenMai(Integer khuyenMaiId);
-    List<ChiTietKhuyenMai> getBySanPham(Integer sanPhamId);
+    List<ChiTietKhuyenMai> getByChiTietSanPham(Integer ctspId);
     ChiTietKhuyenMai create(ChiTietKhuyenMai chiTietKhuyenMai);
     void delete(Integer id);
 }

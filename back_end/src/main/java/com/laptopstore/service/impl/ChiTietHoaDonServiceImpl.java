@@ -4,18 +4,17 @@ import com.laptopstore.entity.ChiTietHoaDon;
 import com.laptopstore.exception.ResourceNotFoundException;
 import com.laptopstore.repository.ChiTietHoaDonRepository;
 import com.laptopstore.service.ChiTietHoaDonService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class ChiTietHoaDonServiceImpl implements ChiTietHoaDonService {
 
     private final ChiTietHoaDonRepository chiTietHoaDonRepository;
-
-    public ChiTietHoaDonServiceImpl(ChiTietHoaDonRepository chiTietHoaDonRepository) {
-        this.chiTietHoaDonRepository = chiTietHoaDonRepository;
-    }
+    private final com.laptopstore.service.KhuyenMaiService khuyenMaiService;
 
     @Override
     public List<ChiTietHoaDon> getAll() {
@@ -40,6 +39,13 @@ public class ChiTietHoaDonServiceImpl implements ChiTietHoaDonService {
 
     @Override
     public ChiTietHoaDon create(ChiTietHoaDon chiTietHoaDon) {
+        // Server calculates authoritative snapshot sale price with promotions
+        if (chiTietHoaDon.getChiTietSanPham() != null && chiTietHoaDon.getChiTietSanPham().getId() != null) {
+            com.laptopstore.dto.GiaKhuyenMaiResponse pricing = khuyenMaiService.tinhGiaBanHienTai(chiTietHoaDon.getChiTietSanPham().getId());
+            if (pricing != null && pricing.getGiaBan() != null) {
+                chiTietHoaDon.setGiaTungSanPham(pricing.getGiaBan());
+            }
+        }
         return chiTietHoaDonRepository.save(chiTietHoaDon);
     }
 
@@ -47,10 +53,12 @@ public class ChiTietHoaDonServiceImpl implements ChiTietHoaDonService {
     public ChiTietHoaDon update(Integer id, ChiTietHoaDon chiTietHoaDon) {
         ChiTietHoaDon existing = getById(id);
         existing.setMa(chiTietHoaDon.getMa());
-        existing.setHoaDon(chiTietHoaDon.getHoaDon());
-        existing.setChiTietSanPham(chiTietHoaDon.getChiTietSanPham());
         existing.setSoLuong(chiTietHoaDon.getSoLuong());
         existing.setGiaTungSanPham(chiTietHoaDon.getGiaTungSanPham());
+
+        if (chiTietHoaDon.getHoaDon() != null) existing.setHoaDon(chiTietHoaDon.getHoaDon());
+        if (chiTietHoaDon.getChiTietSanPham() != null) existing.setChiTietSanPham(chiTietHoaDon.getChiTietSanPham());
+
         return chiTietHoaDonRepository.save(existing);
     }
 

@@ -2,6 +2,7 @@ package com.laptopstore.controller;
 
 import com.laptopstore.entity.CardDoHoa;
 import com.laptopstore.service.CardDoHoaService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -10,13 +11,10 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/card-do-hoa")
+@RequiredArgsConstructor
 public class CardDoHoaController {
 
     private final CardDoHoaService cardDoHoaService;
-
-    public CardDoHoaController(CardDoHoaService cardDoHoaService) {
-        this.cardDoHoaService = cardDoHoaService;
-    }
 
     @GetMapping
     public ResponseEntity<List<CardDoHoa>> getAll() {

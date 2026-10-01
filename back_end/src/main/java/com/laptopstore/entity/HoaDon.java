@@ -2,6 +2,7 @@ package com.laptopstore.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -48,29 +49,14 @@ public class HoaDon {
     @JoinColumn(name = "id_nhan_vien")
     private NguoiDung nhanVien;
 
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "id_voucher")
+    private Voucher voucher;
+
+    @Column(name = "tien_giam_voucher", precision = 18, scale = 2)
+    @Builder.Default
+    private BigDecimal tienGiamVoucher = BigDecimal.ZERO;
+
     @Column(name = "mo_ta", columnDefinition = "NVARCHAR(MAX)")
     private String moTa;
-
-    public Integer getId() { return id; }
-    public void setId(Integer id) { this.id = id; }
-    public String getMa() { return ma; }
-    public void setMa(String ma) { this.ma = ma; }
-    public NguoiDung getKhachHang() { return khachHang; }
-    public void setKhachHang(NguoiDung khachHang) { this.khachHang = khachHang; }
-    public String getDiaChi() { return diaChi; }
-    public void setDiaChi(String diaChi) { this.diaChi = diaChi; }
-    public String getDienThoai() { return dienThoai; }
-    public void setDienThoai(String dienThoai) { this.dienThoai = dienThoai; }
-    public LocalDateTime getNgayTao() { return ngayTao; }
-    public void setNgayTao(LocalDateTime ngayTao) { this.ngayTao = ngayTao; }
-    public String getTenNguoiNhan() { return tenNguoiNhan; }
-    public void setTenNguoiNhan(String tenNguoiNhan) { this.tenNguoiNhan = tenNguoiNhan; }
-    public Integer getTrangThai() { return trangThai; }
-    public void setTrangThai(Integer trangThai) { this.trangThai = trangThai; }
-    public ThanhToan getThanhToan() { return thanhToan; }
-    public void setThanhToan(ThanhToan thanhToan) { this.thanhToan = thanhToan; }
-    public NguoiDung getNhanVien() { return nhanVien; }
-    public void setNhanVien(NguoiDung nhanVien) { this.nhanVien = nhanVien; }
-    public String getMoTa() { return moTa; }
-    public void setMoTa(String moTa) { this.moTa = moTa; }
 }

@@ -4,18 +4,16 @@ import com.laptopstore.entity.NguoiDung;
 import com.laptopstore.exception.ResourceNotFoundException;
 import com.laptopstore.repository.NguoiDungRepository;
 import com.laptopstore.service.NguoiDungService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class NguoiDungServiceImpl implements NguoiDungService {
 
     private final NguoiDungRepository nguoiDungRepository;
-
-    public NguoiDungServiceImpl(NguoiDungRepository nguoiDungRepository) {
-        this.nguoiDungRepository = nguoiDungRepository;
-    }
 
     @Override
     public List<NguoiDung> getAll() {
@@ -41,20 +39,25 @@ public class NguoiDungServiceImpl implements NguoiDungService {
 
     @Override
     public NguoiDung create(NguoiDung nguoiDung) {
+        if (nguoiDung.getPassword() != null && !nguoiDung.getPassword().isEmpty()) {
+            nguoiDung.setPassword(com.laptopstore.util.PasswordUtil.hashPassword(nguoiDung.getPassword()));
+        }
         return nguoiDungRepository.save(nguoiDung);
     }
 
     @Override
     public NguoiDung update(Integer id, NguoiDung nguoiDung) {
         NguoiDung existing = getById(id);
-        existing.setMa(nguoiDung.getMa());
         existing.setTen(nguoiDung.getTen());
-        existing.setUsername(nguoiDung.getUsername());
-        existing.setPassword(nguoiDung.getPassword());
+        if (nguoiDung.getPassword() != null && !nguoiDung.getPassword().isEmpty()) {
+            existing.setPassword(com.laptopstore.util.PasswordUtil.hashPassword(nguoiDung.getPassword()));
+        }
         existing.setDiaChi(nguoiDung.getDiaChi());
         existing.setDienThoai(nguoiDung.getDienThoai());
         existing.setEmail(nguoiDung.getEmail());
-        existing.setVaiTro(nguoiDung.getVaiTro());
+        if (nguoiDung.getVaiTro() != null) {
+            existing.setVaiTro(nguoiDung.getVaiTro());
+        }
         return nguoiDungRepository.save(existing);
     }
 

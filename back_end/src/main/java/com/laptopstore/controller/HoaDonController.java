@@ -2,21 +2,20 @@ package com.laptopstore.controller;
 
 import com.laptopstore.entity.HoaDon;
 import com.laptopstore.service.HoaDonService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/hoa-don")
+@RequiredArgsConstructor
 public class HoaDonController {
 
     private final HoaDonService hoaDonService;
-
-    public HoaDonController(HoaDonService hoaDonService) {
-        this.hoaDonService = hoaDonService;
-    }
 
     @GetMapping
     public ResponseEntity<List<HoaDon>> getAll() {
@@ -53,6 +52,11 @@ public class HoaDonController {
         return new ResponseEntity<>(hoaDonService.create(hoaDon), HttpStatus.CREATED);
     }
 
+    @PostMapping("/pos-checkout")
+    public ResponseEntity<HoaDon> posCheckout(@RequestBody com.laptopstore.dto.PosCheckoutRequest request) {
+        return new ResponseEntity<>(hoaDonService.posCheckout(request), HttpStatus.CREATED);
+    }
+
     @PutMapping("/{id}")
     public ResponseEntity<HoaDon> update(@PathVariable Integer id, @RequestBody HoaDon hoaDon) {
         return ResponseEntity.ok(hoaDonService.update(id, hoaDon));
@@ -61,6 +65,48 @@ public class HoaDonController {
     @PatchMapping("/{id}/trang-thai/{trangThai}")
     public ResponseEntity<HoaDon> updateTrangThai(@PathVariable Integer id, @PathVariable Integer trangThai) {
         return ResponseEntity.ok(hoaDonService.updateTrangThai(id, trangThai));
+    }
+
+    @PostMapping("/{id}/xac-nhan")
+    public ResponseEntity<HoaDon> xacNhanDonHang(
+            @PathVariable Integer id,
+            @RequestBody(required = false) com.laptopstore.dto.XacNhanDonHangRequest request,
+            @RequestHeader(value = "X-Staff-Username", required = false) String staffUsernameHeader,
+            @RequestParam(required = false) Integer nhanVienId) {
+        String username = null;
+        if (staffUsernameHeader != null && !staffUsernameHeader.isBlank()) {
+            username = staffUsernameHeader.trim();
+        } else if (request != null && request.getUsername() != null && !request.getUsername().isBlank()) {
+            username = request.getUsername().trim();
+        }
+
+        if (request != null && request.getChiTietImei() != null && !request.getChiTietImei().isEmpty()) {
+            return ResponseEntity.ok(hoaDonService.xacNhanDonHangWithImei(id, request, username, nhanVienId));
+        }
+
+        return ResponseEntity.ok(hoaDonService.xacNhanDonHang(id, nhanVienId));
+    }
+
+    @PostMapping("/{id}/giao-hang")
+    public ResponseEntity<HoaDon> giaoHang(@PathVariable Integer id) {
+        return ResponseEntity.ok(hoaDonService.giaoHang(id));
+    }
+
+    @PostMapping("/{id}/xac-nhan-giao-va-thu-tien")
+    public ResponseEntity<HoaDon> xacNhanGiaoHangVaThuTien(@PathVariable Integer id) {
+        return ResponseEntity.ok(hoaDonService.xacNhanGiaoHangVaThuTien(id));
+    }
+
+    @PostMapping("/{id}/xac-nhan-giao-thanh-cong")
+    public ResponseEntity<HoaDon> xacNhanGiaoHangThanhCong(@PathVariable Integer id) {
+        return ResponseEntity.ok(hoaDonService.xacNhanGiaoHangThanhCong(id));
+    }
+
+    @PostMapping("/{id}/huy")
+    public ResponseEntity<HoaDon> huyHoaDon(
+            @PathVariable Integer id,
+            @RequestParam(required = false, defaultValue = "Khách hàng / Nhân viên yêu cầu hủy đơn") String lyDo) {
+        return ResponseEntity.ok(hoaDonService.huyHoaDon(id, lyDo));
     }
 
     @DeleteMapping("/{id}")

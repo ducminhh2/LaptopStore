@@ -4,18 +4,19 @@ import com.laptopstore.entity.ChiTietGioHang;
 import com.laptopstore.exception.ResourceNotFoundException;
 import com.laptopstore.repository.ChiTietGioHangRepository;
 import com.laptopstore.service.ChiTietGioHangService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class ChiTietGioHangServiceImpl implements ChiTietGioHangService {
 
     private final ChiTietGioHangRepository chiTietGioHangRepository;
-
-    public ChiTietGioHangServiceImpl(ChiTietGioHangRepository chiTietGioHangRepository) {
-        this.chiTietGioHangRepository = chiTietGioHangRepository;
-    }
+    private final com.laptopstore.service.KhuyenMaiService khuyenMaiService;
 
     @Override
     public List<ChiTietGioHang> getAll() {
@@ -35,6 +36,26 @@ public class ChiTietGioHangServiceImpl implements ChiTietGioHangService {
 
     @Override
     public ChiTietGioHang addToCart(ChiTietGioHang chiTietGioHang) {
+        // Server calculates authoritative price after promotion
+        if (chiTietGioHang.getChiTietSanPham() != null && chiTietGioHang.getChiTietSanPham().getId() != null) {
+            com.laptopstore.dto.GiaKhuyenMaiResponse pricing = khuyenMaiService.tinhGiaBanHienTai(chiTietGioHang.getChiTietSanPham().getId());
+            if (pricing != null && pricing.getGiaBan() != null) {
+                chiTietGioHang.setGiaTungSanPham(pricing.getGiaBan());
+            }
+        }
+
+        if (chiTietGioHang.getGioHang() != null && chiTietGioHang.getChiTietSanPham() != null) {
+            Optional<ChiTietGioHang> existing = chiTietGioHangRepository.findByGioHangIdAndChiTietSanPhamId(
+                    chiTietGioHang.getGioHang().getId(), chiTietGioHang.getChiTietSanPham().getId());
+            if (existing.isPresent()) {
+                ChiTietGioHang item = existing.get();
+                item.setSoLuong(item.getSoLuong() + chiTietGioHang.getSoLuong());
+                if (chiTietGioHang.getGiaTungSanPham() != null) {
+                    item.setGiaTungSanPham(chiTietGioHang.getGiaTungSanPham());
+                }
+                return chiTietGioHangRepository.save(item);
+            }
+        }
         return chiTietGioHangRepository.save(chiTietGioHang);
     }
 
@@ -52,8 +73,8 @@ public class ChiTietGioHangServiceImpl implements ChiTietGioHangService {
     }
 
     @Override
+    @Transactional
     public void clearCart(Integer gioHangId) {
-        List<ChiTietGioHang> items = getByGioHang(gioHangId);
-        chiTietGioHangRepository.deleteAll(items);
+        chiTietGioHangRepository.deleteByGioHangId(gioHangId);
     }
 }

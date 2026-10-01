@@ -20,13 +20,6 @@ public class ChiTietHoaDonImei {
     private ChiTietHoaDon chiTietHoaDon;
 
     @OneToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "id_imei", nullable = false, unique = true)
+    @JoinColumn(name = "id_imei", unique = true, nullable = false)
     private Imei imei;
-
-    public Integer getId() { return id; }
-    public void setId(Integer id) { this.id = id; }
-    public ChiTietHoaDon getChiTietHoaDon() { return chiTietHoaDon; }
-    public void setChiTietHoaDon(ChiTietHoaDon chiTietHoaDon) { this.chiTietHoaDon = chiTietHoaDon; }
-    public Imei getImei() { return imei; }
-    public void setImei(Imei imei) { this.imei = imei; }
 }

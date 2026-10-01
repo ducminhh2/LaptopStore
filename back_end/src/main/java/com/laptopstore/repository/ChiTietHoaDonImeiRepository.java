@@ -10,5 +10,6 @@ import java.util.Optional;
 @Repository
 public interface ChiTietHoaDonImeiRepository extends JpaRepository<ChiTietHoaDonImei, Integer> {
     List<ChiTietHoaDonImei> findByChiTietHoaDonId(Integer chiTietHoaDonId);
+    List<ChiTietHoaDonImei> findByChiTietHoaDonHoaDonId(Integer hoaDonId);
     Optional<ChiTietHoaDonImei> findByImeiId(Integer imeiId);
 }

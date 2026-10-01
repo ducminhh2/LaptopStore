@@ -26,18 +26,10 @@ public class ThanhToan {
     @Column(name = "so_tien", nullable = false, precision = 18, scale = 2)
     private BigDecimal soTien;
 
-    @Column(name = "ngay_thanh_toan")
+    @Column(name = "trang_thai")
     @Builder.Default
-    private LocalDateTime ngayThanhToan = LocalDateTime.now();
+    private Integer trangThai = 0; // 0: Chưa thanh toán, 1: Đã thanh toán
 
-    public Integer getId() { return id; }
-    public void setId(Integer id) { this.id = id; }
-    public String getMa() { return ma; }
-    public void setMa(String ma) { this.ma = ma; }
-    public String getPhuongThuc() { return phuongThuc; }
-    public void setPhuongThuc(String phuongThuc) { this.phuongThuc = phuongThuc; }
-    public BigDecimal getSoTien() { return soTien; }
-    public void setSoTien(BigDecimal soTien) { this.soTien = soTien; }
-    public LocalDateTime getNgayThanhToan() { return ngayThanhToan; }
-    public void setNgayThanhToan(LocalDateTime ngayThanhToan) { this.ngayThanhToan = ngayThanhToan; }
+    @Column(name = "ngay_thanh_toan")
+    private LocalDateTime ngayThanhToan;
 }

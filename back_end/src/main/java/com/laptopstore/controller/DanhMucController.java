@@ -2,6 +2,7 @@ package com.laptopstore.controller;
 
 import com.laptopstore.entity.DanhMuc;
 import com.laptopstore.service.DanhMucService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -10,13 +11,10 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/danh-muc")
+@RequiredArgsConstructor
 public class DanhMucController {
 
     private final DanhMucService danhMucService;
-
-    public DanhMucController(DanhMucService danhMucService) {
-        this.danhMucService = danhMucService;
-    }
 
     @GetMapping
     public ResponseEntity<List<DanhMuc>> getAll() {

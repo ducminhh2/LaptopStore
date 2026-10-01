@@ -2,6 +2,7 @@ package com.laptopstore.controller;
 
 import com.laptopstore.entity.OCung;
 import com.laptopstore.service.OCungService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -10,13 +11,10 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/o-cung")
+@RequiredArgsConstructor
 public class OCungController {
 
     private final OCungService oCungService;
-
-    public OCungController(OCungService oCungService) {
-        this.oCungService = oCungService;
-    }
 
     @GetMapping
     public ResponseEntity<List<OCung>> getAll() {

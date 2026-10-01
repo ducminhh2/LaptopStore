@@ -2,6 +2,7 @@ package com.laptopstore.controller;
 
 import com.laptopstore.entity.ChiTietHoaDonImei;
 import com.laptopstore.service.ChiTietHoaDonImeiService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -10,13 +11,10 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/chi-tiet-hoa-don-imei")
+@RequiredArgsConstructor
 public class ChiTietHoaDonImeiController {
 
     private final ChiTietHoaDonImeiService chiTietHoaDonImeiService;
-
-    public ChiTietHoaDonImeiController(ChiTietHoaDonImeiService chiTietHoaDonImeiService) {
-        this.chiTietHoaDonImeiService = chiTietHoaDonImeiService;
-    }
 
     @GetMapping
     public ResponseEntity<List<ChiTietHoaDonImei>> getAll() {
@@ -28,9 +26,14 @@ public class ChiTietHoaDonImeiController {
         return ResponseEntity.ok(chiTietHoaDonImeiService.getById(id));
     }
 
-    @GetMapping("/chi-tiet-hoa-don/{chiTietHoaDonId}")
-    public ResponseEntity<List<ChiTietHoaDonImei>> getByChiTietHoaDon(@PathVariable Integer chiTietHoaDonId) {
-        return ResponseEntity.ok(chiTietHoaDonImeiService.getByChiTietHoaDon(chiTietHoaDonId));
+    @GetMapping("/chi-tiet-hoa-don/{cthdId}")
+    public ResponseEntity<List<ChiTietHoaDonImei>> getByChiTietHoaDon(@PathVariable Integer cthdId) {
+        return ResponseEntity.ok(chiTietHoaDonImeiService.getByChiTietHoaDon(cthdId));
+    }
+
+    @GetMapping("/imei/{imeiId}")
+    public ResponseEntity<ChiTietHoaDonImei> getByImei(@PathVariable Integer imeiId) {
+        return ResponseEntity.ok(chiTietHoaDonImeiService.getByImei(imeiId));
     }
 
     @PostMapping

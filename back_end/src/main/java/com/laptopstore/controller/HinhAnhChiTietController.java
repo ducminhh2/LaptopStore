@@ -2,6 +2,7 @@ package com.laptopstore.controller;
 
 import com.laptopstore.entity.HinhAnhChiTiet;
 import com.laptopstore.service.HinhAnhChiTietService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -10,13 +11,10 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/hinh-anh-chi-tiet")
+@RequiredArgsConstructor
 public class HinhAnhChiTietController {
 
     private final HinhAnhChiTietService hinhAnhChiTietService;
-
-    public HinhAnhChiTietController(HinhAnhChiTietService hinhAnhChiTietService) {
-        this.hinhAnhChiTietService = hinhAnhChiTietService;
-    }
 
     @GetMapping
     public ResponseEntity<List<HinhAnhChiTiet>> getAll() {
@@ -36,6 +34,11 @@ public class HinhAnhChiTietController {
     @PostMapping
     public ResponseEntity<HinhAnhChiTiet> create(@RequestBody HinhAnhChiTiet hinhAnhChiTiet) {
         return new ResponseEntity<>(hinhAnhChiTietService.create(hinhAnhChiTiet), HttpStatus.CREATED);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<HinhAnhChiTiet> update(@PathVariable Integer id, @RequestBody HinhAnhChiTiet hinhAnhChiTiet) {
+        return ResponseEntity.ok(hinhAnhChiTietService.update(id, hinhAnhChiTiet));
     }
 
     @DeleteMapping("/{id}")
