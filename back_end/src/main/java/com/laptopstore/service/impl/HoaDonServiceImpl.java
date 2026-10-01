@@ -119,11 +119,8 @@ public class HoaDonServiceImpl implements HoaDonService {
 
         if (targetStatus == 3) {
             ThanhToan tt = existing.getThanhToan();
-            boolean isCODChuaThanhToan = tt != null 
-                    && (tt.getTrangThai() == null || tt.getTrangThai() == 0)
-                    && (tt.getPhuongThuc() != null && tt.getPhuongThuc().toUpperCase().contains("COD"));
-            
-            if (isCODChuaThanhToan) {
+            boolean isChuaThanhToan = (tt == null || tt.getTrangThai() == null || tt.getTrangThai() == 0);
+            if (isChuaThanhToan) {
                 return xacNhanGiaoHangVaThuTien(id);
             } else {
                 return xacNhanGiaoHangThanhCong(id);
@@ -312,7 +309,7 @@ public class HoaDonServiceImpl implements HoaDonService {
     }
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public HoaDon xacNhanGiaoHangVaThuTien(Integer id) {
         HoaDon existing = getById(id);
         int currentStatus = existing.getTrangThai() != null ? existing.getTrangThai() : 0;
@@ -320,16 +317,21 @@ public class HoaDonServiceImpl implements HoaDonService {
             throw new IllegalStateException("Chỉ có thể xác nhận đã giao & thu tiền khi đơn ở trạng thái 'Đang giao hàng' (2). Trạng thái hiện tại: " + currentStatus);
         }
 
+        ThanhToan tt = existing.getThanhToan();
+        if (tt == null) {
+            throw new IllegalStateException("Hóa đơn không có thông tin thanh toán.");
+        }
+        if (tt.getTrangThai() != null && tt.getTrangThai() == 1) {
+            throw new IllegalStateException("Đơn hàng này đã được thanh toán trước đó. Không thể thực hiện thu tiền lần 2.");
+        }
+
         // 1. Cập nhật hóa đơn sang Hoàn thành (3)
         existing.setTrangThai(3);
 
         // 2. Cập nhật thanh toán sang Đã thanh toán (1) và ngayThanhToan = now
-        ThanhToan tt = existing.getThanhToan();
-        if (tt != null) {
-            tt.setTrangThai(1); // 1 = Đã thanh toán
-            tt.setNgayThanhToan(LocalDateTime.now());
-            thanhToanRepository.save(tt);
-        }
+        tt.setTrangThai(1); // 1 = Đã thanh toán
+        tt.setNgayThanhToan(LocalDateTime.now());
+        thanhToanRepository.save(tt);
 
         // 3. Cập nhật toàn bộ IMEI thuộc hóa đơn sang 1 = Đã bán
         updateInvoiceImeisStatus(id, 1);
@@ -338,7 +340,7 @@ public class HoaDonServiceImpl implements HoaDonService {
     }
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public HoaDon xacNhanGiaoHangThanhCong(Integer id) {
         HoaDon existing = getById(id);
         int currentStatus = existing.getTrangThai() != null ? existing.getTrangThai() : 0;
@@ -346,18 +348,15 @@ public class HoaDonServiceImpl implements HoaDonService {
             throw new IllegalStateException("Chỉ có thể xác nhận giao hàng thành công khi đơn ở trạng thái 'Đang giao hàng' (2). Trạng thái hiện tại: " + currentStatus);
         }
 
+        ThanhToan tt = existing.getThanhToan();
+        if (tt == null || tt.getTrangThai() == null || tt.getTrangThai() == 0) {
+            throw new IllegalStateException("Đơn hàng chưa được thanh toán. Vui lòng sử dụng chức năng 'Xác Nhận Đã Giao & Thu Tiền'.");
+        }
+
         // 1. Cập nhật hóa đơn sang Hoàn thành (3)
         existing.setTrangThai(3);
 
-        // 2. KHÔNG thay đổi thanhToan.trangThai và KHÔNG cập nhật lại ngayThanhToan (giữ nguyên thời gian thanh toán trước đó)
-        ThanhToan tt = existing.getThanhToan();
-        if (tt != null && (tt.getTrangThai() == null || tt.getTrangThai() == 0)) {
-            tt.setTrangThai(1);
-            if (tt.getNgayThanhToan() == null) {
-                tt.setNgayThanhToan(LocalDateTime.now());
-            }
-            thanhToanRepository.save(tt);
-        }
+        // 2. ĐÃ THANH TOÁN TRƯỚC: TUYỆT ĐỐI KHÔNG thay đổi thanhToan.trangThai và KHÔNG cập nhật lại ngayThanhToan (giữ nguyên thời gian thanh toán trước đó)
 
         // 3. Cập nhật toàn bộ IMEI thuộc hóa đơn sang 1 = Đã bán
         updateInvoiceImeisStatus(id, 1);
@@ -684,7 +683,10 @@ public class HoaDonServiceImpl implements HoaDonService {
 
         // 2. Nếu là mua nhận tại quầy (không phải giao hàng tận nơi):
         // Hoàn thành ngay hóa đơn (1 -> 3) và cập nhật toàn bộ IMEI sang 1 (Đã bán)
-        boolean isGiaoHang = existing.getMoTa() != null && existing.getMoTa().contains("Giao hàng tận nơi");
+        // Nếu là giao hàng tận nơi: Đơn hàng vẫn giữ trạng thái 1 (Đã xác nhận), IMEI giữ trạng thái 0 (chờ giao hàng)
+        boolean isGiaoHang = (existing.getMoTa() != null && existing.getMoTa().contains("Giao hàng tận nơi"))
+                || (!"Tại quầy Store".equalsIgnoreCase(existing.getDiaChi()) 
+                    && (existing.getMoTa() == null || !existing.getMoTa().contains("Nhận tại quầy")));
         if (!isGiaoHang) {
             existing.setTrangThai(3); // 3 = Hoàn thành
             updateInvoiceImeisStatus(id, 1); // 1 = Đã bán

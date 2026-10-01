@@ -2122,7 +2122,8 @@ function renderInvoiceDetailActionButtons(inv) {
   }
   // 2. Trạng thái: Đã xác nhận (1)
   else if (currentStatus === 1) {
-    const isAtStore = (inv.diaChi === 'Tại quầy Store' || (inv.moTa && inv.moTa.includes('Nhận tại quầy')));
+    const isAtStore = (inv.diaChi === 'Tại quầy Store' || (inv.moTa && inv.moTa.includes('Nhận tại quầy')))
+                      && !(inv.moTa && inv.moTa.includes('Giao hàng tận nơi'));
     if (isAtStore) {
       actionBtnsHtml += `
         <button class="btn-admin btn-danger btn-outline" onclick="proceedOrderAction(${inv.id}, 'huy')" type="button">
@@ -2137,6 +2138,7 @@ function renderInvoiceDetailActionButtons(inv) {
         `;
       }
     } else {
+      // CASE A: Đã xác nhận (1) + Giao tận nơi
       actionBtnsHtml += `
         <button class="btn-admin btn-danger btn-outline" onclick="proceedOrderAction(${inv.id}, 'huy')" type="button">
           Hủy Đơn
@@ -2158,24 +2160,21 @@ function renderInvoiceDetailActionButtons(inv) {
   }
   // 3. Trạng thái: Đang giao hàng (2)
   else if (currentStatus === 2) {
-    if (isCod && !isPaid) {
-      // Trường hợp COD & Chưa thanh toán: Nút [Xác nhận đã giao & thu tiền (COD)]
+    if (!isPaid) {
+      // CASE B: Đang giao hàng (2) + Chưa thanh toán (0)
       actionBtnsHtml += `
         <button class="btn-admin btn-danger btn-outline" onclick="proceedOrderAction(${inv.id}, 'huy')" type="button">
           Hủy Đơn
         </button>
-        <button class="btn-admin btn-primary" onclick="openConfirmCodModalForCurrentInvoice()" type="button" style="background:#2563eb; font-weight:800; display:inline-flex; align-items:center; gap:6px; box-shadow:0 2px 6px rgba(37,99,235,0.3);">
-          <span>&#128722; Xác nhận đã giao & thu tiền (COD)</span>
+        <button class="btn-admin btn-primary" onclick="openConfirmCodModalForCurrentInvoice()" type="button" style="background:#2563eb; border-color:#2563eb; font-weight:800; display:inline-flex; align-items:center; gap:6px; box-shadow:0 2px 6px rgba(37,99,235,0.3);">
+          <span>&#128176; Xác Nhận Đã Giao & Thu Tiền</span>
         </button>
       `;
     } else {
-      // Trường hợp Đã thanh toán trước: Nút [Xác nhận giao hàng thành công]
+      // CASE C: Đang giao hàng (2) + Đã thanh toán (1)
       actionBtnsHtml += `
-        <button class="btn-admin btn-danger btn-outline" onclick="proceedOrderAction(${inv.id}, 'huy')" type="button">
-          Hủy Đơn
-        </button>
         <button class="btn-admin btn-primary" onclick="proceedOrderAction(${inv.id}, 'xac-nhan-giao-thanh-cong')" type="button" style="background:#16a34a; border-color:#16a34a; font-weight:800; display:inline-flex; align-items:center; gap:6px; box-shadow:0 2px 6px rgba(22,163,74,0.3);">
-          <span>&#10003; Xác nhận giao hàng thành công</span>
+          <span>&#10003; Xác Nhận Giao Hàng Thành Công</span>
         </button>
       `;
     }
@@ -2312,8 +2311,11 @@ window.openConfirmCodModalForCurrentInvoice = function() {
   const customerName = inv.tenNguoiNhan || inv.khachHang?.ten || 'Khách lẻ tại quầy';
   const phone = inv.dienThoai || inv.khachHang?.dienThoai || '';
   document.getElementById('codModalKhach').textContent = `${customerName} (${phone})`;
+
+  const pmEl = document.getElementById('codModalPhuongThuc');
+  if (pmEl) pmEl.textContent = inv.thanhToan?.phuongThuc || 'TIEN_MAT';
   
-  const totalAmount = inv.thanhToan?.soTien || 45980000;
+  const totalAmount = inv.thanhToan?.soTien || 0;
   const formattedTotal = formatCurrency(totalAmount);
   document.getElementById('codModalTotal').textContent = formattedTotal;
   document.getElementById('codModalTotalText').textContent = formattedTotal;
