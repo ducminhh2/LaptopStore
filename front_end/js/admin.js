@@ -1227,7 +1227,6 @@ window.submitPosCheckout = async function(isCompleted = true) {
     console.error('Error in POS checkout:', err);
     showToast('Lỗi khi lưu hóa đơn: ' + err.message, 'error');
   } finally {
-  } finally {
     const btn = document.getElementById('btnPosCheckout');
     if (btn) {
       btn.disabled = false;
