@@ -102,6 +102,13 @@ public class HoaDonController {
         return ResponseEntity.ok(hoaDonService.xacNhanGiaoHangThanhCong(id));
     }
 
+    @PostMapping("/{id}/thanh-toan-tai-quay")
+    public ResponseEntity<HoaDon> thanhToanTaiQuay(
+            @PathVariable Integer id,
+            @RequestHeader(value = "X-Staff-Username", required = false) String staffUsername) {
+        return ResponseEntity.ok(hoaDonService.thanhToanTaiQuay(id, staffUsername));
+    }
+
     @PostMapping("/{id}/huy")
     public ResponseEntity<HoaDon> huyHoaDon(
             @PathVariable Integer id,

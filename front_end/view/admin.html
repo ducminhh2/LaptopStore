@@ -267,10 +267,11 @@
                       <thead>
                         <tr>
                           <th style="width: 40px; text-align: center;">#</th>
-                          <th style="min-width: 240px;">Sản phẩm Laptop</th>
-                          <th style="width: 130px; text-align: right;">Đơn giá</th>
-                          <th style="width: 120px; text-align: center;">Số lượng</th>
-                          <th style="width: 140px; text-align: right;">Thành tiền</th>
+                          <th style="min-width: 220px;">Sản phẩm Laptop</th>
+                          <th style="width: 150px; text-align: center;">Phân bổ IMEI</th>
+                          <th style="width: 120px; text-align: right;">Đơn giá</th>
+                          <th style="width: 110px; text-align: center;">Số lượng</th>
+                          <th style="width: 130px; text-align: right;">Thành tiền</th>
                           <th style="width: 50px; text-align: center;">Xóa</th>
                         </tr>
                       </thead>
@@ -329,10 +330,27 @@
                 </div>
               </div>
 
-              <!-- Customer Address -->
+              <!-- Hình Thức Nhận Hàng -->
               <div class="pos-form-group">
+                <label class="pos-form-label">Hình Thức Nhận Hàng</label>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                  <label
+                    style="display:flex; align-items:center; gap:6px; font-size:0.8rem; font-weight:600; cursor:pointer; background:#f8fafc; border:1px solid var(--admin-border); padding:8px 10px; border-radius:var(--radius-sm);">
+                    <input type="radio" name="posDeliveryType" value="TAI_QUAY" checked onchange="onPosDeliveryTypeChange()">
+                    <span>Nhận tại quầy</span>
+                  </label>
+                  <label
+                    style="display:flex; align-items:center; gap:6px; font-size:0.8rem; font-weight:600; cursor:pointer; background:#f8fafc; border:1px solid var(--admin-border); padding:8px 10px; border-radius:var(--radius-sm);">
+                    <input type="radio" name="posDeliveryType" value="GIAO_HANG" onchange="onPosDeliveryTypeChange()">
+                    <span>Giao hàng tận nơi</span>
+                  </label>
+                </div>
+              </div>
+
+              <!-- Customer Address (Chỉ hiển thị khi chọn Giao hàng tận nơi) -->
+              <div class="pos-form-group" id="posDeliveryAddressGroup" style="display: none;">
                 <label class="pos-form-label" for="posCustomerAddress">Địa Chỉ Nhận Hàng</label>
-                <input type="text" class="pos-form-input" id="posCustomerAddress" placeholder="Nhập địa chỉ giao hàng hoặc 'Tại quầy Store'..." value="Tại quầy Store" oninput="onPosAddressChange()">
+                <input type="text" class="pos-form-input" id="posCustomerAddress" placeholder="Nhập địa chỉ nhận hàng của khách..." value="" oninput="onPosAddressChange()">
               </div>
 
               <!-- Payment Method -->
@@ -403,9 +421,9 @@
                 <button class="btn-pos-pay" id="btnPosCheckout" onclick="submitPosCheckout(true)" type="button">
                   THANH TOÁN & IN HÓA ĐƠN
                 </button>
-                <button class="btn-admin btn-outline" style="justify-content:center; width:100%; padding:10px;"
-                  onclick="submitPosCheckout(false)" type="button">
-                  Lưu Hóa Đơn Chờ (Chưa TT)
+                <button class="btn-admin btn-outline" style="justify-content:center; width:100%; padding:10px; font-weight:700;"
+                  id="btnPosHoldOrder" onclick="submitPosCheckout(false)" type="button">
+                  Xác Nhận Hóa Đơn (Chưa TT)
                 </button>
               </div>
             </div>
@@ -1382,6 +1400,67 @@
         <button class="btn-admin btn-primary" id="btnSubmitAcceptOrder" onclick="executeConfirmAcceptOrder()"
           type="button" disabled style="font-weight: 700; opacity: 0.5; cursor: not-allowed;">
           Xác nhận đơn hàng
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================================
+       MODAL: CHỌN IMEI CHO SẢN PHẨM TẠI QUẦY (POS)
+       ====================================================================== -->
+  <div class="admin-modal-overlay" id="posImeiPickerModal" style="z-index: 2250;">
+    <div class="admin-modal-container"
+      style="max-width: 580px; max-height: 90vh; display: flex; flex-direction: column;">
+      <div class="admin-modal-header" style="border-bottom: 1px solid var(--admin-border); padding: 14px 18px;">
+        <div class="admin-modal-title"
+          style="font-size: 1.05rem; font-weight: 800; color: #1e293b; display: flex; align-items: center; gap: 8px;">
+          <span>CHỌN IMEI</span>
+          <span id="posImeiModalCtspMa" style="color: #2563eb; font-size: 0.9rem;">CTSP001</span>
+        </div>
+        <button class="admin-modal-close" onclick="closePosImeiPickerModal()" type="button">&times;</button>
+      </div>
+
+      <div style="padding: 16px 20px; overflow-y: auto; flex: 1;">
+        <!-- Product info & Required count -->
+        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px 14px; margin-bottom: 14px;">
+          <div id="posImeiModalProdName" style="font-weight: 800; font-size: 1rem; color: #0f172a; margin-bottom: 4px;">Tên sản phẩm</div>
+          <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; color: #64748b;">
+            <span>Số lượng cần chọn: <strong id="posImeiModalRequiredQty" style="color: #dc2626; font-size: 0.95rem;">1</strong></span>
+            <span id="posImeiModalBadge" class="badge-status badge-pay-unpaid" style="font-size: 0.8rem; font-weight: 700; padding: 4px 10px;">
+              Đã chọn: 0/1
+            </span>
+          </div>
+        </div>
+
+        <!-- Search input & available count -->
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px;">
+          <div style="position: relative; flex: 1;">
+            <input type="text" id="posImeiSearchInput" placeholder="Tìm kiếm mã IMEI..." oninput="onPosImeiSearch(this.value)"
+              style="width: 100%; padding: 7px 10px 7px 32px; font-size: 0.84rem; border: 1px solid #cbd5e1; border-radius: 6px; outline: none; background: #fff;">
+            <svg style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); width: 14px; height: 14px; color: #94a3b8; pointer-events: none;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+          </div>
+          <div id="posImeiAvailCount" style="font-size: 0.82rem; color: #475569; font-weight: 600; white-space: nowrap;">
+            0 IMEI khả dụng
+          </div>
+        </div>
+
+        <!-- Container danh sách IMEI có scroll độc lập -->
+        <div id="posImeiListContainer" class="custom-imei-scroll"
+          style="max-height: 240px; min-height: 120px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 8px; background: #f8fafc; padding: 12px;">
+        </div>
+      </div>
+
+      <div class="admin-modal-footer"
+        style="padding: 12px 18px; border-top: 1px solid var(--admin-border); display: flex; justify-content: flex-end; gap: 10px;">
+        <button class="btn-admin btn-outline" onclick="closePosImeiPickerModal()" type="button" style="font-weight: 600;">
+          Hủy
+        </button>
+        <button class="btn-admin btn-primary" id="btnPosImeiConfirm" onclick="confirmPosImeiSelection()"
+          type="button" disabled style="font-weight: 700; opacity: 0.5; cursor: not-allowed;">
+          Xác nhận
         </button>
       </div>
     </div>

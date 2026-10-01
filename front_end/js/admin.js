@@ -142,6 +142,7 @@ const state = {
       customerName: 'Khách lẻ tại quầy',
       customerPhone: '0988888888',
       customerAddress: 'Tại quầy Store',
+      deliveryType: 'TAI_QUAY',
       cashierId: 4,
       payMethod: 'TIEN_MAT',
       idVoucher: null,
@@ -625,6 +626,7 @@ window.posCreateNewOrderTab = function() {
     customerName: 'Khách lẻ tại quầy',
     customerPhone: '0988888888',
     customerAddress: 'Tại quầy Store',
+    deliveryType: 'TAI_QUAY',
     cashierId: currentCashierId,
     payMethod: 'TIEN_MAT',
     idVoucher: null,
@@ -683,6 +685,10 @@ function renderPosCart() {
 
     order.items.forEach((item, idx) => {
       const lineTotal = item.price * item.qty;
+      const selectedImeis = item.selectedImeis || [];
+      const isFulfilled = (selectedImeis.length === item.qty);
+      const imeiSummary = selectedImeis.map(im => im.soImei).join(', ');
+
       const tr = document.createElement('tr');
       tr.className = 'pos-product-item-row';
       tr.innerHTML = `
@@ -694,6 +700,19 @@ function renderPosCart() {
               <div style="font-weight:700; color:var(--admin-text-main); font-size:0.88rem;">${item.name}</div>
               <div style="font-size:0.75rem; color:var(--admin-text-muted); margin-top:2px;">${item.specs || ''}</div>
             </div>
+          </div>
+        </td>
+        <td style="text-align:center;">
+          <div style="display:flex; flex-direction:column; align-items:center; gap:4px;">
+            <span class="badge-status ${isFulfilled ? 'badge-pay-paid' : 'badge-pay-unpaid'}" style="font-size:0.75rem; font-weight:700;">
+              IMEI: ${selectedImeis.length}/${item.qty} ${isFulfilled ? '&#10003;' : ''}
+            </span>
+            <button class="btn-admin btn-sm ${isFulfilled ? 'btn-outline' : 'btn-primary'}" 
+                    style="font-size:11px; padding:2px 8px; font-weight:700;" 
+                    onclick="openPosImeiPicker(${idx})" type="button">
+              ${isFulfilled ? 'Đổi IMEI' : 'Chọn IMEI'}
+            </button>
+            ${isFulfilled ? `<span style="font-family:monospace; font-size:10px; color:#1e40af; max-width:130px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${imeiSummary}">${imeiSummary}</span>` : ''}
           </div>
         </td>
         <td style="text-align:right; font-weight:700;">${formatCurrency(item.price)}</td>
@@ -729,6 +748,15 @@ function renderPosCart() {
   if (custSelect) custSelect.value = order.customerId || 1;
   if (noteInput) noteInput.value = order.note || '';
 
+  // Synchronize Delivery Type
+  order.deliveryType = order.deliveryType || 'TAI_QUAY';
+  const delRadio = document.querySelector(`input[name="posDeliveryType"][value="${order.deliveryType}"]`);
+  if (delRadio) delRadio.checked = true;
+  const delAddrGroup = document.getElementById('posDeliveryAddressGroup');
+  if (delAddrGroup) {
+    delAddrGroup.style.display = (order.deliveryType === 'GIAO_HANG') ? 'block' : 'none';
+  }
+
   if (!order.payMethod || order.payMethod === 'QUET_THE') {
     order.payMethod = 'TIEN_MAT';
   }
@@ -762,6 +790,11 @@ window.posChangeItemQty = function(ctspId, delta) {
   item.qty += delta;
   if (item.qty <= 0) {
     order.items = order.items.filter(i => i.ctspId !== ctspId);
+  } else {
+    if (!item.selectedImeis) item.selectedImeis = [];
+    if (item.selectedImeis.length > item.qty) {
+      item.selectedImeis = item.selectedImeis.slice(0, item.qty);
+    }
   }
   renderPosOrderTabs();
   renderPosCart();
@@ -800,9 +833,14 @@ window.onPosCustomerChange = function() {
     order.customerId = parseInt(opt.value);
     order.customerName = opt.getAttribute('data-name');
     order.customerPhone = opt.getAttribute('data-phone');
-    order.customerAddress = opt.getAttribute('data-address') || 'Tại quầy Store';
+    const custAddr = opt.getAttribute('data-address');
     if (phoneInput) phoneInput.value = order.customerPhone || '';
-    if (addressInput) addressInput.value = order.customerAddress;
+    if (custAddr && custAddr !== 'Tại quầy') {
+      order.customerAddress = custAddr;
+      if (addressInput && order.deliveryType === 'GIAO_HANG') {
+        addressInput.value = custAddr;
+      }
+    }
   }
 };
 
@@ -811,6 +849,30 @@ window.onPosAddressChange = function() {
   const addressInput = document.getElementById('posCustomerAddress');
   if (order && addressInput) {
     order.customerAddress = addressInput.value.trim() || 'Tại quầy Store';
+  }
+};
+
+window.onPosDeliveryTypeChange = function() {
+  const order = getActivePosOrder();
+  if (!order) return;
+  const rad = document.querySelector('input[name="posDeliveryType"]:checked');
+  order.deliveryType = rad ? rad.value : 'TAI_QUAY';
+
+  const addrGroup = document.getElementById('posDeliveryAddressGroup');
+  const addrInput = document.getElementById('posCustomerAddress');
+  if (addrGroup) {
+    if (order.deliveryType === 'GIAO_HANG') {
+      addrGroup.style.display = 'block';
+      if (!addrInput.value.trim() || addrInput.value.trim() === 'Tại quầy Store') {
+        const custSelect = document.getElementById('posCustomerSelect');
+        const custAddr = custSelect?.options[custSelect.selectedIndex]?.getAttribute('data-address');
+        addrInput.value = (custAddr && custAddr !== 'Tại quầy') ? custAddr : '';
+        order.customerAddress = addrInput.value;
+      }
+    } else {
+      addrGroup.style.display = 'none';
+      order.customerAddress = 'Tại quầy Store';
+    }
   }
 };
 
@@ -1140,7 +1202,8 @@ function posAddProductToActiveOrder(itemData) {
       specs: itemData.specs,
       price: itemData.price,
       image: itemData.image,
-      qty: 1
+      qty: 1,
+      selectedImeis: []
     });
     showToast(`Đã thêm: ${itemData.name}`);
   }
@@ -1157,6 +1220,15 @@ window.submitPosCheckout = async function(isCompleted = true) {
     return;
   }
 
+  // Validate chọn đủ IMEI cho từng sản phẩm
+  for (const item of order.items) {
+    const selected = item.selectedImeis || [];
+    if (selected.length !== item.qty) {
+      showToast(`${item.name} cần chọn đủ ${item.qty} IMEI trước khi xác nhận hóa đơn (hiện chọn: ${selected.length})!`, 'error');
+      return;
+    }
+  }
+
   const custSelect = document.getElementById('posCustomerSelect');
   const phoneInput = document.getElementById('posCustomerPhone');
   const cashierSelect = document.getElementById('posCashierSelect');
@@ -1169,8 +1241,9 @@ window.submitPosCheckout = async function(isCompleted = true) {
   const phone = phoneInput?.value || '0988888888';
   const note = noteInput?.value || '';
   const customerName = custSelect?.options[custSelect.selectedIndex]?.getAttribute('data-name') || 'Khách lẻ tại quầy';
+  const isGiaoHang = (order.deliveryType === 'GIAO_HANG');
   const addressInput = document.getElementById('posCustomerAddress');
-  const customerAddress = addressInput?.value?.trim() || order.customerAddress || custSelect?.options[custSelect.selectedIndex]?.getAttribute('data-address') || 'Tại quầy Store';
+  const customerAddress = isGiaoHang ? (addressInput?.value?.trim() || order.customerAddress || 'Địa chỉ giao hàng') : 'Tại quầy Store';
   order.customerAddress = customerAddress;
 
   const orderCode = 'HD' + Math.floor(Date.now() / 1000);
@@ -1195,12 +1268,17 @@ window.submitPosCheckout = async function(isCompleted = true) {
     customerName: customerName,
     phone: phone,
     address: customerAddress,
+    deliveryType: order.deliveryType || 'TAI_QUAY',
     payMethod: order.payMethod || 'TIEN_MAT',
     customerGiven: given,
     isCompleted: isCompleted,
     note: note,
     idVoucher: order.idVoucher || null,
-    items: order.items.map(i => ({ ctspId: i.ctspId, qty: i.qty }))
+    items: order.items.map(i => ({
+      ctspId: i.ctspId,
+      qty: i.qty,
+      imeiIds: (i.selectedImeis || []).map(im => im.id)
+    }))
   };
 
   try {
@@ -1223,7 +1301,7 @@ window.submitPosCheckout = async function(isCompleted = true) {
     }
 
     const createdHoaDon = await res.json();
-    showToast(`Đã ${isCompleted ? 'thanh toán thành công' : 'lưu hóa đơn chờ'}: ${createdHoaDon.ma}`);
+    showToast(`Đã ${isCompleted ? 'thanh toán thành công' : 'xác nhận hóa đơn'}: ${createdHoaDon.ma}`);
 
     // In hóa đơn nếu thanh toán thành công
     if (isCompleted) {
@@ -1240,6 +1318,7 @@ window.submitPosCheckout = async function(isCompleted = true) {
       order.tienGiamVoucher = 0;
       order.note = '';
       order.customerAddress = 'Tại quầy Store';
+      order.deliveryType = 'TAI_QUAY';
       renderPosOrderTabs();
       renderPosCart();
     }
@@ -1257,6 +1336,196 @@ window.submitPosCheckout = async function(isCompleted = true) {
       btn.textContent = 'THANH TOÁN & IN HÓA ĐƠN';
     }
   }
+};
+
+// ============================================================================
+// POS IMEI PICKER MODAL LOGIC
+// ============================================================================
+let posPickerCurrentItemIndex = null;
+let posPickerAvailableImeis = [];
+let posPickerSelectedIds = new Set();
+let posPickerRequiredQty = 1;
+let posPickerSearchQuery = '';
+
+window.openPosImeiPicker = async function(itemIndex) {
+  const order = getActivePosOrder();
+  if (!order || !order.items[itemIndex]) return;
+
+  const item = order.items[itemIndex];
+  posPickerCurrentItemIndex = itemIndex;
+  posPickerRequiredQty = item.qty;
+  posPickerSearchQuery = '';
+  posPickerSelectedIds = new Set((item.selectedImeis || []).map(im => im.id));
+
+  // Populate header & info
+  const nameEl = document.getElementById('posImeiModalProdName');
+  const ctspEl = document.getElementById('posImeiModalCtspMa');
+  const reqQtyEl = document.getElementById('posImeiModalRequiredQty');
+  const searchInput = document.getElementById('posImeiSearchInput');
+  const container = document.getElementById('posImeiListContainer');
+
+  if (nameEl) nameEl.textContent = item.name;
+  if (ctspEl) ctspEl.textContent = item.specs ? `Cấu hình: ${item.specs}` : `CTSP: ${item.ctspId}`;
+  if (reqQtyEl) reqQtyEl.textContent = item.qty;
+  if (searchInput) searchInput.value = '';
+
+  if (container) {
+    container.innerHTML = '<div style="text-align:center; padding:25px; color:#64748b;">Đang tải danh sách IMEI khả dụng...</div>';
+  }
+
+  const modal = document.getElementById('posImeiPickerModal');
+  if (modal) modal.classList.add('active');
+
+  try {
+    const res = await fetch(`${API_BASE_URL}/imei/chi-tiet-san-pham/${item.ctspId}/kha-dung`);
+    if (res.ok) {
+      let imeis = await res.json();
+
+      // Collect IMEI IDs already chosen in OTHER items of this POS order
+      const otherItemsChosenImeiIds = new Set();
+      order.items.forEach((it, idx) => {
+        if (idx !== itemIndex && it.selectedImeis) {
+          it.selectedImeis.forEach(im => otherItemsChosenImeiIds.add(im.id));
+        }
+      });
+
+      // Filter out IMEIs chosen in other items of the same order
+      posPickerAvailableImeis = imeis.filter(im => !otherItemsChosenImeiIds.has(im.id));
+      renderPosImeiList();
+    } else {
+      if (container) {
+        container.innerHTML = '<div style="color:#dc2626; text-align:center; padding:20px;">Không thể tải danh sách IMEI khả dụng.</div>';
+      }
+    }
+  } catch (err) {
+    console.error('Error fetching available IMEIs for POS:', err);
+    if (container) {
+      container.innerHTML = `<div style="color:#dc2626; text-align:center; padding:20px;">Lỗi kết nối: ${err.message}</div>`;
+    }
+  }
+};
+
+window.closePosImeiPickerModal = function() {
+  const modal = document.getElementById('posImeiPickerModal');
+  if (modal) modal.classList.remove('active');
+  posPickerCurrentItemIndex = null;
+  posPickerAvailableImeis = [];
+  posPickerSelectedIds = new Set();
+};
+
+window.onPosImeiSearch = function(query) {
+  posPickerSearchQuery = query;
+  renderPosImeiList();
+};
+
+function renderPosImeiList() {
+  const container = document.getElementById('posImeiListContainer');
+  const badge = document.getElementById('posImeiModalBadge');
+  const countText = document.getElementById('posImeiAvailCount');
+  const confirmBtn = document.getElementById('btnPosImeiConfirm');
+  if (!container) return;
+
+  const countSelected = posPickerSelectedIds.size;
+  const isFull = (countSelected >= posPickerRequiredQty);
+
+  if (badge) {
+    badge.textContent = `Đã chọn: ${countSelected}/${posPickerRequiredQty} ${isFull ? '✓' : ''}`;
+    badge.className = `badge-status ${isFull ? 'badge-pay-paid' : 'badge-pay-unpaid'}`;
+  }
+
+  if (countText) {
+    countText.innerHTML = `<strong style="color:#2563eb;">${posPickerAvailableImeis.length}</strong> IMEI khả dụng`;
+  }
+
+  if (confirmBtn) {
+    confirmBtn.disabled = !isFull;
+    confirmBtn.style.opacity = isFull ? '1' : '0.5';
+    confirmBtn.style.cursor = isFull ? 'pointer' : 'not-allowed';
+  }
+
+  if (!posPickerAvailableImeis || posPickerAvailableImeis.length === 0) {
+    container.innerHTML = `
+      <div style="color:#dc2626; font-size:0.84rem; font-weight:600; text-align:center; padding:25px 10px; background:#fef2f2; border:1px dashed #fca5a5; border-radius:6px;">
+        Không còn IMEI khả dụng trong kho cho cấu hình này.
+      </div>
+    `;
+    return;
+  }
+
+  const query = (posPickerSearchQuery || '').trim().toLowerCase();
+  const filtered = query
+    ? posPickerAvailableImeis.filter(im => (im.soImei || '').toLowerCase().includes(query))
+    : posPickerAvailableImeis;
+
+  if (filtered.length === 0) {
+    const safeQ = (query || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    container.innerHTML = `
+      <div style="color:#64748b; font-size:0.84rem; font-style:italic; text-align:center; padding:25px 10px;">
+        Không tìm thấy IMEI nào khớp với "<strong>${safeQ}</strong>"
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = `
+    <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(160px, 1fr)); gap:8px;">
+      ${filtered.map(im => {
+        const isChecked = posPickerSelectedIds.has(im.id);
+        const isDisabled = isFull && !isChecked;
+        const bgStyle = isChecked
+          ? 'background:#eff6ff; border-color:#3b82f6; box-shadow:0 0 0 1px #3b82f6;'
+          : (isDisabled
+              ? 'background:#f1f5f9; border-color:#e2e8f0; opacity:0.5; cursor:not-allowed;'
+              : 'background:#fff; border-color:#cbd5e1; cursor:pointer;');
+
+        return `
+          <label style="display:flex; align-items:center; gap:8px; border:1px solid; border-radius:6px; padding:7px 10px; font-size:0.84rem; user-select:none; transition:all 0.15s ease; ${bgStyle}">
+            <input type="checkbox"
+                   value="${im.id}"
+                   ${isChecked ? 'checked' : ''}
+                   ${isDisabled ? 'disabled' : ''}
+                   onchange="onPosImeiToggle(${im.id}, this.checked)"
+                   style="width:16px; height:16px; cursor:${isDisabled ? 'not-allowed' : 'pointer'}; accent-color:#2563eb;">
+            <span style="font-family:monospace; font-weight:700; color:${isChecked ? '#1d4ed8' : (isDisabled ? '#94a3b8' : '#1e293b')};">${im.soImei}</span>
+          </label>
+        `;
+      }).join('')}
+    </div>
+  `;
+}
+
+window.onPosImeiToggle = function(imeiId, isChecked) {
+  if (isChecked) {
+    if (posPickerSelectedIds.size >= posPickerRequiredQty) {
+      showToast(`Chỉ được chọn tối đa ${posPickerRequiredQty} IMEI cho sản phẩm này!`, 'warning');
+      renderPosImeiList();
+      return;
+    }
+    posPickerSelectedIds.add(imeiId);
+  } else {
+    posPickerSelectedIds.delete(imeiId);
+  }
+  renderPosImeiList();
+};
+
+window.confirmPosImeiSelection = function() {
+  const order = getActivePosOrder();
+  if (!order || posPickerCurrentItemIndex === null || !order.items[posPickerCurrentItemIndex]) {
+    closePosImeiPickerModal();
+    return;
+  }
+
+  const item = order.items[posPickerCurrentItemIndex];
+  if (posPickerSelectedIds.size !== item.qty) {
+    showToast(`Vui lòng chọn đúng ${item.qty} IMEI trước khi xác nhận!`, 'warning');
+    return;
+  }
+
+  // Find full objects for selected IDs
+  item.selectedImeis = posPickerAvailableImeis.filter(im => posPickerSelectedIds.has(im.id));
+  showToast(`Đã chọn ${item.selectedImeis.length} IMEI cho ${item.name}!`, 'success');
+  closePosImeiPickerModal();
+  renderPosCart();
 };
 
 // ============================================================================
@@ -1816,14 +2085,39 @@ function renderInvoiceDetailActionButtons(inv) {
   }
   // 2. Trạng thái: Đã xác nhận (1)
   else if (currentStatus === 1) {
-    actionBtnsHtml += `
-      <button class="btn-admin btn-danger btn-outline" onclick="proceedOrderAction(${inv.id}, 'huy')" type="button">
-        Hủy Đơn
-      </button>
-      <button class="btn-admin btn-primary" onclick="proceedOrderAction(${inv.id}, 'giao-hang')" type="button" style="font-weight:700;">
-        Bắt Đầu Giao Hàng
-      </button>
-    `;
+    const isAtStore = (inv.diaChi === 'Tại quầy Store' || (inv.moTa && inv.moTa.includes('Nhận tại quầy')));
+    if (isAtStore) {
+      actionBtnsHtml += `
+        <button class="btn-admin btn-danger btn-outline" onclick="proceedOrderAction(${inv.id}, 'huy')" type="button">
+          Hủy Đơn
+        </button>
+      `;
+      if (!isPaid) {
+        actionBtnsHtml += `
+          <button class="btn-admin btn-primary" onclick="proceedOrderAction(${inv.id}, 'thanh-toan-tai-quay')" type="button" style="background:#16a34a; border-color:#16a34a; font-weight:800; display:inline-flex; align-items:center; gap:6px; box-shadow:0 2px 6px rgba(22,163,74,0.3);">
+            <span>&#128179; Thanh Toán Tại Quầy</span>
+          </button>
+        `;
+      }
+    } else {
+      actionBtnsHtml += `
+        <button class="btn-admin btn-danger btn-outline" onclick="proceedOrderAction(${inv.id}, 'huy')" type="button">
+          Hủy Đơn
+        </button>
+      `;
+      if (!isPaid) {
+        actionBtnsHtml += `
+          <button class="btn-admin btn-primary" onclick="proceedOrderAction(${inv.id}, 'thanh-toan-tai-quay')" type="button" style="background:#16a34a; border-color:#16a34a; font-weight:700; margin-right:4px;">
+            <span>&#128179; Thu Tiền Trước</span>
+          </button>
+        `;
+      }
+      actionBtnsHtml += `
+        <button class="btn-admin btn-primary" onclick="proceedOrderAction(${inv.id}, 'giao-hang')" type="button" style="font-weight:700;">
+          Bắt Đầu Giao Hàng
+        </button>
+      `;
+    }
   }
   // 3. Trạng thái: Đang giao hàng (2)
   else if (currentStatus === 2) {
@@ -1903,6 +2197,29 @@ window.proceedOrderAction = async function(invoiceId, actionType) {
       }
     } catch(e) {
       showToast('Lỗi khi hủy đơn hàng: ' + e.message, 'error');
+      return;
+    }
+  } else if (actionType === 'thanh-toan-tai-quay') {
+    if (!confirm('Xác nhận thanh toán cho đơn hàng này?')) return;
+    try {
+      const currentUser = getLoggedInUser();
+      const staffUsername = (currentUser && currentUser.username) ? currentUser.username : '';
+      const res = await fetch(`${API_BASE_URL}/hoa-don/${invoiceId}/thanh-toan-tai-quay`, {
+        method: 'POST',
+        headers: { 'X-Staff-Username': staffUsername }
+      });
+      if (res.ok) {
+        showToast('Đã ghi nhận thanh toán thành công!', 'success');
+        await loadInvoicesList();
+        await openInvoiceDetail(invoiceId);
+        return;
+      } else {
+        const err = await res.json().catch(() => null);
+        showToast(err?.message || 'Không thể thanh toán đơn hàng này.', 'error');
+        return;
+      }
+    } catch(e) {
+      showToast('Lỗi khi thanh toán: ' + e.message, 'error');
       return;
     }
   } else if (actionType === 'xac-nhan') {

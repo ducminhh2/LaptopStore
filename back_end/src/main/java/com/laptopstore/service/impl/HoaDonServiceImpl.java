@@ -431,6 +431,9 @@ public class HoaDonServiceImpl implements HoaDonService {
         // 2. Tính lại tổng tiền hàng từ CTSP và khuyến mãi thực tế (dữ liệu backend đáng tin cậy)
         BigDecimal tongTienHang = BigDecimal.ZERO;
         List<ChiTietHoaDon> cthdList = new ArrayList<>();
+        Map<Integer, List<Imei>> itemImeiObjectsMap = new HashMap<>();
+        Set<Integer> allSelectedImeiIds = new HashSet<>();
+        List<Imei> imeisToUpdateSold = new ArrayList<>();
 
         for (int i = 0; i < request.getItems().size(); i++) {
             PosItemRequest itemReq = request.getItems().get(i);
@@ -439,6 +442,50 @@ public class HoaDonServiceImpl implements HoaDonService {
             }
             ChiTietSanPham ctsp = chiTietSanPhamRepository.findById(itemReq.getCtspId())
                     .orElseThrow(() -> new ResourceNotFoundException("Chi tiết sản phẩm", "id", itemReq.getCtspId()));
+
+            String spName = (ctsp.getSanPham() != null) ? ctsp.getSanPham().getTenSp() : ("CTSP " + ctsp.getId());
+            int requiredQty = itemReq.getQty();
+
+            // Validate số lượng IMEI cho từng CTSP
+            if (itemReq.getImeiIds() == null || itemReq.getImeiIds().size() != requiredQty) {
+                int currentCount = itemReq.getImeiIds() != null ? itemReq.getImeiIds().size() : 0;
+                throw new IllegalArgumentException(String.format("%s cần chọn đủ %d IMEI trước khi xác nhận hóa đơn (hiện chọn: %d).",
+                        spName, requiredQty, currentCount));
+            }
+
+            // Validate từng IMEI của item
+            List<Imei> currentItemImeis = new ArrayList<>();
+            for (Integer imeiId : itemReq.getImeiIds()) {
+                if (imeiId == null) {
+                    throw new IllegalArgumentException("Mã IMEI không hợp lệ.");
+                }
+                if (!allSelectedImeiIds.add(imeiId)) {
+                    throw new IllegalArgumentException("Phát hiện IMEI (id=" + imeiId + ") bị chọn trùng lặp trong yêu cầu.");
+                }
+
+                Imei imei = imeiRepository.findById(imeiId)
+                        .orElseThrow(() -> new ResourceNotFoundException("IMEI", "id", imeiId));
+
+                // 1) Trạng thái trong kho: trang_thai == 0
+                if (imei.getTrangThai() == null || imei.getTrangThai() != 0) {
+                    throw new IllegalStateException("IMEI '" + imei.getSoImei() + "' không ở trạng thái 'Trong kho' (trang_thai = 0).");
+                }
+
+                // 2) Thuộc đúng CTSP
+                Integer imeiCtspId = imei.getChiTietSanPham() != null ? imei.getChiTietSanPham().getId() : null;
+                if (!ctsp.getId().equals(imeiCtspId)) {
+                    throw new IllegalArgumentException("IMEI '" + imei.getSoImei() + "' không thuộc cấu hình sản phẩm của " + spName);
+                }
+
+                // 3) Chưa phân bổ cho hóa đơn khác (chưa có trong chi_tiet_hoa_don_imei)
+                if (chiTietHoaDonImeiRepository.findByImeiId(imeiId).isPresent()) {
+                    throw new IllegalStateException("IMEI '" + imei.getSoImei() + "' vừa được sử dụng cho hóa đơn khác. Vui lòng chọn IMEI khác.");
+                }
+
+                currentItemImeis.add(imei);
+                imeisToUpdateSold.add(imei);
+            }
+            itemImeiObjectsMap.put(cthdList.size(), currentItemImeis);
 
             // Lấy giá bán thực tế sau KM sản phẩm (snapshot giá sản phẩm)
             com.laptopstore.dto.GiaKhuyenMaiResponse giaKm = khuyenMaiService.tinhGiaBanHienTai(ctsp);
@@ -489,17 +536,53 @@ public class HoaDonServiceImpl implements HoaDonService {
             }
         }
 
-        // 5. Tạo ThanhToan
+        // 5. Xác định hình thức nhận hàng (Tại quầy vs Giao hàng tận nơi)
+        boolean isGiaoHang = "GIAO_HANG".equalsIgnoreCase(request.getDeliveryType());
+        String diaChi = isGiaoHang ? (request.getAddress() != null && !request.getAddress().isBlank() ? request.getAddress().trim() : "Địa chỉ giao hàng") : "Tại quầy Store";
+        String kieuBanMoTa = isGiaoHang ? "Bán tại quầy (Giao hàng tận nơi)" : "Bán tại quầy (Nhận tại quầy)";
+
+        int targetHoaDonStatus;
+        int targetThanhToanStatus;
+        LocalDateTime ngayThanhToan = null;
+        boolean markImeisAsSold = false;
+
+        if (!isGiaoHang) {
+            // Mua nhận tại quầy:
+            if (isCompleted) {
+                targetHoaDonStatus = 3; // Hoàn thành ngay
+                targetThanhToanStatus = 1; // Đã thanh toán
+                ngayThanhToan = LocalDateTime.now();
+                markImeisAsSold = true; // IMEI -> 1 (Đã bán)
+            } else {
+                targetHoaDonStatus = 1; // Đã xác nhận (chưa thanh toán)
+                targetThanhToanStatus = 0; // Chưa thanh toán
+                ngayThanhToan = null;
+                markImeisAsSold = false; // IMEI -> giữ 0 (Trong kho, đã giữ)
+            }
+        } else {
+            // Giao hàng tận nơi: Đơn hàng ở trạng thái 1 (Đã xác nhận), sau này sẽ đi qua bước giao hàng
+            targetHoaDonStatus = 1; // Đã xác nhận
+            markImeisAsSold = false; // IMEI giữ 0 (chờ giao thành công mới đổi thành 1)
+            if (isCompleted) {
+                targetThanhToanStatus = 1; // Đã thanh toán trước
+                ngayThanhToan = LocalDateTime.now();
+            } else {
+                targetThanhToanStatus = 0; // Chưa thanh toán (COD)
+                ngayThanhToan = null;
+            }
+        }
+
+        // 6. Tạo ThanhToan
         ThanhToan tt = ThanhToan.builder()
                 .ma("TT" + Math.floor(System.currentTimeMillis() / 1000) + "_" + (int)(Math.random() * 1000))
                 .phuongThuc(payMethod)
                 .soTien(khachPhaiTra)
-                .trangThai(isCompleted ? 1 : 0)
-                .ngayThanhToan(isCompleted ? LocalDateTime.now() : null)
+                .trangThai(targetThanhToanStatus)
+                .ngayThanhToan(ngayThanhToan)
                 .build();
         tt = thanhToanRepository.save(tt);
 
-        // 6. Tạo HoaDon
+        // 7. Tạo HoaDon
         String maHd = (request.getMa() != null && !request.getMa().isBlank()) ? request.getMa().trim() : "HD" + Math.floor(System.currentTimeMillis() / 1000);
         if (hoaDonRepository.findByMa(maHd).isPresent()) {
             maHd = "HD" + System.currentTimeMillis();
@@ -511,26 +594,80 @@ public class HoaDonServiceImpl implements HoaDonService {
                 .nhanVien(nhanVien)
                 .tenNguoiNhan(request.getCustomerName() != null ? request.getCustomerName() : khachHang.getTen())
                 .dienThoai(request.getPhone() != null ? request.getPhone() : khachHang.getDienThoai())
-                .diaChi(request.getAddress() != null ? request.getAddress() : "Tại quầy Store")
-                .trangThai(isCompleted ? 3 : 0) // 3: Hoàn thành, 0: Chờ xác nhận
+                .diaChi(diaChi)
+                .trangThai(targetHoaDonStatus)
                 .thanhToan(tt)
                 .voucher(voucher)
                 .tienGiamVoucher(tienGiamVoucher)
-                .moTa((request.getNote() != null && !request.getNote().isBlank() ? request.getNote() + " - " : "") + "Bán tại quầy POS (" + payMethod + ")")
+                .moTa((request.getNote() != null && !request.getNote().isBlank() ? request.getNote() + " - " : "") + kieuBanMoTa + " (" + payMethod + ")")
                 .ngayTao(LocalDateTime.now())
                 .build();
 
         HoaDon savedHoaDon = hoaDonRepository.save(hoaDon);
 
-        // 7. Lưu ChiTietHoaDon cho từng sản phẩm
+        // 8. Lưu ChiTietHoaDon và phân bổ ChiTietHoaDonImei
+        List<ChiTietHoaDonImei> toSaveImeiLinks = new ArrayList<>();
         for (int i = 0; i < cthdList.size(); i++) {
             ChiTietHoaDon cthd = cthdList.get(i);
             cthd.setHoaDon(savedHoaDon);
             cthd.setMa(String.format("CTHD_%s_%d", savedHoaDon.getMa(), i + 1));
-            chiTietHoaDonRepository.save(cthd);
+            ChiTietHoaDon savedCthd = chiTietHoaDonRepository.save(cthd);
+
+            List<Imei> itemImeis = itemImeiObjectsMap.get(i);
+            if (itemImeis != null) {
+                for (Imei imei : itemImeis) {
+                    ChiTietHoaDonImei link = ChiTietHoaDonImei.builder()
+                            .chiTietHoaDon(savedCthd)
+                            .imei(imei)
+                            .build();
+                    toSaveImeiLinks.add(link);
+                }
+            }
+        }
+        chiTietHoaDonImeiRepository.saveAll(toSaveImeiLinks);
+
+        // 9. Cập nhật IMEI sang 1 (Đã bán) nếu thanh toán xong ngay tại quầy
+        if (markImeisAsSold) {
+            for (Imei imei : imeisToUpdateSold) {
+                imei.setTrangThai(1); // 1 = Đã bán
+                imeiRepository.save(imei);
+            }
         }
 
         return savedHoaDon;
+    }
+
+    @Override
+    @Transactional
+    public HoaDon thanhToanTaiQuay(Integer id, String username) {
+        HoaDon existing = getById(id);
+        int currentStatus = existing.getTrangThai() != null ? existing.getTrangThai() : 0;
+        if (currentStatus != 1) {
+            throw new IllegalStateException("Chỉ có thể thanh toán cho hóa đơn ở trạng thái 'Đã xác nhận' (1). Trạng thái hiện tại: " + currentStatus);
+        }
+
+        ThanhToan tt = existing.getThanhToan();
+        if (tt == null) {
+            throw new IllegalStateException("Hóa đơn không có thông tin thanh toán.");
+        }
+        if (tt.getTrangThai() != null && tt.getTrangThai() == 1) {
+            throw new IllegalStateException("Hóa đơn này đã được thanh toán trước đó.");
+        }
+
+        // 1. Cập nhật trạng thái thanh toán sang Đã thanh toán
+        tt.setTrangThai(1);
+        tt.setNgayThanhToan(LocalDateTime.now());
+        thanhToanRepository.save(tt);
+
+        // 2. Nếu là mua nhận tại quầy (không phải giao hàng tận nơi):
+        // Hoàn thành ngay hóa đơn (1 -> 3) và cập nhật toàn bộ IMEI sang 1 (Đã bán)
+        boolean isGiaoHang = existing.getMoTa() != null && existing.getMoTa().contains("Giao hàng tận nơi");
+        if (!isGiaoHang) {
+            existing.setTrangThai(3); // 3 = Hoàn thành
+            updateInvoiceImeisStatus(id, 1); // 1 = Đã bán
+        }
+
+        return hoaDonRepository.save(existing);
     }
 
     private String formatMoney(BigDecimal amount) {

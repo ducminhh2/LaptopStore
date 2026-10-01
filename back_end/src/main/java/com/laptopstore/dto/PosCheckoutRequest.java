@@ -23,6 +23,7 @@ public class PosCheckoutRequest {
     private BigDecimal customerGiven; // Tiền khách đưa
     private Boolean isCompleted; // true: Hoàn thành (3), false: Chờ xác nhận (0)
     private String note;
+    private String deliveryType; // TAI_QUAY, GIAO_HANG
     private Integer idVoucher; // Có thể null
     private List<PosItemRequest> items;
 }
