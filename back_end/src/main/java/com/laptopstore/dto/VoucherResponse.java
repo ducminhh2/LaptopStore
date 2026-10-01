@@ -34,4 +34,8 @@ public class VoucherResponse {
     // POS eligibility fields
     private Boolean duDieuKien;           // true if tongTienHang >= giaTriDonToiThieu
     private String lyDoKhongDuDieuKien;   // "Đơn tối thiểu 50.000.000đ - Chưa đủ điều kiện"
+
+    public String getMaVoucher() {
+        return this.ma;
+    }
 }

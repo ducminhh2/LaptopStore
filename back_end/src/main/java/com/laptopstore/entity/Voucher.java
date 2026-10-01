@@ -48,4 +48,8 @@ public class Voucher {
     @Column(name = "trang_thai", nullable = false)
     @Builder.Default
     private Integer trangThai = 1; // 0: Ngừng hoạt động, 1: Hoạt động
+
+    public String getMaVoucher() {
+        return this.ma;
+    }
 }

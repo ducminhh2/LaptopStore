@@ -871,6 +871,7 @@ async function syncPosVouchersAndCalculations() {
         voucherSelect.disabled = false;
         let optionsHtml = '<option value="">-- Không áp dụng Voucher --</option>';
         vouchers.forEach(v => {
+          const code = v.ma || v.maVoucher || ('VC' + v.id);
           let desc = '';
           if (v.loaiGiam === 1) {
             desc = `Giảm ${v.giaTriGiam}%` + (v.giamToiDa ? `, tối đa ${formatCurrency(v.giamToiDa)}` : '');
@@ -881,9 +882,9 @@ async function syncPosVouchersAndCalculations() {
           let minText = v.giaTriDonToiThieu ? `Đơn từ ${formatCurrency(v.giaTriDonToiThieu)}` : '';
 
           if (v.duDieuKien) {
-            optionsHtml += `<option value="${v.id}">${v.maVoucher} - ${desc}${minText ? ` (${minText})` : ''}</option>`;
+            optionsHtml += `<option value="${v.id}">${code} - ${desc}${minText ? ` (${minText})` : ''}</option>`;
           } else {
-            optionsHtml += `<option value="${v.id}" disabled style="color:#94a3b8; background:#f8fafc;">${v.maVoucher} - ${desc} (${minText ? minText + ' - ' : ''}Chưa đủ điều kiện)</option>`;
+            optionsHtml += `<option value="${v.id}" disabled style="color:#94a3b8; background:#f8fafc;">${code} - ${desc} (${minText ? minText + ' - ' : ''}Chưa đủ điều kiện)</option>`;
           }
         });
         voucherSelect.innerHTML = optionsHtml;
@@ -1595,7 +1596,7 @@ window.openInvoiceDetail = async function(invoiceId) {
   if (inv.voucher || (inv.tienGiamVoucher && Number(inv.tienGiamVoucher) > 0)) {
     if (vRow) {
       vRow.style.display = 'flex';
-      if (vCode) vCode.textContent = inv.voucher?.maVoucher || 'Voucher';
+      if (vCode) vCode.textContent = inv.voucher?.ma || inv.voucher?.maVoucher || 'Voucher';
     }
     if (vTienRow) {
       vTienRow.style.display = 'flex';
@@ -2770,7 +2771,7 @@ function printReceiptDirectly(hoaDon, order) {
 
   const subtotal = order.items.reduce((s, i) => s + (i.price * i.qty), 0);
   const discount = (hoaDon.tienGiamVoucher !== undefined && hoaDon.tienGiamVoucher !== null) ? Number(hoaDon.tienGiamVoucher) : (order.tienGiamVoucher || 0);
-  const voucherCode = hoaDon.voucher?.maVoucher || order.maVoucher || '';
+  const voucherCode = hoaDon.voucher?.ma || hoaDon.voucher?.maVoucher || order.maVoucher || '';
   const total = Math.max(0, subtotal - discount);
 
   let itemsHtml = '';
@@ -2858,7 +2859,7 @@ window.printReceiptForCurrentModal = function() {
       price: i.giaTungSanPham || 0
     })),
     idVoucher: state.selectedInvoice.voucher?.id,
-    maVoucher: state.selectedInvoice.voucher?.maVoucher || '',
+    maVoucher: state.selectedInvoice.voucher?.ma || state.selectedInvoice.voucher?.maVoucher || '',
     tienGiamVoucher: state.selectedInvoice.tienGiamVoucher || 0,
     payMethod: state.selectedInvoice.thanhToan?.phuongThuc || 'Tiền mặt'
   };
