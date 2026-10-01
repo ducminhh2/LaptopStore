@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Laptop Store - Đăng Nhập & Đăng Ký</title>
+  <meta name="description" content="Đăng nhập tài khoản khách hàng hoặc quản trị viên Laptop Store">
+
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Auth Stylesheet -->
+  <link rel="stylesheet" href="../css/auth.css?v=2.0">
+</head>
+<body>
+
+  <div class="auth-wrapper">
+    <div class="auth-card">
+
+      <!-- Header -->
+      <div class="auth-header">
+        <div class="auth-logo-badge">LS</div>
+        <h1 class="auth-title">LAPTOP STORE</h1>
+        <p class="auth-subtitle">Cổng đăng nhập hệ thống bán lẻ & quản trị</p>
+      </div>
+
+      <!-- Tab Switcher -->
+      <div class="auth-tabs">
+        <button type="button" class="auth-tab-btn active" id="tabLoginBtn" onclick="switchAuthTab('login')">
+          Đăng Nhập
+        </button>
+        <button type="button" class="auth-tab-btn" id="tabRegisterBtn" onclick="switchAuthTab('register')">
+          Đăng Ký
+        </button>
+      </div>
+
+      <!-- Notification Alert -->
+      <div class="auth-alert" id="authAlert"></div>
+
+      <!-- ====================================================================
+           TAB 1: FORM ĐĂNG NHẬP
+           ==================================================================== -->
+      <div class="auth-form-pane active" id="loginFormPane">
+        <form onsubmit="handleLoginSubmit(event)" id="loginForm">
+          
+          <div class="auth-form-group">
+            <label class="auth-label" for="loginUsername">Tên đăng nhập hoặc Email <span class="req">*</span></label>
+            <div class="auth-input-wrapper">
+              <input type="text" class="auth-input" id="loginUsername" placeholder="Nhập tên đăng nhập hoặc email" required autocomplete="username">
+            </div>
+          </div>
+
+          <div class="auth-form-group">
+            <label class="auth-label" for="loginPassword">Mật khẩu <span class="req">*</span></label>
+            <div class="auth-input-wrapper">
+              <input type="password" class="auth-input auth-input-pwd" id="loginPassword" placeholder="Nhập mật khẩu của bạn" required autocomplete="current-password">
+              <button type="button" class="auth-toggle-pwd" onclick="togglePassword('loginPassword', this)" title="Ẩn/Hiện mật khẩu" aria-label="Ẩn/Hiện mật khẩu">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                  <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="auth-options">
+            <label class="auth-remember">
+              <input type="checkbox" id="rememberMe">
+              <span>Ghi nhớ đăng nhập</span>
+            </label>
+            <a href="javascript:void(0)" onclick="alert('Vui lòng liên hệ quản trị viên qua hotline 088.697.6868 để được cấp lại mật khẩu.')">Quên mật khẩu?</a>
+          </div>
+
+          <button type="submit" class="btn-auth-submit" id="btnLoginSubmit">
+            Đăng Nhập
+          </button>
+        </form>
+      </div>
+
+      <!-- ====================================================================
+           TAB 2: FORM ĐĂNG KÝ
+           ==================================================================== -->
+      <div class="auth-form-pane" id="registerFormPane">
+        <form onsubmit="handleRegisterSubmit(event)" id="registerForm">
+
+          <div class="auth-form-group">
+            <label class="auth-label" for="regTen">Họ và tên <span class="req">*</span></label>
+            <div class="auth-input-wrapper">
+              <input type="text" class="auth-input" id="regTen" placeholder="Ví dụ: Nguyễn Văn An" required>
+            </div>
+          </div>
+
+          <div class="auth-form-row">
+            <div class="auth-form-group">
+              <label class="auth-label" for="regUsername">Tên đăng nhập <span class="req">*</span></label>
+              <div class="auth-input-wrapper">
+                <input type="text" class="auth-input" id="regUsername" placeholder="Từ 3-50 ký tự" required autocomplete="username">
+              </div>
+            </div>
+
+            <div class="auth-form-group">
+              <label class="auth-label" for="regPhone">Số điện thoại</label>
+              <div class="auth-input-wrapper">
+                <input type="tel" class="auth-input" id="regPhone" placeholder="09xxxxxxxx">
+              </div>
+            </div>
+          </div>
+
+          <div class="auth-form-group">
+            <label class="auth-label" for="regEmail">Địa chỉ Email</label>
+            <div class="auth-input-wrapper">
+              <input type="email" class="auth-input" id="regEmail" placeholder="email@gmail.com">
+            </div>
+          </div>
+
+          <div class="auth-form-group">
+            <label class="auth-label" for="regDiaChi">Địa chỉ</label>
+            <div class="auth-input-wrapper">
+              <input type="text" class="auth-input" id="regDiaChi" placeholder="Quận/Huyện, Tỉnh/Thành phố">
+            </div>
+          </div>
+
+          <div class="auth-form-row">
+            <div class="auth-form-group">
+              <label class="auth-label" for="regPassword">Mật khẩu <span class="req">*</span></label>
+              <div class="auth-input-wrapper">
+                <input type="password" class="auth-input auth-input-pwd" id="regPassword" placeholder="Ít nhất 6 ký tự" required autocomplete="new-password">
+                <button type="button" class="auth-toggle-pwd" onclick="togglePassword('regPassword', this)" title="Ẩn/Hiện mật khẩu" aria-label="Ẩn/Hiện mật khẩu">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <div class="auth-form-group">
+              <label class="auth-label" for="regConfirmPassword">Xác nhận mật khẩu <span class="req">*</span></label>
+              <div class="auth-input-wrapper">
+                <input type="password" class="auth-input" id="regConfirmPassword" placeholder="Nhập lại mật khẩu" required autocomplete="new-password">
+              </div>
+            </div>
+          </div>
+
+          <p class="auth-note">
+            Mật khẩu được mã hóa an toàn (BCrypt) trước khi lưu trữ vào hệ thống.
+          </p>
+
+          <button type="submit" class="btn-auth-submit" id="btnRegisterSubmit">
+            Đăng Ký Tài Khoản
+          </button>
+
+        </form>
+      </div>
+
+      <!-- Footer back link -->
+      <div class="auth-footer">
+        <a href="index.html" class="auth-back-link">
+          &larr; Về trang chủ cửa hàng
+        </a>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- JavaScript Logic -->
+  <script src="../js/auth.js?v=2.0"></script>
+</body>
+</html>

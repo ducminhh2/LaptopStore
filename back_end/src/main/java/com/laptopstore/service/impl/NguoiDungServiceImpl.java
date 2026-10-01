@@ -39,6 +39,9 @@ public class NguoiDungServiceImpl implements NguoiDungService {
 
     @Override
     public NguoiDung create(NguoiDung nguoiDung) {
+        if (nguoiDung.getPassword() != null && !nguoiDung.getPassword().isEmpty()) {
+            nguoiDung.setPassword(com.laptopstore.util.PasswordUtil.hashPassword(nguoiDung.getPassword()));
+        }
         return nguoiDungRepository.save(nguoiDung);
     }
 
@@ -46,7 +49,9 @@ public class NguoiDungServiceImpl implements NguoiDungService {
     public NguoiDung update(Integer id, NguoiDung nguoiDung) {
         NguoiDung existing = getById(id);
         existing.setTen(nguoiDung.getTen());
-        existing.setPassword(nguoiDung.getPassword());
+        if (nguoiDung.getPassword() != null && !nguoiDung.getPassword().isEmpty()) {
+            existing.setPassword(com.laptopstore.util.PasswordUtil.hashPassword(nguoiDung.getPassword()));
+        }
         existing.setDiaChi(nguoiDung.getDiaChi());
         existing.setDienThoai(nguoiDung.getDienThoai());
         existing.setEmail(nguoiDung.getEmail());

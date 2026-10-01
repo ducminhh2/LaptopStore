@@ -17,13 +17,13 @@ public class KhuyenMaiController {
     private final KhuyenMaiService khuyenMaiService;
 
     @GetMapping
-    public ResponseEntity<List<KhuyenMai>> getAll() {
-        return ResponseEntity.ok(khuyenMaiService.getAll());
+    public ResponseEntity<List<com.laptopstore.dto.KhuyenMaiResponse>> getAll() {
+        return ResponseEntity.ok(khuyenMaiService.getAllKhuyenMaiResponses());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<KhuyenMai> getById(@PathVariable Integer id) {
-        return ResponseEntity.ok(khuyenMaiService.getById(id));
+    public ResponseEntity<com.laptopstore.dto.KhuyenMaiResponse> getById(@PathVariable Integer id) {
+        return ResponseEntity.ok(khuyenMaiService.getKhuyenMaiResponseById(id));
     }
 
     @GetMapping("/ma/{ma}")
@@ -31,14 +31,25 @@ public class KhuyenMaiController {
         return ResponseEntity.ok(khuyenMaiService.getByMa(ma));
     }
 
+    @GetMapping({"/gia/{ctspId}", "/ctsp/{ctspId}/gia"})
+    public ResponseEntity<com.laptopstore.dto.GiaKhuyenMaiResponse> getGiaKhuyenMai(@PathVariable Integer ctspId) {
+        return ResponseEntity.ok(khuyenMaiService.tinhGiaBanHienTai(ctspId));
+    }
+
     @PostMapping
-    public ResponseEntity<KhuyenMai> create(@RequestBody KhuyenMai khuyenMai) {
-        return new ResponseEntity<>(khuyenMaiService.create(khuyenMai), HttpStatus.CREATED);
+    public ResponseEntity<KhuyenMai> create(@RequestBody com.laptopstore.dto.KhuyenMaiRequest request) {
+        return new ResponseEntity<>(khuyenMaiService.createWithCtsp(request), HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<KhuyenMai> update(@PathVariable Integer id, @RequestBody KhuyenMai khuyenMai) {
-        return ResponseEntity.ok(khuyenMaiService.update(id, khuyenMai));
+    public ResponseEntity<KhuyenMai> update(@PathVariable Integer id, @RequestBody com.laptopstore.dto.KhuyenMaiRequest request) {
+        return ResponseEntity.ok(khuyenMaiService.updateWithCtsp(id, request));
+    }
+
+    @PatchMapping("/{id}/trang-thai")
+    public ResponseEntity<Void> updateTrangThai(@PathVariable Integer id, @RequestParam Integer trangThai) {
+        khuyenMaiService.updateTrangThai(id, trangThai);
+        return ResponseEntity.ok().build();
     }
 
     @DeleteMapping("/{id}")

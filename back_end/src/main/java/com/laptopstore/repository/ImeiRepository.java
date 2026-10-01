@@ -14,4 +14,13 @@ public interface ImeiRepository extends JpaRepository<Imei, Integer> {
     List<Imei> findByChiTietSanPhamIdAndTrangThai(Integer chiTietSanPhamId, Integer trangThai);
     List<Imei> findByTrangThai(Integer trangThai);
     boolean existsBySoImei(String soImei);
+    List<Imei> findBySoImeiIn(List<String> soImeis);
+    int countByChiTietSanPhamId(Integer chiTietSanPhamId);
+    int countByChiTietSanPhamIdAndTrangThai(Integer chiTietSanPhamId, Integer trangThai);
+
+    @org.springframework.data.jpa.repository.Query(
+        "SELECT i FROM Imei i WHERE i.chiTietSanPham.id = :ctspId AND i.trangThai = 0 " +
+        "AND NOT EXISTS (SELECT 1 FROM ChiTietHoaDonImei cthdi WHERE cthdi.imei.id = i.id)"
+    )
+    List<Imei> findAvailableByChiTietSanPhamId(@org.springframework.data.repository.query.Param("ctspId") Integer ctspId);
 }

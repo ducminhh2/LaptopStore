@@ -62,6 +62,24 @@ public class ChiTietSanPham {
     @Builder.Default
     private Integer trangThai = 1;
 
+    @Transient
+    private BigDecimal giaBan;
+
+    @Transient
+    private Boolean coKhuyenMai;
+
+    @Transient
+    private Integer loaiGiam;
+
+    @Transient
+    private BigDecimal giaTriGiam;
+
+    @Transient
+    private BigDecimal tienGiam;
+
+    @Transient
+    private String tenKhuyenMai;
+
     @OneToMany(mappedBy = "chiTietSanPham", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JsonIgnoreProperties("chiTietSanPham")
     @ToString.Exclude

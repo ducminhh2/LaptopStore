@@ -13,5 +13,13 @@ public interface HoaDonService {
     HoaDon create(HoaDon hoaDon);
     HoaDon update(Integer id, HoaDon hoaDon);
     HoaDon updateTrangThai(Integer id, Integer trangThai);
+    HoaDon xacNhanDonHang(Integer id);
+    HoaDon xacNhanDonHang(Integer id, Integer nhanVienId);
+    HoaDon xacNhanDonHangWithImei(Integer id, com.laptopstore.dto.XacNhanDonHangRequest request, String username, Integer nhanVienId);
+    HoaDon giaoHang(Integer id);
+    HoaDon xacNhanGiaoHangVaThuTien(Integer id);
+    HoaDon xacNhanGiaoHangThanhCong(Integer id);
+    HoaDon huyHoaDon(Integer id, String lyDo);
+    HoaDon posCheckout(com.laptopstore.dto.PosCheckoutRequest request);
     void delete(Integer id);
 }

@@ -2,6 +2,7 @@ package com.laptopstore.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -47,6 +48,14 @@ public class HoaDon {
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "id_nhan_vien")
     private NguoiDung nhanVien;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "id_voucher")
+    private Voucher voucher;
+
+    @Column(name = "tien_giam_voucher", precision = 18, scale = 2)
+    @Builder.Default
+    private BigDecimal tienGiamVoucher = BigDecimal.ZERO;
 
     @Column(name = "mo_ta", columnDefinition = "NVARCHAR(MAX)")
     private String moTa;

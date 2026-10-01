@@ -32,8 +32,8 @@ public class ChiTietKhuyenMaiServiceImpl implements ChiTietKhuyenMaiService {
     }
 
     @Override
-    public List<ChiTietKhuyenMai> getBySanPham(Integer sanPhamId) {
-        return chiTietKhuyenMaiRepository.findBySanPhamId(sanPhamId);
+    public List<ChiTietKhuyenMai> getByChiTietSanPham(Integer ctspId) {
+        return chiTietKhuyenMaiRepository.findByChiTietSanPhamId(ctspId);
     }
 
     @Override

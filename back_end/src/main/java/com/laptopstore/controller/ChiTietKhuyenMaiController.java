@@ -31,9 +31,9 @@ public class ChiTietKhuyenMaiController {
         return ResponseEntity.ok(chiTietKhuyenMaiService.getByKhuyenMai(khuyenMaiId));
     }
 
-    @GetMapping("/san-pham/{sanPhamId}")
-    public ResponseEntity<List<ChiTietKhuyenMai>> getBySanPham(@PathVariable Integer sanPhamId) {
-        return ResponseEntity.ok(chiTietKhuyenMaiService.getBySanPham(sanPhamId));
+    @GetMapping({"/chi-tiet-san-pham/{ctspId}", "/ctsp/{ctspId}"})
+    public ResponseEntity<List<ChiTietKhuyenMai>> getByChiTietSanPham(@PathVariable Integer ctspId) {
+        return ResponseEntity.ok(chiTietKhuyenMaiService.getByChiTietSanPham(ctspId));
     }
 
     @PostMapping

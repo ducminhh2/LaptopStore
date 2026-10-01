@@ -16,6 +16,7 @@ import java.util.Optional;
 public class ChiTietGioHangServiceImpl implements ChiTietGioHangService {
 
     private final ChiTietGioHangRepository chiTietGioHangRepository;
+    private final com.laptopstore.service.KhuyenMaiService khuyenMaiService;
 
     @Override
     public List<ChiTietGioHang> getAll() {
@@ -35,12 +36,23 @@ public class ChiTietGioHangServiceImpl implements ChiTietGioHangService {
 
     @Override
     public ChiTietGioHang addToCart(ChiTietGioHang chiTietGioHang) {
+        // Server calculates authoritative price after promotion
+        if (chiTietGioHang.getChiTietSanPham() != null && chiTietGioHang.getChiTietSanPham().getId() != null) {
+            com.laptopstore.dto.GiaKhuyenMaiResponse pricing = khuyenMaiService.tinhGiaBanHienTai(chiTietGioHang.getChiTietSanPham().getId());
+            if (pricing != null && pricing.getGiaBan() != null) {
+                chiTietGioHang.setGiaTungSanPham(pricing.getGiaBan());
+            }
+        }
+
         if (chiTietGioHang.getGioHang() != null && chiTietGioHang.getChiTietSanPham() != null) {
             Optional<ChiTietGioHang> existing = chiTietGioHangRepository.findByGioHangIdAndChiTietSanPhamId(
                     chiTietGioHang.getGioHang().getId(), chiTietGioHang.getChiTietSanPham().getId());
             if (existing.isPresent()) {
                 ChiTietGioHang item = existing.get();
                 item.setSoLuong(item.getSoLuong() + chiTietGioHang.getSoLuong());
+                if (chiTietGioHang.getGiaTungSanPham() != null) {
+                    item.setGiaTungSanPham(chiTietGioHang.getGiaTungSanPham());
+                }
                 return chiTietGioHangRepository.save(item);
             }
         }

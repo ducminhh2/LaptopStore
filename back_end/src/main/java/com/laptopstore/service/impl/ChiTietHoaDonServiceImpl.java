@@ -14,6 +14,7 @@ import java.util.List;
 public class ChiTietHoaDonServiceImpl implements ChiTietHoaDonService {
 
     private final ChiTietHoaDonRepository chiTietHoaDonRepository;
+    private final com.laptopstore.service.KhuyenMaiService khuyenMaiService;
 
     @Override
     public List<ChiTietHoaDon> getAll() {
@@ -38,6 +39,13 @@ public class ChiTietHoaDonServiceImpl implements ChiTietHoaDonService {
 
     @Override
     public ChiTietHoaDon create(ChiTietHoaDon chiTietHoaDon) {
+        // Server calculates authoritative snapshot sale price with promotions
+        if (chiTietHoaDon.getChiTietSanPham() != null && chiTietHoaDon.getChiTietSanPham().getId() != null) {
+            com.laptopstore.dto.GiaKhuyenMaiResponse pricing = khuyenMaiService.tinhGiaBanHienTai(chiTietHoaDon.getChiTietSanPham().getId());
+            if (pricing != null && pricing.getGiaBan() != null) {
+                chiTietHoaDon.setGiaTungSanPham(pricing.getGiaBan());
+            }
+        }
         return chiTietHoaDonRepository.save(chiTietHoaDon);
     }
 

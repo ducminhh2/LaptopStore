@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chi Tiết Sản Phẩm - Laptop Store</title>
+  <meta name="description" content="Xem thông số kỹ thuật chi tiết, giá bán, khuyến mãi và hình ảnh thực tế sản phẩm tại Laptop Store.">
+
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <!-- CSS Stylesheet -->
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+
+  <!-- ==========================================================================
+       TOP ANNOUNCEMENT BAR
+       ========================================================================== -->
+  <div class="top-notice-bar">
+    <div class="container">
+      <div class="notice-highlights">
+        <div class="notice-item">
+          <svg style="width: 14px; height: 14px;" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9v-2h2v2zm0-4H9V7h2v5z"/></svg>
+          <span>Cam kết 100% hàng chính hãng - Đổi mới trong 30 ngày nếu có lỗi</span>
+        </div>
+        <div class="notice-item">
+          <svg style="width: 14px; height: 14px;" fill="currentColor" viewBox="0 0 24 24"><path d="M20 8h-3V4H3c-1.1 0-2 .9-2 2v11h2c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-5l-3-4zM6 18.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm13.5-9l1.96 2.5H17V9.5h2.5zm-1.5 9c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>
+          <span>Miễn phí vận chuyển toàn quốc</span>
+        </div>
+      </div>
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <div class="backend-status-badge">
+          <span class="status-dot"></span> Hệ thống bảo hành điện tử chính hãng
+        </div>
+        <a href="admin.html" style="color: #ffffff; background: #e02424; padding: 3px 10px; border-radius: 4px; font-size: 0.75rem; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 5px;">
+          ⚙️ Quản Trị / POS
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       MAIN HEADER
+       ========================================================================== -->
+  <header class="main-header">
+    <div class="container">
+      <div class="header-inner">
+        
+        <!-- Category Dropdown Button -->
+        <div class="category-btn-wrapper">
+          <a href="index.html" class="category-dropdown-btn">
+            <div class="hamburger-icon">
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+            <span>VỀ TRANG CHỦ</span>
+          </a>
+        </div>
+
+        <!-- Search Bar -->
+        <div class="search-container">
+          <select class="search-category-select" id="searchCategorySelect">
+            <option value="ALL">Tất cả danh mục</option>
+            <option value="1">Laptop Gaming</option>
+            <option value="2">Laptop Văn phòng</option>
+            <option value="3">Laptop Đồ họa</option>
+            <option value="4">Laptop Mỏng nhẹ</option>
+          </select>
+          <div class="search-divider"></div>
+          <input type="text" class="search-input" id="searchInput" placeholder="Tìm kiếm sản phẩm...">
+          <button class="search-btn" type="button" onclick="window.location.href='index.html'" title="Tìm kiếm">
+            <svg fill="currentColor" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+          </button>
+        </div>
+
+        <!-- Header Actions: Hotline, Cart -->
+        <div class="header-actions">
+          
+          <!-- Hotline -->
+          <div class="action-item" onclick="window.location.href='tel:0886976868'">
+            <div class="action-icon-circle">
+              <svg fill="currentColor" viewBox="0 0 24 24"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>
+            </div>
+            <div class="action-text">
+              <span class="action-label">Hotline mua hàng</span>
+              <span class="action-value">088.697.6868</span>
+            </div>
+          </div>
+
+          <!-- Cart -->
+          <div class="action-item" onclick="openCartDrawer()">
+            <div class="action-icon-circle">
+              <svg fill="currentColor" viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>
+              <span class="cart-count-badge" id="cartCountBadge">0</span>
+            </div>
+            <div class="action-text">
+              <span class="action-label">Giỏ hàng</span>
+              <span class="action-value">Xem ngay</span>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+  </header>
+
+  <!-- ==========================================================================
+       MAIN CONTENT
+       ========================================================================== -->
+  <main class="container">
+
+    <!-- Breadcrumb (Matching screenshot) -->
+    <div class="breadcrumb-container">
+      <a href="index.html">Trang chủ</a>
+      <span class="breadcrumb-separator">&gt;</span>
+      <span id="breadcrumbCategory">Laptop Gaming</span>
+      <span class="breadcrumb-separator">&gt;</span>
+      <span class="breadcrumb-current" id="breadcrumbProduct">Đang tải sản phẩm...</span>
+    </div>
+
+    <!-- Main Detail Layout Grid -->
+    <div class="detail-layout-grid">
+      
+      <!-- ====================================================================
+           LEFT COLUMN: Main Image, Arrows, Thumbnails, Cross-sell Products
+           ==================================================================== -->
+      <div class="detail-gallery-container">
+        
+        <!-- Large Main Image Box -->
+        <div class="detail-main-image-box">
+          <button class="detail-nav-arrow prev" onclick="navigateGallery(-1)" title="Ảnh trước">❮</button>
+          
+          <img src="" id="detailMainImage" class="detail-main-image" alt="Product Image">
+          
+          <button class="detail-nav-arrow next" onclick="navigateGallery(1)" title="Ảnh tiếp theo">❯</button>
+
+          <!-- Promotional banner strip at bottom of image (Matching screenshot) -->
+          <div class="detail-promo-banner-strip">
+            <span>🔥 TOP CẤU HÌNH CHIẾN GAME - TRẢI NGHIỆM ĐỈNH CAO CHINH PHỤC MỌI TRẬN CHIẾN</span>
+            <span class="detail-promo-badge">QUÀ TẶNG KHỦNG</span>
+          </div>
+        </div>
+
+        <!-- Thumbnails Strip -->
+        <div class="detail-thumbnails-row" id="detailThumbnailsRow">
+          <!-- Populated by detail.js -->
+        </div>
+
+        <!-- SẢN PHẨM TƯƠNG TỰ (Matching screenshot) -->
+        <div class="similar-products-section">
+          <h3 class="similar-products-title">SẢN PHẨM TƯƠNG TỰ</h3>
+          <div class="similar-products-wrapper">
+            <button class="similar-nav-arrow prev" type="button" onclick="scrollSimilarProducts(-1)" title="Trước">❮</button>
+            
+            <div class="similar-products-grid" id="similarProductsGrid">
+              <!-- Populated dynamically by detail.js -->
+            </div>
+
+            <button class="similar-nav-arrow next" type="button" onclick="scrollSimilarProducts(1)" title="Sau">❯</button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ====================================================================
+           RIGHT COLUMN: Title, Price, Specs, Promotions, Quantity & 2 Buttons
+           ==================================================================== -->
+      <div class="detail-info-container">
+        
+        <!-- Product Title -->
+        <h1 class="detail-product-title" id="detailTitle">Đang tải tên sản phẩm...</h1>
+
+        <!-- Variant Selector (Cấu hình CTSP) -->
+        <div id="detailVariantsContainer"></div>
+
+        <!-- Price Banner (Matching screenshot) -->
+        <div class="detail-price-banner">
+          <div>
+            <span class="detail-current-price" id="detailCurrentPrice">0 đ</span>
+          </div>
+          <div>
+            <span class="detail-old-price" id="detailOldPrice">0 đ</span>
+          </div>
+          <div>
+            <span class="detail-save-amount" id="detailSaveAmount">Tiết kiệm: 0 đ</span>
+          </div>
+        </div>
+
+        <!-- Warranty Badge -->
+        <div class="detail-meta-badges">
+          <span class="warranty-badge">Bảo hành: 24 Tháng chính hãng</span>
+          <span class="brand-tag-badge">Máy mới 100% Fullbox</span>
+        </div>
+
+        <!-- Specs List ("Mô tả sản phẩm" - Matching screenshot bullet list) -->
+        <div class="detail-specs-box">
+          <h3 class="detail-specs-heading">Mô tả sản phẩm</h3>
+          <ul class="detail-specs-list" id="detailSpecsList">
+            <!-- Populated by detail.js with checkmark icons -->
+          </ul>
+        </div>
+
+        <!-- Promotions Box ("KHUYẾN MÃI" - Matching screenshot) -->
+        <div class="detail-promo-box">
+          <div class="detail-promo-header">
+            🎁 KHUYẾN MÃI ĐẶC QUYỀN
+          </div>
+          <div class="detail-promo-content">
+            <ul>
+              <li><strong>Quà tặng:</strong> Balo Laptop Gaming chống sốc cao cấp trị giá <strong>450.000đ</strong></li>
+              <li><strong>Tặng kèm:</strong> Chuột Gaming ASUS TUF hoặc Chuột Logitech G102 Lightsync chính hãng</li>
+              <li>Tặng lót chuột Gaming Bo viền cỡ lớn (80x30cm) + Bộ dụng cụ vệ sinh Laptop</li>
+              <li>Miễn phí cài đặt hệ điều hành Windows bản quyền + Cài đặt trọn bộ phần mềm văn phòng/đồ họa</li>
+              <li>Miễn phí vệ sinh máy, tra keo tản nhiệt cao cấp định kỳ trọn đời máy</li>
+              <li class="note"><strong>*** Lưu ý:</strong> Sản phẩm mới 100% nguyên seal xuất xưởng, áp dụng chính sách đổi mới trong 30 ngày nếu có lỗi phần cứng từ nhà sản xuất.</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Quantity Selector Row -->
+        <div class="detail-purchase-row">
+          <span class="detail-qty-label">Số lượng:</span>
+          <div class="detail-qty-control">
+            <button class="detail-qty-btn" type="button" onclick="changeDetailQty(-1)">-</button>
+            <input type="text" class="detail-qty-input" id="detailQtyInput" value="1" readonly>
+            <button class="detail-qty-btn" type="button" onclick="changeDetailQty(1)">+</button>
+          </div>
+        </div>
+
+        <!-- The 2 Action Buttons Requested: THÊM GIỎ HÀNG & MUA HÀNG -->
+        <div class="detail-action-buttons">
+          
+          <!-- Nút 1: Thêm vào giỏ hàng -->
+          <button class="btn-detail-add-cart" type="button" onclick="handleAddToCart(false)">
+            <svg style="width: 20px; height: 20px;" fill="currentColor" viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>
+            THÊM VÀO GIỎ HÀNG
+          </button>
+
+          <!-- Nút 2: Mua hàng / Đặt hàng -->
+          <button class="btn-detail-buy-now" type="button" onclick="handleBuyNow()">
+            ĐẶT HÀNG NGAY
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- ==========================================================================
+       CART SLIDE-IN DRAWER
+       ========================================================================== -->
+  <div class="cart-drawer-overlay" id="cartDrawerOverlay" onclick="closeCartDrawer()"></div>
+  <div class="cart-drawer" id="cartDrawer">
+    
+    <div class="cart-drawer-header">
+      <h3>
+        <svg style="width: 22px; height: 22px; color: var(--primary-red);" fill="currentColor" viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>
+        Giỏ Hàng Của Bạn
+      </h3>
+      <button class="modal-close-btn" onclick="closeCartDrawer()">✕</button>
+    </div>
+
+    <div class="cart-drawer-items" id="cartDrawerItems">
+      <!-- Items dynamically populated -->
+    </div>
+
+    <div class="cart-drawer-footer">
+      <div class="cart-total-row">
+        <span class="cart-total-label">Tổng cộng:</span>
+        <span class="cart-total-amount" id="cartTotalAmount">0 đ</span>
+      </div>
+      <button class="btn-checkout" onclick="alert('Cảm ơn bạn! Đơn hàng đã được ghi nhận vào hệ thống.')">
+        TIẾN HÀNH THANH TOÁN
+      </button>
+    </div>
+
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Footer -->
+  <footer class="main-footer">
+    <div class="container">
+      <div class="footer-bottom">
+        <p>© 2026 LaptopStore. All rights reserved. Hệ thống bán lẻ Laptop uy tín chất lượng.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Detail Script -->
+  <script src="../js/detail.js"></script>
+
+</body>
+</html>

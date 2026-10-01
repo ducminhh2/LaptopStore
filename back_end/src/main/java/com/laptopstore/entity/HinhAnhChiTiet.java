@@ -21,7 +21,7 @@ public class HinhAnhChiTiet {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_ctsp", nullable = false)
-    @JsonIgnoreProperties("danhSachHinhAnh")
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "danhSachHinhAnh"})
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
     private ChiTietSanPham chiTietSanPham;

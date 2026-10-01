@@ -188,7 +188,8 @@ CREATE TABLE thanh_toan (
     ma VARCHAR(50) UNIQUE NOT NULL,
     phuong_thuc NVARCHAR(100) NOT NULL,
     so_tien DECIMAL(18, 2) NOT NULL,
-    ngay_thanh_toan DATETIME DEFAULT GETDATE()
+    trang_thai INT DEFAULT 0,
+    ngay_thanh_toan DATETIME NULL
 );
 GO
 
@@ -204,10 +205,13 @@ CREATE TABLE hoa_don (
     trang_thai INT DEFAULT 0,
     id_thanh_toan INT,
     id_nhan_vien INT,
+    id_voucher INT,
+    tien_giam_voucher DECIMAL(18, 2) NOT NULL DEFAULT 0,
     mo_ta NVARCHAR(MAX),
     CONSTRAINT FK_HoaDon_KhachHang FOREIGN KEY (id_khach_hang) REFERENCES nguoi_dung(id),
     CONSTRAINT FK_HoaDon_ThanhToan FOREIGN KEY (id_thanh_toan) REFERENCES thanh_toan(id),
-    CONSTRAINT FK_HoaDon_NhanVien FOREIGN KEY (id_nhan_vien) REFERENCES nguoi_dung(id)
+    CONSTRAINT FK_HoaDon_NhanVien FOREIGN KEY (id_nhan_vien) REFERENCES nguoi_dung(id),
+    CONSTRAINT FK_HoaDon_Voucher FOREIGN KEY (id_voucher) REFERENCES voucher(id)
 );
 GO
 
@@ -251,9 +255,11 @@ CREATE TABLE khuyen_mai (
     id INT IDENTITY(1,1) PRIMARY KEY,
     ma VARCHAR(50) UNIQUE NOT NULL,
     ten_km NVARCHAR(200) NOT NULL,
-    phan_tram_giam DECIMAL(5, 2),
+    loai_giam INT NOT NULL DEFAULT 1, -- 1: Giảm %, 2: Giảm số tiền
+    gia_tri_giam DECIMAL(18, 2) NOT NULL DEFAULT 0,
     ngay_bat_dau DATETIME NOT NULL,
-    ngay_ket_thuc DATETIME NOT NULL
+    ngay_ket_thuc DATETIME NOT NULL,
+    trang_thai INT DEFAULT 1 -- 0: Ngừng hoạt động, 1: Hoạt động
 );
 GO
 
@@ -261,10 +267,11 @@ IF OBJECT_ID('dbo.chi_tiet_khuyen_mai', 'U') IS NOT NULL DROP TABLE dbo.chi_tiet
 CREATE TABLE chi_tiet_khuyen_mai (
     id INT IDENTITY(1,1) PRIMARY KEY,
     ma_ctkm VARCHAR(50),
-    id_sp INT NOT NULL,
+    id_ctsp INT NOT NULL,
     id_khuyen_mai INT NOT NULL,
-    CONSTRAINT FK_CTKM_SanPham FOREIGN KEY (id_sp) REFERENCES san_pham(id) ON DELETE CASCADE,
-    CONSTRAINT FK_CTKM_KhuyenMai FOREIGN KEY (id_khuyen_mai) REFERENCES khuyen_mai(id) ON DELETE CASCADE
+    CONSTRAINT FK_CTKM_CTSP FOREIGN KEY (id_ctsp) REFERENCES chi_tiet_san_pham(id) ON DELETE CASCADE,
+    CONSTRAINT FK_CTKM_KhuyenMai FOREIGN KEY (id_khuyen_mai) REFERENCES khuyen_mai(id) ON DELETE CASCADE,
+    CONSTRAINT UQ_CTKM_CTSP_KM UNIQUE (id_ctsp, id_khuyen_mai)
 );
 GO
 
@@ -288,6 +295,9 @@ GO
 INSERT INTO nguoi_dung
 (ma, ten, username, password, dia_chi, dien_thoai, email, id_vai_tro)
 VALUES
+('KH000', N'Khách lẻ tại quầy', 'khachle', '123456',
+ N'Tại quầy Store', '0988888888', 'khachle@laptopstore.vn', 3),
+
 ('KH001', N'Nguyễn Văn An', 'nguyenvanan', '123456',
  N'Hà Nội', '0901234567', 'an@gmail.com', 3),
 

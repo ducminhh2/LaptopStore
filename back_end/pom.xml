@@ -35,6 +35,12 @@
 			<artifactId>spring-boot-starter-validation</artifactId>
 		</dependency>
 
+		<!-- Spring Security Crypto (BCryptPasswordEncoder only, without web security filters) -->
+		<dependency>
+			<groupId>org.springframework.security</groupId>
+			<artifactId>spring-security-crypto</artifactId>
+		</dependency>
+
 		<!-- Microsoft SQL Server JDBC Driver -->
 		<dependency>
 			<groupId>com.microsoft.sqlserver</groupId>

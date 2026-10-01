@@ -26,7 +26,10 @@ public class ThanhToan {
     @Column(name = "so_tien", nullable = false, precision = 18, scale = 2)
     private BigDecimal soTien;
 
-    @Column(name = "ngay_thanh_toan")
+    @Column(name = "trang_thai")
     @Builder.Default
-    private LocalDateTime ngayThanhToan = LocalDateTime.now();
+    private Integer trangThai = 0; // 0: Chưa thanh toán, 1: Đã thanh toán
+
+    @Column(name = "ngay_thanh_toan")
+    private LocalDateTime ngayThanhToan;
 }

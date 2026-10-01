@@ -23,12 +23,21 @@ public class KhuyenMai {
     @Column(name = "ten_km", nullable = false, length = 200)
     private String tenKm;
 
-    @Column(name = "phan_tram_giam", precision = 5, scale = 2)
-    private BigDecimal phanTramGiam;
+    @Column(name = "loai_giam", nullable = false)
+    @Builder.Default
+    private Integer loaiGiam = 1; // 1: Giảm theo %, 2: Giảm theo số tiền
+
+    @Column(name = "gia_tri_giam", nullable = false, precision = 18, scale = 2)
+    @Builder.Default
+    private BigDecimal giaTriGiam = BigDecimal.ZERO;
 
     @Column(name = "ngay_bat_dau", nullable = false)
     private LocalDateTime ngayBatDau;
 
     @Column(name = "ngay_ket_thuc", nullable = false)
     private LocalDateTime ngayKetThuc;
+
+    @Column(name = "trang_thai")
+    @Builder.Default
+    private Integer trangThai = 1; // 0: Ngừng hoạt động, 1: Hoạt động
 }

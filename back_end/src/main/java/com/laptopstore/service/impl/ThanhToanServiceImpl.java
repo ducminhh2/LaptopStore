@@ -37,9 +37,10 @@ public class ThanhToanServiceImpl implements ThanhToanService {
         existing.setMa(thanhToan.getMa());
         existing.setPhuongThuc(thanhToan.getPhuongThuc());
         existing.setSoTien(thanhToan.getSoTien());
-        if (thanhToan.getNgayThanhToan() != null) {
-            existing.setNgayThanhToan(thanhToan.getNgayThanhToan());
+        if (thanhToan.getTrangThai() != null) {
+            existing.setTrangThai(thanhToan.getTrangThai());
         }
+        existing.setNgayThanhToan(thanhToan.getNgayThanhToan());
         return thanhToanRepository.save(existing);
     }
 
