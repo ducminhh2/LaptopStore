@@ -30,40 +30,94 @@ public class ChiTietSanPhamServiceImpl implements ChiTietSanPhamService {
     private final com.laptopstore.service.KhuyenMaiService khuyenMaiService;
 
     @Override
+    @Transactional
     public List<ChiTietSanPham> getAll() {
         List<ChiTietSanPham> list = chiTietSanPhamRepository.findAll();
+        applySoLuongKhaDung(list);
         khuyenMaiService.applyGiaKhuyenMai(list);
         return list;
     }
 
     @Override
+    @Transactional
     public ChiTietSanPham getById(Integer id) {
         ChiTietSanPham ctsp = chiTietSanPhamRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Chi tiết sản phẩm", "id", id));
+        applySoLuongKhaDung(ctsp);
         khuyenMaiService.applyGiaKhuyenMai(ctsp);
         return ctsp;
     }
 
     @Override
+    @Transactional
     public ChiTietSanPham getByMaCtsp(String maCtsp) {
         ChiTietSanPham ctsp = chiTietSanPhamRepository.findByMaCtsp(maCtsp)
                 .orElseThrow(() -> new ResourceNotFoundException("Chi tiết sản phẩm", "maCtsp", maCtsp));
+        applySoLuongKhaDung(ctsp);
         khuyenMaiService.applyGiaKhuyenMai(ctsp);
         return ctsp;
     }
 
     @Override
+    @Transactional
     public List<ChiTietSanPham> getBySanPham(Integer sanPhamId) {
         List<ChiTietSanPham> list = chiTietSanPhamRepository.findBySanPhamId(sanPhamId);
+        applySoLuongKhaDung(list);
         khuyenMaiService.applyGiaKhuyenMai(list);
         return list;
     }
 
     @Override
+    @Transactional
     public List<ChiTietSanPham> getByTrangThai(Integer trangThai) {
         List<ChiTietSanPham> list = chiTietSanPhamRepository.findByTrangThai(trangThai);
+        applySoLuongKhaDung(list);
         khuyenMaiService.applyGiaKhuyenMai(list);
         return list;
+    }
+
+    private void applySoLuongKhaDung(List<ChiTietSanPham> list) {
+        if (list == null || list.isEmpty()) return;
+
+        List<Object[]> totalImeisList = imeiRepository.countTotalImeisGroupedByCtsp();
+        java.util.Map<Integer, Long> totalImeisMap = new java.util.HashMap<>();
+        for (Object[] row : totalImeisList) {
+            totalImeisMap.put((Integer) row[0], (Long) row[1]);
+        }
+
+        List<Object[]> availableImeisList = imeiRepository.countAvailableImeisGroupedByCtsp();
+        java.util.Map<Integer, Long> availableImeisMap = new java.util.HashMap<>();
+        for (Object[] row : availableImeisList) {
+            availableImeisMap.put((Integer) row[0], (Long) row[1]);
+        }
+
+        for (ChiTietSanPham ctsp : list) {
+            Long total = totalImeisMap.get(ctsp.getId());
+            int newQty;
+            if (total != null && total > 0) {
+                Long avail = availableImeisMap.getOrDefault(ctsp.getId(), 0L);
+                newQty = avail.intValue();
+            } else {
+                newQty = 0;
+            }
+            ctsp.setSoLuong(newQty);
+            if (ctsp.getId() != null) {
+                chiTietSanPhamRepository.updateSoLuong(ctsp.getId(), newQty);
+            }
+        }
+    }
+
+    private void applySoLuongKhaDung(ChiTietSanPham ctsp) {
+        if (ctsp == null || ctsp.getId() == null) return;
+        int total = imeiRepository.countByChiTietSanPhamId(ctsp.getId());
+        int newQty;
+        if (total > 0) {
+            newQty = imeiRepository.countAvailableByChiTietSanPhamId(ctsp.getId());
+        } else {
+            newQty = 0;
+        }
+        ctsp.setSoLuong(newQty);
+        chiTietSanPhamRepository.updateSoLuong(ctsp.getId(), newQty);
     }
 
     @Override
@@ -154,12 +208,12 @@ public class ChiTietSanPhamServiceImpl implements ChiTietSanPhamService {
         existing.setMaCtsp(chiTietSanPham.getMaCtsp());
         existing.setGia(chiTietSanPham.getGia());
         
-        // Số lượng kho đồng bộ dựa trên số IMEI có trạng thái Trong kho (0)
+        // Số lượng kho đồng bộ dựa trên số IMEI khả dụng trong kho
         int totalImeis = imeiRepository.countByChiTietSanPhamId(existing.getId());
         if (totalImeis > 0) {
-            existing.setSoLuong(imeiRepository.countByChiTietSanPhamIdAndTrangThai(existing.getId(), 0));
+            existing.setSoLuong(imeiRepository.countAvailableByChiTietSanPhamId(existing.getId()));
         } else {
-            existing.setSoLuong(chiTietSanPham.getSoLuong());
+            existing.setSoLuong(chiTietSanPham.getSoLuong() != null ? chiTietSanPham.getSoLuong() : 0);
         }
 
         existing.setMoTa(chiTietSanPham.getMoTa());

@@ -787,6 +787,15 @@ window.posChangeItemQty = function(ctspId, delta) {
   const item = order.items.find(i => i.ctspId === ctspId);
   if (!item) return;
 
+  if (delta > 0) {
+    const productInfo = (state.productsList || []).find(p => p.id === ctspId);
+    const maxStock = (productInfo && productInfo.soLuong !== undefined) ? Number(productInfo.soLuong) : 999;
+    if (item.qty + delta > maxStock) {
+      showToast(`Số lượng tồn kho khả dụng chỉ còn ${maxStock} máy!`, 'warning');
+      return;
+    }
+  }
+
   item.qty += delta;
   if (item.qty <= 0) {
     order.items = order.items.filter(i => i.ctspId !== ctspId);
@@ -1090,10 +1099,11 @@ window.updatePosCalculations = function() {
 // ============================================================================
 // MODAL: POS PRODUCT PICKER
 // ============================================================================
-window.openPosProductPickerModal = function() {
+window.openPosProductPickerModal = async function() {
   const modal = document.getElementById('posProductPickerModal');
   if (!modal) return;
   modal.classList.add('active');
+  await loadProductsList();
   renderPosPickerProducts(state.productsList);
   const search = document.getElementById('posProductSearchInput');
   if (search) {
@@ -1134,6 +1144,9 @@ function renderPosPickerProducts(products) {
     const ssd = p.ocung ? `${p.ocung.loaiOCung || ''} ${p.ocung.dungLuong || ''}` : '';
     const specs = [cpu, ram, ssd].filter(Boolean).join(' / ');
 
+    const availableStock = (p.soLuong !== undefined && p.soLuong !== null) ? Number(p.soLuong) : 0;
+    const isOutOfStock = (availableStock <= 0);
+
     let discountBadge = '';
     if (coKm) {
       if (p.loaiGiam === 1) {
@@ -1144,20 +1157,32 @@ function renderPosPickerProducts(products) {
     }
 
     card.innerHTML = `
-      <img src="${imgUrl}" alt="${name}" class="pos-picker-img">
+      <img src="${imgUrl}" alt="${name}" class="pos-picker-img" style="${isOutOfStock ? 'filter: grayscale(80%); opacity: 0.7;' : ''}">
       <div class="pos-picker-title">${name}</div>
       <div style="font-size:0.7rem; color:var(--admin-text-muted); margin-bottom:6px;">${specs}</div>
-      <div style="font-size:0.72rem; color:var(--admin-success); margin-bottom:4px; font-weight:700;">Kho: ${p.soLuong || 10} máy</div>
+      <div style="font-size:0.75rem; color:${isOutOfStock ? '#ef4444' : 'var(--admin-success)'}; margin-bottom:4px; font-weight:700;">
+        ${isOutOfStock ? 'Hết hàng (0 máy)' : `Kho: ${availableStock} máy`}
+      </div>
       <div class="pos-picker-price">
-        <span style="font-weight:800; color:var(--admin-primary);">${formatCurrency(giaBan)}</span>
+        <span style="font-weight:800; color:${isOutOfStock ? '#94a3b8' : 'var(--admin-primary)'};">${formatCurrency(giaBan)}</span>
         ${coKm ? `<span style="font-size:0.75rem; text-decoration:line-through; color:var(--admin-text-muted); margin-left:4px;">${formatCurrency(giaGoc)}</span> ${discountBadge}` : ''}
       </div>
-      <button class="btn-admin btn-primary btn-sm" style="margin-top:8px; width:100%; justify-content:center;" type="button">
-        + Chọn mua
-      </button>
+      ${isOutOfStock ? `
+        <button class="btn-admin btn-sm" style="margin-top:8px; width:100%; justify-content:center; background:#f1f5f9; color:#94a3b8; border:1px solid #cbd5e1; cursor:not-allowed;" type="button" disabled>
+          Hết hàng
+        </button>
+      ` : `
+        <button class="btn-admin btn-primary btn-sm" style="margin-top:8px; width:100%; justify-content:center;" type="button">
+          + Chọn mua
+        </button>
+      `}
     `;
 
     card.onclick = () => {
+      if (isOutOfStock) {
+        showToast(`Sản phẩm "${name}" hiện đã hết hàng khả dụng trong kho!`, 'warning');
+        return;
+      }
       posAddProductToActiveOrder({
         ctspId: p.id,
         name: name,
@@ -1191,11 +1216,22 @@ function posAddProductToActiveOrder(itemData) {
   const order = getActivePosOrder();
   if (!order) return;
 
+  const productInfo = (state.productsList || []).find(p => p.id === itemData.ctspId);
+  const maxStock = (productInfo && productInfo.soLuong !== undefined) ? Number(productInfo.soLuong) : 999;
+
   const existing = order.items.find(i => i.ctspId === itemData.ctspId);
   if (existing) {
+    if (existing.qty >= maxStock) {
+      showToast(`Số lượng tồn kho khả dụng chỉ còn ${maxStock} máy!`, 'warning');
+      return;
+    }
     existing.qty += 1;
     showToast(`Đã tăng số lượng: ${itemData.name} (x${existing.qty})`);
   } else {
+    if (maxStock <= 0) {
+      showToast(`Sản phẩm này hiện đã hết hàng trong kho!`, 'warning');
+      return;
+    }
     order.items.push({
       ctspId: itemData.ctspId,
       name: itemData.name,
@@ -1323,8 +1359,9 @@ window.submitPosCheckout = async function(isCompleted = true) {
       renderPosCart();
     }
 
-    // Refresh danh sách hóa đơn trong tab Quản lý Hóa Đơn
+    // Refresh danh sách hóa đơn trong tab Quản lý Hóa Đơn và cập nhật số lượng tồn kho
     loadInvoicesList();
+    await loadProductsList();
 
   } catch (err) {
     console.error('Error in POS checkout:', err);
@@ -2256,8 +2293,9 @@ window.proceedOrderAction = async function(invoiceId, actionType) {
     }
   }
 
-  // Reload current invoice detail & list
+  // Reload current invoice detail & list & product stock
   await loadInvoicesList();
+  loadProductsList();
   openInvoiceDetail(invoiceId);
 };
 

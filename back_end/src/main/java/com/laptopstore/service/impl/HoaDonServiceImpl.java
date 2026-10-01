@@ -284,6 +284,14 @@ public class HoaDonServiceImpl implements HoaDonService {
         // 8. Lưu tất cả chi_tiet_hoa_don_imei (IMEI.trang_thai vẫn giữ = 0)
         chiTietHoaDonImeiRepository.saveAll(toSaveList);
 
+        // Cập nhật lại số lượng khả dụng trong kho cho các CTSP
+        for (ChiTietHoaDon cthd : cthdList) {
+            if (cthd.getChiTietSanPham() != null && cthd.getChiTietSanPham().getId() != null) {
+                Integer ctspId = cthd.getChiTietSanPham().getId();
+                chiTietSanPhamRepository.updateSoLuong(ctspId, imeiRepository.countAvailableByChiTietSanPhamId(ctspId));
+            }
+        }
+
         // 9. Gán nhân viên xử lý & chuyển trạng thái sang 1 (Đã xác nhận)
         existing.setNhanVien(nv);
         existing.setTrangThai(1);
@@ -379,14 +387,21 @@ public class HoaDonServiceImpl implements HoaDonService {
         // và XÓA các bản ghi liên kết chi_tiet_hoa_don_imei để IMEI trở lại khả dụng
         List<ChiTietHoaDonImei> cthdImeis = chiTietHoaDonImeiRepository.findByChiTietHoaDonHoaDonId(id);
         if (cthdImeis != null && !cthdImeis.isEmpty()) {
+            java.util.Set<Integer> affectedCtspIds = new java.util.HashSet<>();
             for (ChiTietHoaDonImei cti : cthdImeis) {
                 Imei imei = cti.getImei();
                 if (imei != null) {
                     imei.setTrangThai(0);
                     imeiRepository.save(imei);
+                    if (imei.getChiTietSanPham() != null && imei.getChiTietSanPham().getId() != null) {
+                        affectedCtspIds.add(imei.getChiTietSanPham().getId());
+                    }
                 }
             }
             chiTietHoaDonImeiRepository.deleteAll(cthdImeis);
+            for (Integer ctspId : affectedCtspIds) {
+                chiTietSanPhamRepository.updateSoLuong(ctspId, imeiRepository.countAvailableByChiTietSanPhamId(ctspId));
+            }
         }
 
         return hoaDonRepository.save(existing);
@@ -631,6 +646,14 @@ public class HoaDonServiceImpl implements HoaDonService {
             for (Imei imei : imeisToUpdateSold) {
                 imei.setTrangThai(1); // 1 = Đã bán
                 imeiRepository.save(imei);
+            }
+        }
+
+        // 10. Cập nhật lại số lượng tồn kho khả dụng cho các CTSP trong hóa đơn
+        for (ChiTietHoaDon cthd : cthdList) {
+            if (cthd.getChiTietSanPham() != null && cthd.getChiTietSanPham().getId() != null) {
+                Integer ctspId = cthd.getChiTietSanPham().getId();
+                chiTietSanPhamRepository.updateSoLuong(ctspId, imeiRepository.countAvailableByChiTietSanPhamId(ctspId));
             }
         }
 
