@@ -295,6 +295,80 @@
       font-size: 1.35rem;
     }
 
+    /* Payment Method Section */
+    .checkout-payment-methods-section {
+      margin-top: 18px;
+      padding-top: 16px;
+      border-top: 1px dashed var(--border-color, #e2e8f0);
+    }
+
+    .payment-section-title {
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: var(--text-main, #0f172a);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .payment-method-option {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      background: #f0fdf4;
+      border: 1.5px solid #22c55e;
+      border-radius: 8px;
+      padding: 12px 14px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .payment-method-option:hover {
+      border-color: #16a34a;
+      background: #ecfdf5;
+    }
+
+    .payment-radio {
+      margin-top: 3px;
+      accent-color: #16a34a;
+      width: 17px;
+      height: 17px;
+      cursor: pointer;
+    }
+
+    .payment-info {
+      flex: 1;
+    }
+
+    .payment-title {
+      font-size: 0.92rem;
+      font-weight: 700;
+      color: #0f172a;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 4px;
+    }
+
+    .badge-cod {
+      font-size: 0.72rem;
+      background: #dcfce7;
+      color: #15803d;
+      padding: 2px 7px;
+      border-radius: 4px;
+      font-weight: 600;
+      border: 1px solid #bbf7d0;
+    }
+
+    .payment-desc {
+      font-size: 0.82rem;
+      color: #64748b;
+      line-height: 1.4;
+    }
+
     /* Main Action Button */
     .btn-submit-order {
       width: 100%;
@@ -648,6 +722,26 @@
               <span class="total-amount" id="checkoutTotalAmount">0 đ</span>
             </div>
 
+            <!-- PHƯƠNG THỨC THANH TOÁN -->
+            <div class="checkout-payment-methods-section">
+              <div class="payment-section-title">
+                <svg style="width: 16px; height: 16px; color: #16a34a;" fill="currentColor" viewBox="0 0 24 24"><path d="M21 18v1c0 1.1-.9 2-2 2H5c-1.11 0-2-.9-2-2V5c0-1.1.89-2 2-2h14c1.1 0 2 .9 2 2v1h-9c-1.11 0-2 .9-2 2v8c0 1.1.89 2 2 2h9zm-9-2h10V8H12v8zm4-2.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>
+                <span>Phương thức thanh toán</span>
+              </div>
+              <label class="payment-method-option" for="paymentCodRadio">
+                <input type="radio" id="paymentCodRadio" name="paymentMethod" value="COD" class="payment-radio" checked>
+                <div class="payment-info">
+                  <div class="payment-title">
+                    <span>Thanh toán khi nhận hàng (COD)</span>
+                    <span class="badge-cod">Tiền mặt</span>
+                  </div>
+                  <div class="payment-desc">
+                    Thanh toán bằng tiền mặt khi nhận được sản phẩm tại địa chỉ giao hàng.
+                  </div>
+                </div>
+              </label>
+            </div>
+
             <!-- Submit Order Button (Placeholder for current step) -->
             <button class="btn-submit-order" id="btnPlaceOrder" type="button" onclick="handlePlaceOrderPlaceholder()">
               <svg style="width: 22px; height: 22px;" fill="currentColor" viewBox="0 0 24 24"><path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"/></svg>
@@ -701,7 +795,7 @@
   </footer>
 
   <!-- Checkout Logic Script -->
-  <script src="../js/checkout.js?v=20261002_1650"></script>
+  <script src="../js/checkout.js?v=20261002_1720"></script>
 
 </body>
 </html>

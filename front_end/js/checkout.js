@@ -194,7 +194,13 @@ function renderCheckoutData(data, user) {
   const statusMsg = document.getElementById('voucherStatusMsg');
   if (statusMsg) statusMsg.style.display = 'none';
 
-  // 5. Hiển thị cảnh báo tổng thể nếu có sản phẩm thiếu hàng
+  // 5. Đảm bảo phương thức thanh toán COD luôn được chọn mặc định
+  const codRadio = document.getElementById('paymentCodRadio');
+  if (codRadio) {
+    codRadio.checked = true;
+  }
+
+  // 6. Hiển thị cảnh báo tổng thể nếu có sản phẩm thiếu hàng
   const globalAlert = document.getElementById('checkoutGlobalAlert');
   const alertText = document.getElementById('checkoutGlobalAlertText');
   if (data.coCanhBaoTonKho) {
@@ -311,7 +317,8 @@ function handlePlaceOrderPlaceholder() {
   }
 
   // Bước này CHỈ là trang Checkout, chưa tạo đơn hàng vào DB
-  showToast(`✓ Đã xác nhận thông tin nhận hàng của ${name}. Chức năng Đặt Hàng sẽ được xử lý ở bước tiếp theo!`, 'success');
+  const payMethod = document.querySelector('input[name="paymentMethod"]:checked')?.value || 'COD';
+  showToast(`✓ Đã xác nhận thông tin nhận hàng của ${name} (Phương thức: ${payMethod}). Chức năng Đặt Hàng sẽ được xử lý ở bước tiếp theo!`, 'success');
 }
 
 // Hiển thị tài khoản người dùng trên header
