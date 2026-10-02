@@ -287,26 +287,42 @@ async function handleSelectVoucher(voucherIdVal) {
 }
 window.handleSelectVoucher = handleSelectVoucher;
 
-// Xử lý nút [ĐẶT HÀNG] dạng Placeholder (CHƯA tạo hóa đơn, CHƯA phân bổ IMEI ở bước này)
-function handlePlaceOrderPlaceholder() {
-  const name = document.getElementById('recipientName')?.value.trim();
-  const phone = document.getElementById('recipientPhone')?.value.trim();
-  const address = document.getElementById('recipientAddress')?.value.trim();
-  const note = document.getElementById('orderNotes')?.value.trim();
+// Xử lý sự kiện bấm nút [ĐẶT HÀNG]
+async function handlePlaceOrder() {
+  const user = getLoggedInCustomer();
+  if (!user) {
+    showToast('Vui lòng đăng nhập để tiến hành đặt hàng!', 'warning');
+    return;
+  }
+
+  const nameInput = document.getElementById('recipientName');
+  const phoneInput = document.getElementById('recipientPhone');
+  const addressInput = document.getElementById('recipientAddress');
+  const noteInput = document.getElementById('orderNotes');
+
+  const name = nameInput ? nameInput.value.trim() : '';
+  const phone = phoneInput ? phoneInput.value.trim() : '';
+  const address = addressInput ? addressInput.value.trim() : '';
+  const note = noteInput ? noteInput.value.trim() : '';
 
   if (!name) {
     showToast('Vui lòng nhập họ và tên người nhận hàng!', 'warning');
-    document.getElementById('recipientName')?.focus();
+    nameInput?.focus();
     return;
   }
   if (!phone) {
     showToast('Vui lòng nhập số điện thoại người nhận hàng!', 'warning');
-    document.getElementById('recipientPhone')?.focus();
+    phoneInput?.focus();
+    return;
+  }
+  if (!/^(0[3|5|7|8|9])[0-9]{8}$/.test(phone)) {
+    showToast('Số điện thoại nhận hàng không hợp lệ (10 chữ số)!', 'warning');
+    phoneInput?.focus();
     return;
   }
   if (!address) {
     showToast('Vui lòng nhập địa chỉ giao hàng!', 'warning');
-    document.getElementById('recipientAddress')?.focus();
+    addressInput?.focus();
     return;
   }
 
@@ -316,10 +332,77 @@ function handlePlaceOrderPlaceholder() {
     return;
   }
 
-  // Bước này CHỈ là trang Checkout, chưa tạo đơn hàng vào DB
+  const voucherSelect = document.getElementById('checkoutVoucherSelect');
+  const voucherId = voucherSelect && voucherSelect.value ? parseInt(voucherSelect.value, 10) : null;
   const payMethod = document.querySelector('input[name="paymentMethod"]:checked')?.value || 'COD';
-  showToast(`✓ Đã xác nhận thông tin nhận hàng của ${name} (Phương thức: ${payMethod}). Chức năng Đặt Hàng sẽ được xử lý ở bước tiếp theo!`, 'success');
+
+  const btn = document.getElementById('btnPlaceOrder');
+  const originalBtnHtml = btn ? btn.innerHTML : 'ĐẶT HÀNG';
+
+  try {
+    // Chống double click
+    if (btn) {
+      btn.disabled = true;
+      btn.style.opacity = '0.7';
+      btn.innerHTML = `
+        <svg style="width: 20px; height: 20px; animation: spin 1s linear infinite;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10" stroke-opacity="0.25"></circle>
+          <path d="M12 2a10 10 0 0 1 10 10" stroke-linecap="round"></path>
+        </svg>
+        ĐANG ĐẶT HÀNG...
+      `;
+    }
+
+    const payload = {
+      tenNguoiNhan: name,
+      dienThoai: phone,
+      diaChi: address,
+      ghiChu: note,
+      voucherId: voucherId,
+      phuongThucThanhToan: payMethod
+    };
+
+    const res = await fetch(`${API_BASE_URL}/checkout/dat-hang`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-User-Id': user.id.toString()
+      },
+      credentials: 'include',
+      body: JSON.stringify(payload)
+    });
+
+    const result = await res.json();
+
+    if (res.ok && result.success) {
+      showToast(result.message || 'Đặt hàng thành công!', 'success');
+      // Xóa giỏ hàng local nếu có
+      localStorage.removeItem('laptop_store_cart');
+
+      // Chuyển hướng sang trang đặt hàng thành công
+      setTimeout(() => {
+        window.location.href = `order-success.html?orderCode=${encodeURIComponent(result.maHoaDon || '')}&total=${encodeURIComponent(result.tongThanhToan || 0)}`;
+      }, 600);
+    } else {
+      showToast(result.message || 'Đặt hàng thất bại. Vui lòng thử lại!', 'warning');
+      if (btn) {
+        btn.disabled = false;
+        btn.style.opacity = '1';
+        btn.innerHTML = originalBtnHtml;
+      }
+    }
+  } catch (err) {
+    console.error('Lỗi khi đặt hàng:', err);
+    showToast('Lỗi kết nối khi gửi yêu cầu đặt hàng!', 'error');
+    if (btn) {
+      btn.disabled = false;
+      btn.style.opacity = '1';
+      btn.innerHTML = originalBtnHtml;
+    }
+  }
 }
+window.handlePlaceOrder = handlePlaceOrder;
+window.handlePlaceOrderPlaceholder = handlePlaceOrder;
 
 // Hiển thị tài khoản người dùng trên header
 function renderHeaderUser(user) {

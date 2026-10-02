@@ -84,6 +84,42 @@ public class GioHangController {
         return ResponseEntity.ok(gioHangService.applyVoucher(khachHangId, voucherId));
     }
 
+    @PostMapping("/checkout/dat-hang")
+    public ResponseEntity<com.laptopstore.dto.DatHangResponse> datHang(
+            @RequestBody com.laptopstore.dto.DatHangRequest request,
+            HttpSession session,
+            @RequestHeader(value = "X-User-Id", required = false) Integer headerUserId) {
+        Integer khachHangId = null;
+        if (session != null) {
+            khachHangId = (Integer) session.getAttribute("CURRENT_USER_ID");
+        }
+        if (khachHangId == null && headerUserId != null) {
+            khachHangId = headerUserId;
+        }
+        if (khachHangId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(com.laptopstore.dto.DatHangResponse.builder()
+                            .success(false)
+                            .message("Vui lòng đăng nhập để tiến hành đặt hàng!")
+                            .build());
+        }
+        try {
+            return ResponseEntity.ok(gioHangService.datHangOnline(khachHangId, request));
+        } catch (IllegalArgumentException | com.laptopstore.exception.ResourceNotFoundException e) {
+            return ResponseEntity.badRequest()
+                    .body(com.laptopstore.dto.DatHangResponse.builder()
+                            .success(false)
+                            .message(e.getMessage())
+                            .build());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(com.laptopstore.dto.DatHangResponse.builder()
+                            .success(false)
+                            .message("Đã xảy ra lỗi khi xử lý đặt hàng: " + e.getMessage())
+                            .build());
+        }
+    }
+
     @PostMapping("/sync-login-cart")
     public ResponseEntity<CartSyncResponse> syncLoginCart(
             @RequestBody SyncCartRequest request,
