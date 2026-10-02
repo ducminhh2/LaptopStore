@@ -283,6 +283,69 @@ function renderProductDetails(item) {
   updateMainImage();
   renderThumbnails();
 
+  // Check in-stock status
+  const inStock = (item.soLuong > 0 && item.trangThai === 1);
+  const stockDesc = inStock 
+    ? `Hàng mới 100% nguyên seal - Sẵn hàng tại kho (${item.soLuong} máy)`
+    : `<span style="color: #ef4444; font-weight: 700;">Tạm hết hàng</span> (Kho hiện còn 0 máy)`;
+
+  // Update Stock Status Badge in meta-badges
+  const stockBadgeEl = document.getElementById('detailStockStatusBadge');
+  if (stockBadgeEl) {
+    if (inStock) {
+      stockBadgeEl.className = 'stock-status-badge in-stock';
+      stockBadgeEl.textContent = `Còn hàng (${item.soLuong} máy)`;
+    } else {
+      stockBadgeEl.className = 'stock-status-badge out-stock';
+      stockBadgeEl.textContent = 'Tạm hết hàng';
+    }
+  }
+
+  // Update Action Buttons & Quantity control based on stock
+  const addCartBtn = document.querySelector('.btn-detail-add-cart');
+  const buyNowBtn = document.querySelector('.btn-detail-buy-now');
+  const qtyInput = document.getElementById('detailQtyInput');
+  const qtyBtns = document.querySelectorAll('.detail-qty-btn');
+
+  if (addCartBtn) {
+    if (!inStock) {
+      addCartBtn.disabled = true;
+      addCartBtn.classList.add('disabled');
+      addCartBtn.innerHTML = `
+        <svg style="width: 20px; height: 20px;" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+        TẠM HẾT HÀNG
+      `;
+    } else {
+      addCartBtn.disabled = false;
+      addCartBtn.classList.remove('disabled');
+      addCartBtn.innerHTML = `
+        <svg style="width: 20px; height: 20px;" fill="currentColor" viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>
+        THÊM VÀO GIỎ HÀNG
+      `;
+    }
+  }
+
+  if (buyNowBtn) {
+    if (!inStock) {
+      buyNowBtn.disabled = true;
+      buyNowBtn.classList.add('disabled');
+      buyNowBtn.textContent = 'LIÊN HỆ ĐẶT TRƯỚC';
+    } else {
+      buyNowBtn.disabled = false;
+      buyNowBtn.classList.remove('disabled');
+      buyNowBtn.textContent = 'ĐẶT HÀNG NGAY';
+    }
+  }
+
+  if (qtyInput) {
+    qtyInput.value = inStock ? '1' : '0';
+  }
+  qtyBtns.forEach(btn => {
+    btn.disabled = !inStock;
+    btn.style.opacity = inStock ? '1' : '0.5';
+    btn.style.cursor = inStock ? 'pointer' : 'not-allowed';
+  });
+
   // Update Specifications list (Checkmarks)
   const specsListEl = document.getElementById('detailSpecsList');
   if (specsListEl) {
@@ -313,7 +376,7 @@ function renderProductDetails(item) {
       </li>
       <li>
         <svg fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
-        <span><strong>Tình trạng:</strong> Hàng mới 100% nguyên seal - Sẵn hàng tại kho (${item.soLuong || 1} máy)</span>
+        <span><strong>Tình trạng:</strong> ${stockDesc}</span>
       </li>
     `;
   }
@@ -369,6 +432,7 @@ async function renderProductVariants(currentItem) {
       <div class="detail-variants-grid">
         ${allVariantsOfProduct.map(variant => {
           const isActive = variant.id === currentItem.id;
+          const isVariantInStock = (variant.soLuong > 0 && variant.trangThai === 1);
           const pricing = getPricingInfo(variant);
           const cpu = variant.cpu?.tenCpu ? variant.cpu.tenCpu.replace('Intel Core ', '').replace('AMD ', '') : '';
           const gpu = variant.cardDoHoa?.tenCard ? variant.cardDoHoa.tenCard.replace(/^NVIDIA GeForce /i, '').replace(/^NVIDIA /i, '').trim() : '';
@@ -379,8 +443,11 @@ async function renderProductVariants(currentItem) {
           const subSpecs = [cpu, gpu].filter(Boolean).join(' • ');
           
           return `
-            <button type="button" class="variant-choice-btn ${isActive ? 'active' : ''}" onclick="selectProductVariant(${variant.id})">
-              <span class="variant-spec-title">${specText}</span>
+            <button type="button" class="variant-choice-btn ${isActive ? 'active' : ''} ${!isVariantInStock ? 'out-of-stock' : ''}" onclick="selectProductVariant(${variant.id})">
+              <div style="display: flex; justify-content: space-between; align-items: flex-start; width: 100%;">
+                <span class="variant-spec-title">${specText}</span>
+                ${!isVariantInStock ? '<span class="variant-stock-tag">Hết hàng</span>' : ''}
+              </div>
               <span class="variant-sub-spec" title="${subSpecs}">${subSpecs}</span>
               <div class="variant-price-row">
                 <span class="variant-sale-price">${formatVND(pricing.giaBan)}</span>
@@ -580,11 +647,15 @@ function navigateGallery(direction) {
 
 // Quantity selector
 function changeDetailQty(delta) {
+  if (!currentProduct || !currentProduct.soLuong || currentProduct.soLuong <= 0) {
+    showToast('Phiên bản này tạm thời hết hàng!');
+    return;
+  }
   const qtyInput = document.getElementById('detailQtyInput');
   if (!qtyInput) return;
   let val = parseInt(qtyInput.value || '1', 10) + delta;
   if (val < 1) val = 1;
-  if (currentProduct && currentProduct.soLuong && val > currentProduct.soLuong) {
+  if (val > currentProduct.soLuong) {
     val = currentProduct.soLuong;
     showToast(`Kho chỉ còn ${currentProduct.soLuong} sản phẩm!`);
   }
@@ -594,6 +665,10 @@ function changeDetailQty(delta) {
 // Action: THÊM VÀO GIỎ HÀNG
 function handleAddToCart(openDrawerAfterAdd = false) {
   if (!currentProduct) return;
+  if (!currentProduct.soLuong || currentProduct.soLuong <= 0 || currentProduct.trangThai !== 1) {
+    showToast('Phiên bản này hiện tại đã hết hàng!', 'error');
+    return;
+  }
 
   const qty = parseInt(document.getElementById('detailQtyInput')?.value || '1', 10);
   const pricing = getPricingInfo(currentProduct);
