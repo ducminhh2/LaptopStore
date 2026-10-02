@@ -169,13 +169,32 @@ function renderCheckoutData(data, user) {
     }).join('');
   }
 
-  // 3. Render tổng tiền & số lượng
+  // 3. Render danh sách Voucher vào Dropdown
+  const voucherSelect = document.getElementById('checkoutVoucherSelect');
+  if (voucherSelect) {
+    let optionsHtml = '<option value="">Không áp dụng</option>';
+    const vouchers = data.vouchers || [];
+    vouchers.forEach(v => {
+      const isEligible = v.duDieuKien;
+      const disabledAttr = isEligible ? '' : 'disabled';
+      const label = formatVoucherLabel(v);
+      optionsHtml += `<option value="${v.id}" ${disabledAttr}>${label}</option>`;
+    });
+    voucherSelect.innerHTML = optionsHtml;
+    voucherSelect.value = '';
+  }
+
+  // 4. Render tổng tiền & số lượng
   document.getElementById('checkoutTotalItemCount').textContent = data.tongSoLuong || 0;
   document.getElementById('checkoutCartBadge').textContent = data.tongSoLuong || 0;
   document.getElementById('checkoutSubtotal').textContent = formatCurrency(data.tongTienHang);
+  document.getElementById('checkoutVoucherDiscount').textContent = '0 đ';
+  document.getElementById('checkoutVoucherDiscount').style.color = '#15803d';
   document.getElementById('checkoutTotalAmount').textContent = formatCurrency(data.tongTienHang);
+  const statusMsg = document.getElementById('voucherStatusMsg');
+  if (statusMsg) statusMsg.style.display = 'none';
 
-  // 4. Hiển thị cảnh báo tổng thể nếu có sản phẩm thiếu hàng
+  // 5. Hiển thị cảnh báo tổng thể nếu có sản phẩm thiếu hàng
   const globalAlert = document.getElementById('checkoutGlobalAlert');
   const alertText = document.getElementById('checkoutGlobalAlertText');
   if (data.coCanhBaoTonKho) {
@@ -185,6 +204,82 @@ function renderCheckoutData(data, user) {
     globalAlert.style.display = 'none';
   }
 }
+
+// Định dạng hiển thị tên Voucher trong Dropdown
+function formatVoucherLabel(v) {
+  let label = `${v.ma} - Giảm ${v.loaiGiamHienThi}`;
+  if (v.giamToiDa && v.giamToiDa > 0 && v.loaiGiam === 1) {
+    label += ` (Tối đa ${formatCurrency(v.giamToiDa)})`;
+  }
+  if (v.giaTriDonToiThieu && v.giaTriDonToiThieu > 0) {
+    label += ` - Đơn từ ${formatCurrency(v.giaTriDonToiThieu)}`;
+  }
+  if (!v.duDieuKien) {
+    label += ` [Chưa đủ điều kiện]`;
+  }
+  return label;
+}
+
+// Xử lý khi khách chọn Voucher từ Dropdown
+async function handleSelectVoucher(voucherIdVal) {
+  const user = getLoggedInCustomer();
+  if (!user) return;
+
+  const voucherId = voucherIdVal ? parseInt(voucherIdVal, 10) : null;
+  const statusMsg = document.getElementById('voucherStatusMsg');
+  const discountEl = document.getElementById('checkoutVoucherDiscount');
+  const totalAmountEl = document.getElementById('checkoutTotalAmount');
+
+  try {
+    const res = await fetch(`${API_BASE_URL}/checkout/apply-voucher`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-User-Id': user.id.toString()
+      },
+      credentials: 'include',
+      body: JSON.stringify({ voucherId })
+    });
+
+    const result = await res.json();
+
+    if (res.ok && result.success) {
+      if (result.tienGiamVoucher > 0) {
+        discountEl.textContent = '-' + formatCurrency(result.tienGiamVoucher);
+        discountEl.style.color = '#dc2626';
+      } else {
+        discountEl.textContent = '0 đ';
+        discountEl.style.color = '#15803d';
+      }
+
+      totalAmountEl.textContent = formatCurrency(result.tongThanhToan);
+
+      if (statusMsg) {
+        statusMsg.style.display = 'block';
+        statusMsg.style.color = '#15803d';
+        statusMsg.textContent = `✓ ${result.message}`;
+      }
+      if (voucherId) {
+        showToast(result.message, 'success');
+      }
+    } else {
+      discountEl.textContent = '0 đ';
+      discountEl.style.color = '#15803d';
+      totalAmountEl.textContent = formatCurrency(result.tamTinh || checkoutData.tongTienHang);
+
+      if (statusMsg) {
+        statusMsg.style.display = 'block';
+        statusMsg.style.color = '#dc2626';
+        statusMsg.textContent = `✗ ${result.message || 'Không thể áp dụng Voucher này.'}`;
+      }
+      showToast(result.message || 'Voucher không hợp lệ!', 'warning');
+    }
+  } catch (err) {
+    console.error('Lỗi khi áp dụng Voucher:', err);
+    showToast('Lỗi kết nối khi kiểm tra Voucher!', 'error');
+  }
+}
+window.handleSelectVoucher = handleSelectVoucher;
 
 // Xử lý nút [ĐẶT HÀNG] dạng Placeholder (CHƯA tạo hóa đơn, CHƯA phân bổ IMEI ở bước này)
 function handlePlaceOrderPlaceholder() {

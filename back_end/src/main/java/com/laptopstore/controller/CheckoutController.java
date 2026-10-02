@@ -37,4 +37,29 @@ public class CheckoutController {
 
         return ResponseEntity.ok(gioHangService.getCheckoutInfo(khachHangId));
     }
+
+    @PostMapping("/apply-voucher")
+    public ResponseEntity<com.laptopstore.dto.ApplyVoucherResponse> applyVoucher(
+            @RequestBody com.laptopstore.dto.ApplyVoucherRequest request,
+            HttpSession session,
+            @RequestHeader(value = "X-User-Id", required = false) Integer headerUserId) {
+        Integer khachHangId = null;
+        if (session != null) {
+            khachHangId = (Integer) session.getAttribute("CURRENT_USER_ID");
+        }
+        if (khachHangId == null && headerUserId != null) {
+            khachHangId = headerUserId;
+        }
+
+        if (khachHangId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(com.laptopstore.dto.ApplyVoucherResponse.builder()
+                            .success(false)
+                            .message("Vui lòng đăng nhập để sử dụng Voucher!")
+                            .build());
+        }
+
+        Integer voucherId = request != null ? request.getVoucherId() : null;
+        return ResponseEntity.ok(gioHangService.applyVoucher(khachHangId, voucherId));
+    }
 }

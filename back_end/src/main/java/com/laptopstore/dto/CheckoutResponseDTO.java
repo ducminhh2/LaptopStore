@@ -32,4 +32,8 @@ public class CheckoutResponseDTO {
     // Trạng thái kiểm tra tồn kho
     private Boolean coCanhBaoTonKho;
     private String thongBaoTonKho;
+
+    // Danh sách Voucher khả dụng cho đơn hàng này
+    @Builder.Default
+    private List<VoucherResponse> vouchers = new ArrayList<>();
 }

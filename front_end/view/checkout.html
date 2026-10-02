@@ -619,16 +619,32 @@
           <div class="checkout-summary-box">
             <div class="summary-row">
               <span>Tạm tính tiền hàng:</span>
-              <span id="checkoutSubtotal" style="font-weight: 600; color: #cbd5e1;">0 đ</span>
+              <span id="checkoutSubtotal" style="font-weight: 600; color: var(--text-main, #1e293b);">0 đ</span>
             </div>
 
             <div class="summary-row">
               <span>Phí vận chuyển:</span>
-              <span style="color: #22c55e; font-weight: 600;">Miễn phí</span>
+              <span style="color: #15803d; font-weight: 600;">Miễn phí</span>
+            </div>
+
+            <!-- Voucher Selection Section -->
+            <div class="checkout-voucher-section" style="margin: 14px 0; padding: 14px; background: #f8fafc; border: 1px solid var(--border-light, #edf2f7); border-radius: 8px;">
+              <label for="checkoutVoucherSelect" style="display: block; font-size: 0.88rem; font-weight: 700; color: var(--text-main, #1e293b); margin-bottom: 6px;">
+                Mã giảm giá (Voucher):
+              </label>
+              <select id="checkoutVoucherSelect" class="checkout-input" style="padding: 10px 12px; font-size: 0.88rem; cursor: pointer; width: 100%; border: 1px solid #cbd5e1; border-radius: 6px;" onchange="handleSelectVoucher(this.value)">
+                <option value="">Không áp dụng</option>
+              </select>
+              <div id="voucherStatusMsg" style="font-size: 0.8rem; margin-top: 6px; color: #64748b; display: none;"></div>
+            </div>
+
+            <div class="summary-row" id="voucherDiscountRow">
+              <span>Giảm Voucher:</span>
+              <span id="checkoutVoucherDiscount" style="font-weight: 700; color: #15803d;">0 đ</span>
             </div>
 
             <div class="summary-row total-row">
-              <span>TỔNG TIỀN HÀNG:</span>
+              <span>TỔNG THANH TOÁN:</span>
               <span class="total-amount" id="checkoutTotalAmount">0 đ</span>
             </div>
 
@@ -685,7 +701,7 @@
   </footer>
 
   <!-- Checkout Logic Script -->
-  <script src="../js/checkout.js?v=20261002_1630"></script>
+  <script src="../js/checkout.js?v=20261002_1650"></script>
 
 </body>
 </html>

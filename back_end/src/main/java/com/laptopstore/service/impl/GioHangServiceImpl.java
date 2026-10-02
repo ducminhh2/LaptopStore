@@ -36,6 +36,7 @@ public class GioHangServiceImpl implements GioHangService {
     private final NguoiDungRepository nguoiDungRepository;
     private final ImeiRepository imeiRepository;
     private final KhuyenMaiService khuyenMaiService;
+    private final com.laptopstore.service.VoucherService voucherService;
 
     @Override
     public List<GioHang> getAll() {
@@ -442,6 +443,8 @@ public class GioHangServiceImpl implements GioHangService {
             checkoutItems.add(itemDTO);
         }
 
+        List<com.laptopstore.dto.VoucherResponse> availableVouchers = voucherService.getAvailableVouchersForPos(totalAmount);
+
         return CheckoutResponseDTO.builder()
                 .success(true)
                 .message("Lấy thông tin thanh toán thành công")
@@ -455,6 +458,67 @@ public class GioHangServiceImpl implements GioHangService {
                 .tongTienHang(totalAmount)
                 .coCanhBaoTonKho(coCanhBaoTonKho)
                 .thongBaoTonKho(canhBaoTongHop.length() > 0 ? canhBaoTongHop.toString() : null)
+                .vouchers(availableVouchers)
+                .build();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public com.laptopstore.dto.ApplyVoucherResponse applyVoucher(Integer khachHangId, Integer voucherId) {
+        CheckoutResponseDTO checkout = getCheckoutInfo(khachHangId);
+        if (!Boolean.TRUE.equals(checkout.getSuccess()) || checkout.getItems().isEmpty()) {
+            return com.laptopstore.dto.ApplyVoucherResponse.builder()
+                    .success(false)
+                    .voucherId(voucherId)
+                    .tamTinh(BigDecimal.ZERO)
+                    .tienGiamVoucher(BigDecimal.ZERO)
+                    .phiVanChuyen(BigDecimal.ZERO)
+                    .tongThanhToan(BigDecimal.ZERO)
+                    .message("Giỏ hàng của bạn đang trống.")
+                    .build();
+        }
+
+        BigDecimal tamTinh = checkout.getTongTienHang();
+
+        // 1. Trường hợp không chọn voucher (Không áp dụng)
+        if (voucherId == null) {
+            return com.laptopstore.dto.ApplyVoucherResponse.builder()
+                    .success(true)
+                    .voucherId(null)
+                    .maVoucher(null)
+                    .tenVoucher("Không áp dụng")
+                    .tamTinh(tamTinh)
+                    .tienGiamVoucher(BigDecimal.ZERO)
+                    .phiVanChuyen(BigDecimal.ZERO)
+                    .tongThanhToan(tamTinh)
+                    .message("Không áp dụng Voucher.")
+                    .build();
+        }
+
+        // 2. Tính toán giảm giá từ Backend
+        com.laptopstore.dto.VoucherCalculationResponse calc = voucherService.calculateVoucherDiscount(voucherId, tamTinh);
+        if (calc == null || !Boolean.TRUE.equals(calc.getHopLe())) {
+            return com.laptopstore.dto.ApplyVoucherResponse.builder()
+                    .success(false)
+                    .voucherId(voucherId)
+                    .tamTinh(tamTinh)
+                    .tienGiamVoucher(BigDecimal.ZERO)
+                    .phiVanChuyen(BigDecimal.ZERO)
+                    .tongThanhToan(tamTinh)
+                    .message(calc != null ? calc.getThongBao() : "Voucher không còn hiệu lực.")
+                    .build();
+        }
+
+        return com.laptopstore.dto.ApplyVoucherResponse.builder()
+                .success(true)
+                .voucherId(voucherId)
+                .maVoucher(calc.getMaVoucher())
+                .tenVoucher(calc.getTenVoucher())
+                .tamTinh(tamTinh)
+                .tienGiamVoucher(calc.getTienGiamVoucher())
+                .phiVanChuyen(BigDecimal.ZERO)
+                .tongThanhToan(calc.getKhachPhaiTra())
+                .message(calc.getThongBao())
                 .build();
     }
 

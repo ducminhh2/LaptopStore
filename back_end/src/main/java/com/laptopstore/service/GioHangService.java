@@ -20,4 +20,5 @@ public interface GioHangService {
     List<ChiTietGioHang> updateDbCartQuantity(Integer khachHangId, Integer chiTietGioHangId, Integer soLuong);
     List<ChiTietGioHang> removeDbCartItem(Integer khachHangId, Integer chiTietGioHangId);
     com.laptopstore.dto.CheckoutResponseDTO getCheckoutInfo(Integer khachHangId);
+    com.laptopstore.dto.ApplyVoucherResponse applyVoucher(Integer khachHangId, Integer voucherId);
 }
