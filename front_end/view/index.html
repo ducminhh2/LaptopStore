@@ -140,136 +140,13 @@
   <main class="container">
 
     <!-- ==========================================================================
-         SECTION 1: PC GAMING / LAPTOP GAMING (EXACT SCREENSHOT LAYOUT)
+         DYNAMIC PRODUCT SECTIONS (Rendered strictly by category from Database)
          ========================================================================== -->
-    <section class="product-section" id="gamingSection">
-      
-      <!-- Section Header Bar with Red Angled Ribbon -->
-      <div class="section-header-bar">
-        
-        <!-- Angular Ribbon Title: PC GAMING / LAPTOP GAMING -->
-        <div class="section-banner-title">
-          LAPTOP GAMING
-        </div>
-
-        <!-- Filter tag pills -->
-        <div class="section-filter-tags">
-          <button class="filter-tag-pill active" onclick="applySubFilter('gaming', 'ALL', this)">TẤT CẢ</button>
-          <button class="filter-tag-pill" onclick="applySubFilter('gaming', 'GIA_RE', this)">GAMING GIÁ RẺ</button>
-          <button class="filter-tag-pill" onclick="applySubFilter('gaming', 'STREAM', this)">STREAM GAME</button>
-          <button class="filter-tag-pill" onclick="applySubFilter('gaming', 'PREMIUM', this)">GAMING PREMIUM</button>
-          <button class="filter-tag-pill" onclick="applySubFilter('gaming', 'CORE_ULTRA', this)">Core Ultra / Ryzen AI</button>
-          <button class="filter-tag-pill" onclick="applySubFilter('gaming', 'CAO_CAP', this)">GAMING CAO CẤP</button>
-        </div>
-
-        <!-- View All Link (Xem tất cả >>) -->
-        <a href="javascript:void(0)" class="view-all-link" onclick="applySubFilter('gaming', 'ALL', this)">
-          Xem tất cả &gt;&gt;
-        </a>
-
+    <div id="dynamicProductSections">
+      <div style="padding: 60px 20px; text-align: center; color: var(--text-muted); font-size: 1.05rem;">
+        Đang tải danh sách sản phẩm theo danh mục...
       </div>
-
-      <!-- Slider Wrapper with Carousel Arrows & Cards Grid -->
-      <div class="product-slider-wrapper">
-        <button class="section-nav-arrow prev" onclick="scrollSection('sectionGamingCards', -300)" title="Trước">❮</button>
-        
-        <!-- Product Cards Grid (5 items per row) -->
-        <div class="product-cards-grid" id="sectionGamingCards">
-          <!-- Dynamically populated from /api/chi-tiet-san-pham -->
-          <div style="grid-column: 1/-1; padding: 40px; text-align: center; color: var(--text-muted);">
-            Đang tải danh sách sản phẩm từ hệ thống...
-          </div>
-        </div>
-
-        <button class="section-nav-arrow next" onclick="scrollSection('sectionGamingCards', 300)" title="Sau">❯</button>
-      </div>
-
-    </section>
-
-
-    <!-- ==========================================================================
-         SECTION 2: PC WORKSTATION 2D 3D / LAPTOP ĐỒ HỌA
-         ========================================================================== -->
-    <section class="product-section" id="workstationSection">
-      
-      <!-- Section Header Bar with Red Angled Ribbon -->
-      <div class="section-header-bar">
-        
-        <!-- Angular Ribbon Title: PC WORKSTATION 2D 3D -->
-        <div class="section-banner-title">
-          LAPTOP WORKSTATION / ĐỒ HỌA 2D 3D
-        </div>
-
-        <!-- Filter tag pills -->
-        <div class="section-filter-tags">
-          <button class="filter-tag-pill active" onclick="applySubFilter('workstation', 'ALL', this)">TẤT CẢ</button>
-          <button class="filter-tag-pill" onclick="applySubFilter('workstation', 'RTX_4060', this)">RTX 4060 8GB</button>
-          <button class="filter-tag-pill" onclick="applySubFilter('workstation', 'CORE_ULTRA', this)">Intel Core i7 / Ultra</button>
-          <button class="filter-tag-pill" onclick="applySubFilter('workstation', 'CAO_CAP', this)">RAM 32GB Chuyên Đồ Họa</button>
-        </div>
-
-        <!-- View All Link (Xem tất cả >>) -->
-        <a href="javascript:void(0)" class="view-all-link" onclick="applySubFilter('workstation', 'ALL', this)">
-          Xem tất cả &gt;&gt;
-        </a>
-
-      </div>
-
-      <!-- Slider Wrapper with Carousel Arrows & Cards Grid -->
-      <div class="product-slider-wrapper">
-        <button class="section-nav-arrow prev" onclick="scrollSection('sectionWorkstationCards', -300)" title="Trước">❮</button>
-        
-        <!-- Product Cards Grid (5 items per row) -->
-        <div class="product-cards-grid" id="sectionWorkstationCards">
-          <!-- Dynamically populated from /api/chi-tiet-san-pham -->
-        </div>
-
-        <button class="section-nav-arrow next" onclick="scrollSection('sectionWorkstationCards', 300)" title="Sau">❯</button>
-      </div>
-
-    </section>
-
-
-    <!-- ==========================================================================
-         SECTION 3: LAPTOP VĂN PHÒNG & MỎNG NHẸ
-         ========================================================================== -->
-    <section class="product-section" id="officeSection">
-      
-      <!-- Section Header Bar -->
-      <div class="section-header-bar">
-        
-        <!-- Angular Ribbon Title -->
-        <div class="section-banner-title blue-gradient">
-          LAPTOP VĂN PHÒNG &amp; MỎNG NHẸ
-        </div>
-
-        <!-- Filter tag pills -->
-        <div class="section-filter-tags">
-          <button class="filter-tag-pill active" onclick="applySubFilter('office', 'ALL', this)">TẤT CẢ</button>
-          <button class="filter-tag-pill" onclick="applySubFilter('office', 'GIA_RE', this)">DƯỚI 20 TRIỆU</button>
-          <button class="filter-tag-pill" onclick="applySubFilter('office', 'CORE_ULTRA', this)">MÀN HÌNH OLED 120HZ</button>
-          <button class="filter-tag-pill" onclick="applySubFilter('office', 'CAO_CAP', this)">PIN TRÂU MỎNG NHẸ</button>
-        </div>
-
-        <!-- View All Link -->
-        <a href="javascript:void(0)" class="view-all-link" onclick="applySubFilter('office', 'ALL', this)">
-          Xem tất cả &gt;&gt;
-        </a>
-
-      </div>
-
-      <!-- Slider Wrapper -->
-      <div class="product-slider-wrapper">
-        <button class="section-nav-arrow prev" onclick="scrollSection('sectionOfficeCards', -300)" title="Trước">❮</button>
-        
-        <div class="product-cards-grid" id="sectionOfficeCards">
-          <!-- Dynamically populated -->
-        </div>
-
-        <button class="section-nav-arrow next" onclick="scrollSection('sectionOfficeCards', 300)" title="Sau">❯</button>
-      </div>
-
-    </section>
+    </div>
 
   </main>
 
@@ -447,7 +324,7 @@
   </script>
 
   <!-- Main JavaScript File -->
-  <script src="../js/app.js"></script>
+  <script src="../js/app.js?v=20261002_1215"></script>
 
 </body>
 </html>

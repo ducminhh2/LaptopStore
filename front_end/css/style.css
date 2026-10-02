@@ -473,6 +473,38 @@ input, select {
   transform: translateX(2px);
 }
 
+.view-all-back-btn {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  color: #334155;
+  padding: 6px 14px;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.view-all-back-btn:hover {
+  background: #f8fafc;
+  border-color: #94a3b8;
+  color: var(--primary-red);
+}
+
+.empty-sections-msg {
+  padding: 60px 20px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 1.05rem;
+  background: #ffffff;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
+  margin-top: 20px;
+}
+
 /* ==========================================================================
    PRODUCT CARDS GRID & CAROUSEL CONTAINER
    ========================================================================== */

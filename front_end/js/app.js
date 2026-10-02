@@ -11,6 +11,7 @@ let allProductDetails = [];
 let allCategories = [];
 let cart = JSON.parse(localStorage.getItem('laptop_store_cart')) || [];
 let currentFilterCategory = 'ALL';
+let currentSectionsData = [];
 
 // Fallback data if backend is offline
 const FALLBACK_PRODUCTS = [
@@ -303,9 +304,24 @@ async function fetchInitialData() {
     } else {
       throw new Error('Không thể tải dữ liệu chi tiết sản phẩm');
     }
+
+    // 3. Fetch dynamic sections by category from backend
+    try {
+      const secResponse = await fetch(`${API_BASE_URL}/danh-muc/sections?limit=5`);
+      if (secResponse.ok) {
+        currentSectionsData = await secResponse.json();
+      } else {
+        currentSectionsData = buildSectionsFromAllProducts(allProductDetails, 5);
+      }
+    } catch (secErr) {
+      console.warn('Cannot fetch /danh-muc/sections, building in memory:', secErr);
+      currentSectionsData = buildSectionsFromAllProducts(allProductDetails, 5);
+    }
+
   } catch (error) {
     console.warn('API error or server offline. Using enriched mock data:', error);
     allProductDetails = FALLBACK_PRODUCTS;
+    currentSectionsData = buildSectionsFromAllProducts(allProductDetails, 5);
     if (statusBadge) {
       statusBadge.innerHTML = `<span class="status-dot" style="background:#eab308; box-shadow:0 0 6px #eab308"></span> Dữ liệu mẫu (Backend Port 8080)`;
       statusBadge.style.background = 'rgba(234, 179, 8, 0.2)';
@@ -313,8 +329,14 @@ async function fetchInitialData() {
     }
   }
 
-  // Render product sections
-  renderAllSections(allProductDetails);
+  // Check URL query parameters (e.g. ?danhMucId=1)
+  const urlParams = new URLSearchParams(window.location.search);
+  const danhMucId = urlParams.get('danhMucId');
+  if (danhMucId) {
+    viewAllCategory(danhMucId, false);
+  } else {
+    renderDynamicSections(currentSectionsData);
+  }
 }
 
 // Populate Category Dropdowns
@@ -324,7 +346,7 @@ function populateCategoryDropdowns(categories) {
 
   if (categoryMenu) {
     categoryMenu.innerHTML = categories.map(cat => `
-      <a href="javascript:void(0)" class="category-menu-item" onclick="filterByCategory('${cat.tenDanhMuc}')">
+      <a href="javascript:void(0)" class="category-menu-item" onclick="filterByCategory(${cat.id}, '${cat.tenDanhMuc}')">
         <svg fill="currentColor" viewBox="0 0 24 24"><path d="M4 6h16v2H4zm0 5h16v2H4zm0 5h16v2H4z"/></svg>
         ${cat.tenDanhMuc}
       </a>
@@ -337,80 +359,160 @@ function populateCategoryDropdowns(categories) {
   }
 }
 
-// Filter by category from dropdown or popup menu
-function filterByCategory(categoryName) {
-  const normCat = categoryName.toLowerCase();
-  let targetSection = null;
+// Build dynamic sections grouping strictly by sanPham.id_danh_muc
+function buildSectionsFromAllProducts(items, limit = 5) {
+  const catMap = new Map();
 
-  if (normCat.includes('gaming')) {
-    targetSection = document.getElementById('gamingSection');
-  } else if (normCat.includes('đồ họa') || normCat.includes('kỹ thuật')) {
-    targetSection = document.getElementById('workstationSection');
-  } else if (normCat.includes('văn phòng') || normCat.includes('mỏng nhẹ')) {
-    targetSection = document.getElementById('officeSection');
-  }
-
-  if (targetSection) {
-    targetSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    showToast(`Đang xem danh mục: <strong>${categoryName}</strong>`);
-  } else {
-    const filtered = allProductDetails.filter(it => 
-      (it.sanPham?.danhMuc?.tenDanhMuc || '').toLowerCase().includes(normCat)
-    );
-    renderSection('sectionGamingCards', filtered);
-    const banner = document.querySelector('#gamingSection .section-banner-title');
-    if (banner) banner.textContent = categoryName.toUpperCase();
-    document.getElementById('gamingSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
-    showToast(`Đã lọc: <strong>${filtered.length} sản phẩm</strong> thuộc ${categoryName}`);
-  }
-
-  const catWrapper = document.querySelector('.category-btn-wrapper');
-  if (catWrapper) catWrapper.classList.remove('active');
-}
-
-// Render All Sections
-function renderAllSections(items) {
-  renderSection('sectionGamingCards', filterByGroup(items, 'gaming'));
-  renderSection('sectionWorkstationCards', filterByGroup(items, 'workstation'));
-  renderSection('sectionOfficeCards', filterByGroup(items, 'office'));
-}
-
-// Filter items by section group
-function filterByGroup(items, group) {
-  if (group === 'gaming') {
-    return items.filter(it => {
-      const dm = it.sanPham?.danhMuc?.tenDanhMuc?.toLowerCase() || '';
-      const name = it.sanPham?.tenSp?.toLowerCase() || '';
-      return dm.includes('gaming') || name.includes('tuf') || name.includes('nitro') || name.includes('legion');
-    });
-  } else if (group === 'workstation') {
-    return items.filter(it => {
-      const dm = it.sanPham?.danhMuc?.tenDanhMuc?.toLowerCase() || '';
-      const ram = it.ram?.dungLuong || '';
-      const gpu = it.cardDoHoa?.tenCard?.toLowerCase() || '';
-      return dm.includes('đồ họa') || gpu.includes('rtx 4060') || ram.includes('32gb');
-    });
-  } else if (group === 'office') {
-    return items.filter(it => {
-      const dm = it.sanPham?.danhMuc?.tenDanhMuc?.toLowerCase() || '';
-      const name = it.sanPham?.tenSp?.toLowerCase() || '';
-      return dm.includes('văn phòng') || dm.includes('mỏng nhẹ') || name.includes('zenbook') || name.includes('inspiron');
+  // If categories are already loaded, preserve category ordering
+  if (allCategories && allCategories.length > 0) {
+    allCategories.forEach(cat => {
+      catMap.set(cat.id, { danhMuc: cat, products: [] });
     });
   }
-  return items;
+
+  items.forEach(it => {
+    const cat = it.sanPham?.danhMuc;
+    if (!cat || !cat.id) return;
+    if (!catMap.has(cat.id)) {
+      catMap.set(cat.id, { danhMuc: cat, products: [] });
+    }
+    catMap.get(cat.id).products.push(it);
+  });
+
+  const sections = [];
+  catMap.forEach(({ danhMuc, products }) => {
+    // Only render categories that have at least 1 product
+    if (products.length > 0) {
+      sections.push({
+        danhMuc: danhMuc,
+        chiTietSanPhams: products.slice(0, limit),
+        totalProducts: products.length
+      });
+    }
+  });
+  return sections;
 }
 
-// Render product cards inside a specific section container
-function renderSection(containerId, items) {
-  const container = document.getElementById(containerId);
+// Render dynamic sections on the home page (Number of sections = Number of non-empty categories)
+function renderDynamicSections(sections) {
+  const container = document.getElementById('dynamicProductSections');
   if (!container) return;
 
-  if (!items || items.length === 0) {
-    container.innerHTML = `<div style="grid-column: 1/-1; padding: 30px; text-align:center; color: var(--text-muted)">Không có sản phẩm nào phù hợp.</div>`;
+  if (!sections || sections.length === 0) {
+    container.innerHTML = `
+      <div class="empty-sections-msg">
+        <p>Hiện chưa có sản phẩm nào được bày bán trong hệ thống.</p>
+      </div>
+    `;
     return;
   }
 
-  container.innerHTML = items.map((item, index) => createProductCardHTML(item, index)).join('');
+  // Cycle through modern gradient styles for section ribbons
+  const gradientClasses = ['', 'blue-gradient', 'purple-gradient'];
+
+  container.innerHTML = sections.map((sec, index) => {
+    const cat = sec.danhMuc;
+    const gradClass = gradientClasses[index % gradientClasses.length];
+    const items = sec.chiTietSanPhams || [];
+    const hasMore = (sec.totalProducts && sec.totalProducts > items.length) || items.length > 5;
+
+    return `
+      <section class="product-section" id="categorySection-${cat.id}">
+        <div class="section-header-bar">
+          <div class="section-banner-title ${gradClass}">
+            ${cat.tenDanhMuc.toUpperCase()}
+          </div>
+          <a href="javascript:void(0)" class="view-all-link" onclick="viewAllCategory(${cat.id})" title="Xem tất cả sản phẩm của ${cat.tenDanhMuc}">
+            Xem tất cả &gt;&gt;
+          </a>
+        </div>
+
+        <div class="product-slider-wrapper">
+          ${hasMore ? `
+            <button class="section-nav-arrow prev" onclick="scrollSection('gridCategory-${cat.id}', -300)" title="Trước">❮</button>
+          ` : ''}
+
+          <div class="product-cards-grid" id="gridCategory-${cat.id}">
+            ${items.map((item, idx) => createProductCardHTML(item, idx)).join('')}
+          </div>
+
+          ${hasMore ? `
+            <button class="section-nav-arrow next" onclick="scrollSection('gridCategory-${cat.id}', 300)" title="Sau">❯</button>
+          ` : ''}
+        </div>
+      </section>
+    `;
+  }).join('');
+}
+
+// "Xem tất cả >" mode: Displays all products strictly belonging to the chosen category
+function viewAllCategory(danhMucId, pushState = true) {
+  const catId = parseInt(danhMucId);
+  const container = document.getElementById('dynamicProductSections');
+  if (!container) return;
+
+  // Find category metadata
+  const cat = allCategories.find(c => c.id === catId) || 
+              (allProductDetails.find(p => p.sanPham?.danhMuc?.id === catId)?.sanPham?.danhMuc);
+  const catName = cat ? cat.tenDanhMuc : 'Danh mục sản phẩm';
+
+  // Filter all products strictly belonging to this category
+  const items = allProductDetails.filter(p => p.sanPham?.danhMuc?.id === catId);
+
+  if (pushState) {
+    const newUrl = new URL(window.location.href);
+    newUrl.searchParams.set('danhMucId', catId);
+    window.history.pushState({ danhMucId: catId }, '', newUrl.toString());
+  }
+
+  container.innerHTML = `
+    <section class="product-section view-all-section">
+      <div class="section-header-bar">
+        <div class="section-banner-title">
+          ${catName.toUpperCase()} <span style="font-weight: 500; font-size: 0.9rem; margin-left: 8px;">(${items.length} sản phẩm)</span>
+        </div>
+        <button type="button" class="view-all-back-btn" onclick="backToAllSections()">
+          <svg style="width:16px;height:16px;" fill="currentColor" viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+          Quay lại trang chủ
+        </button>
+      </div>
+
+      <div class="product-cards-grid view-all-grid">
+        ${items.length > 0 
+          ? items.map((item, idx) => createProductCardHTML(item, idx)).join('') 
+          : '<div style="grid-column: 1/-1; padding: 40px; text-align: center; color: var(--text-muted);">Hiện chưa có sản phẩm nào thuộc danh mục này.</div>'
+        }
+      </div>
+    </section>
+  `;
+
+  container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// Return from "Xem tất cả" to home sections
+function backToAllSections(pushState = true) {
+  if (pushState) {
+    const newUrl = new URL(window.location.href);
+    newUrl.searchParams.delete('danhMucId');
+    window.history.pushState({}, '', newUrl.toString());
+  }
+  renderDynamicSections(currentSectionsData);
+  const container = document.getElementById('dynamicProductSections');
+  if (container) container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// Filter by category from dropdown or popup menu
+function filterByCategory(categoryId, categoryName) {
+  const catWrapper = document.querySelector('.category-btn-wrapper');
+  if (catWrapper) catWrapper.classList.remove('active');
+
+  const secEl = document.getElementById(`categorySection-${categoryId}`);
+  if (secEl) {
+    secEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    showToast(`Đang xem danh mục: <strong>${categoryName}</strong>`);
+  } else {
+    viewAllCategory(categoryId);
+  }
 }
 
 // Generate Product Card HTML (Exact replica of user's image)
@@ -500,36 +602,6 @@ function changeCardImage(itemId, direction) {
   imgEl.setAttribute('data-current-index', currentIndex);
 }
 
-// Sub-filters for section tabs (e.g. "PC GAMING GIÁ RẺ", "PC Core Ultra", etc.)
-function applySubFilter(sectionGroup, filterType, btnElement) {
-  // Update active pill styling
-  const parent = btnElement.parentElement;
-  if (parent) {
-    parent.querySelectorAll('.filter-tag-pill').forEach(btn => btn.classList.remove('active'));
-    btnElement.classList.add('active');
-  }
-
-  let items = filterByGroup(allProductDetails, sectionGroup);
-
-  if (filterType === 'GIA_RE') {
-    items = items.filter(it => it.gia <= 20000000);
-  } else if (filterType === 'CAO_CAP') {
-    items = items.filter(it => it.gia > 20000000);
-  } else if (filterType === 'CORE_ULTRA') {
-    items = items.filter(it => (it.cpu?.tenCpu?.toLowerCase() || '').includes('ultra') || (it.cpu?.tenCpu?.toLowerCase() || '').includes('ryzen 7'));
-  } else if (filterType === 'RTX_4060') {
-    items = items.filter(it => (it.cardDoHoa?.tenCard?.toLowerCase() || '').includes('4060'));
-  }
-
-  if (sectionGroup === 'gaming') {
-    renderSection('sectionGamingCards', items);
-  } else if (sectionGroup === 'workstation') {
-    renderSection('sectionWorkstationCards', items);
-  } else if (sectionGroup === 'office') {
-    renderSection('sectionOfficeCards', items);
-  }
-}
-
 // Search functionality
 function handleSearch() {
   const searchInput = document.getElementById('searchInput');
@@ -538,6 +610,11 @@ function handleSearch() {
 
   const query = searchInput.value.trim().toLowerCase();
   const selectedCatId = catSelect ? catSelect.value : 'ALL';
+
+  if (!query && selectedCatId === 'ALL') {
+    backToAllSections();
+    return;
+  }
 
   let filtered = allProductDetails;
 
@@ -562,15 +639,43 @@ function handleSearch() {
     });
   }
 
-  // Scroll to gaming section and display results there
-  const mainSec = document.getElementById('sectionGamingCards');
-  if (mainSec) {
-    const banner = document.querySelector('#gamingSection .section-banner-title');
-    if (banner) banner.textContent = `KẾT QUẢ TÌM KIẾM (${filtered.length})`;
-    renderSection('sectionGamingCards', filtered);
-    mainSec.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }
+  const container = document.getElementById('dynamicProductSections');
+  if (!container) return;
+
+  container.innerHTML = `
+    <section class="product-section search-results-section">
+      <div class="section-header-bar">
+        <div class="section-banner-title">
+          KẾT QUẢ TÌM KIẾM <span style="font-weight: 500; font-size: 0.9rem; margin-left: 8px;">(${filtered.length} sản phẩm)</span>
+        </div>
+        <button type="button" class="view-all-back-btn" onclick="backToAllSections()">
+          <svg style="width:16px;height:16px;" fill="currentColor" viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+          Xem tất cả danh mục
+        </button>
+      </div>
+
+      <div class="product-cards-grid view-all-grid">
+        ${filtered.length > 0 
+          ? filtered.map((item, idx) => createProductCardHTML(item, idx)).join('') 
+          : '<div style="grid-column: 1/-1; padding: 40px; text-align: center; color: var(--text-muted);">Không tìm thấy sản phẩm nào khớp với tìm kiếm của bạn.</div>'
+        }
+      </div>
+    </section>
+  `;
+  container.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
+
+// Handle browser back/forward navigation for ?danhMucId=
+window.addEventListener('popstate', () => {
+  const urlParams = new URLSearchParams(window.location.search);
+  const catId = urlParams.get('danhMucId');
+  if (catId) {
+    viewAllCategory(catId, false);
+  } else {
+    backToAllSections(false);
+  }
+});
+
 
 // Quick View Modal
 function openProductQuickView(itemJson) {

@@ -1,5 +1,6 @@
 package com.laptopstore.controller;
 
+import com.laptopstore.dto.DanhMucSectionDTO;
 import com.laptopstore.entity.DanhMuc;
 import com.laptopstore.service.DanhMucService;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +20,11 @@ public class DanhMucController {
     @GetMapping
     public ResponseEntity<List<DanhMuc>> getAll() {
         return ResponseEntity.ok(danhMucService.getAll());
+    }
+
+    @GetMapping("/sections")
+    public ResponseEntity<List<DanhMucSectionDTO>> getSections(@RequestParam(required = false, defaultValue = "5") Integer limit) {
+        return ResponseEntity.ok(danhMucService.getDanhMucSections(limit));
     }
 
     @GetMapping("/{id}")
