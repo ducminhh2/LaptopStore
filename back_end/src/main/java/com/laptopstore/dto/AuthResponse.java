@@ -20,4 +20,5 @@ public class AuthResponse {
     private String roleCode;
     private String redirectUrl;
     private String message;
+    private CartSyncResponse cartSync;
 }

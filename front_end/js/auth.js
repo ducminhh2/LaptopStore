@@ -89,17 +89,40 @@ window.handleLoginSubmit = async function(e) {
     btn.innerHTML = 'Đang xử lý...';
   }
 
+  // Lấy giỏ hàng khách vãng lai từ localStorage (nếu có)
+  const rawGuestCart = localStorage.getItem('laptop_store_cart');
+  let guestCartPayload = [];
+  try {
+    const parsed = rawGuestCart ? JSON.parse(rawGuestCart) : [];
+    if (Array.isArray(parsed)) {
+      guestCartPayload = parsed.map(it => ({
+        idChiTietSanPham: it.id,
+        soLuong: it.quantity || 1
+      }));
+    }
+  } catch (e) {}
+
   try {
     const res = await fetch(`${API_BASE_URL}/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password })
+      body: JSON.stringify({
+        username,
+        password,
+        guestCart: guestCartPayload
+      })
     });
 
     const data = await res.json();
 
     if (!res.ok) {
       throw new Error(data.message || 'Tài khoản hoặc mật khẩu không chính xác');
+    }
+
+    // Xử lý giỏ hàng sau khi xác thực thành công theo đúng quy tắc đồ án:
+    // Khi backend xác nhận dùng DB (hoặc import DB thành công) -> xóa guest cart local
+    if (data.cartSync && data.cartSync.success && data.cartSync.cartSource === 'DATABASE') {
+      localStorage.removeItem('laptop_store_cart');
     }
 
     // Ghi nhớ đăng nhập

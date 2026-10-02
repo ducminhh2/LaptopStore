@@ -1,7 +1,11 @@
 package com.laptopstore.controller;
 
+import com.laptopstore.dto.CartSyncResponse;
+import com.laptopstore.dto.SyncCartRequest;
+import com.laptopstore.entity.ChiTietGioHang;
 import com.laptopstore.entity.GioHang;
 import com.laptopstore.service.GioHangService;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,6 +33,48 @@ public class GioHangController {
     @GetMapping("/khach-hang/{khachHangId}")
     public ResponseEntity<GioHang> getByKhachHang(@PathVariable Integer khachHangId) {
         return ResponseEntity.ok(gioHangService.getByKhachHang(khachHangId));
+    }
+
+    @GetMapping("/khach-hang/{khachHangId}/items")
+    public ResponseEntity<List<ChiTietGioHang>> getCartItemsByKhachHang(@PathVariable Integer khachHangId) {
+        return ResponseEntity.ok(gioHangService.getCartItemsByKhachHang(khachHangId));
+    }
+
+    @PostMapping("/sync-login-cart")
+    public ResponseEntity<CartSyncResponse> syncLoginCart(
+            @RequestBody SyncCartRequest request,
+            HttpSession session) {
+        Integer khachHangId = request.getKhachHangId();
+        if (khachHangId == null && session != null) {
+            khachHangId = (Integer) session.getAttribute("CURRENT_USER_ID");
+        }
+        if (khachHangId == null) {
+            throw new IllegalArgumentException("Không thể xác định người dùng đang đăng nhập!");
+        }
+        return ResponseEntity.ok(gioHangService.syncLoginCart(khachHangId, request.getGuestCart()));
+    }
+
+    @PostMapping("/khach-hang/{khachHangId}/add")
+    public ResponseEntity<List<ChiTietGioHang>> addToDbCart(
+            @PathVariable Integer khachHangId,
+            @RequestParam Integer ctspId,
+            @RequestParam(defaultValue = "1") Integer soLuong) {
+        return ResponseEntity.ok(gioHangService.addToDbCart(khachHangId, ctspId, soLuong));
+    }
+
+    @PutMapping("/khach-hang/{khachHangId}/item/{chiTietGioHangId}/so-luong/{soLuong}")
+    public ResponseEntity<List<ChiTietGioHang>> updateDbCartQuantity(
+            @PathVariable Integer khachHangId,
+            @PathVariable Integer chiTietGioHangId,
+            @PathVariable Integer soLuong) {
+        return ResponseEntity.ok(gioHangService.updateDbCartQuantity(khachHangId, chiTietGioHangId, soLuong));
+    }
+
+    @DeleteMapping("/khach-hang/{khachHangId}/item/{chiTietGioHangId}")
+    public ResponseEntity<List<ChiTietGioHang>> removeDbCartItem(
+            @PathVariable Integer khachHangId,
+            @PathVariable Integer chiTietGioHangId) {
+        return ResponseEntity.ok(gioHangService.removeDbCartItem(khachHangId, chiTietGioHangId));
     }
 
     @PostMapping

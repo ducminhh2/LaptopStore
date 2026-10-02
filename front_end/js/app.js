@@ -209,11 +209,11 @@ const FALLBACK_PRODUCTS = [
 ];
 
 // Initialize on page load
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   renderHeaderAuth();
+  await initUserCart();
   fetchInitialData();
   setupEventListeners();
-  updateCartBadge();
 });
 
 // Format VND currency
@@ -1022,8 +1022,53 @@ function closeQuickView() {
   if (modal) modal.classList.remove('active');
 }
 
-// Cart Drawer & Management
-function addToCart(itemId, quantity = 1) {
+// ==========================================================================
+// CART MANAGEMENT (Database Cart khi đã đăng nhập, LocalStorage khi chưa)
+// ==========================================================================
+
+function getLoggedInCustomer() {
+  const userStr = localStorage.getItem('laptop_store_user') || sessionStorage.getItem('laptop_store_user');
+  try {
+    const user = userStr ? JSON.parse(userStr) : null;
+    return (user && user.id) ? user : null;
+  } catch (e) {
+    return null;
+  }
+}
+
+async function initUserCart() {
+  const user = getLoggedInCustomer();
+  if (user) {
+    try {
+      const res = await fetch(`${API_BASE_URL}/gio-hang/khach-hang/${user.id}/items`);
+      if (res.ok) {
+        const dbItems = await res.json();
+        cart = dbItems.map(it => {
+          const ctsp = it.chiTietSanPham || {};
+          const pricing = getPricingInfo(ctsp);
+          const images = getProductImages(ctsp);
+          return {
+            id: ctsp.id,
+            chiTietGioHangId: it.id,
+            maCtsp: ctsp.maCtsp,
+            title: getProductDisplayTitle(ctsp),
+            price: it.giaTungSanPham != null ? Number(it.giaTungSanPham) : pricing.currentPrice,
+            image: images[0],
+            quantity: it.soLuong || 1,
+            fromDb: true
+          };
+        });
+      }
+    } catch (err) {
+      console.warn('Lỗi tải giỏ hàng từ Database:', err);
+    }
+  } else {
+    cart = JSON.parse(localStorage.getItem('laptop_store_cart')) || [];
+  }
+  updateCartBadge();
+}
+
+async function addToCart(itemId, quantity = 1) {
   const item = allProductDetails.find(p => p.id === itemId);
   if (!item) return;
 
@@ -1032,35 +1077,59 @@ function addToCart(itemId, quantity = 1) {
     return;
   }
 
-  const existing = cart.find(c => c.id === itemId);
-  const currentQtyInCart = existing ? existing.quantity : 0;
-  if (currentQtyInCart + quantity > item.soLuong) {
-    showToast(`Kho chỉ còn <strong>${item.soLuong}</strong> máy khả dụng!`, 'error');
-    return;
-  }
-
-  if (existing) {
-    existing.quantity += quantity;
+  const user = getLoggedInCustomer();
+  if (user) {
+    // ĐÃ ĐĂNG NHẬP: Lưu trực tiếp vào Database
+    try {
+      const res = await fetch(`${API_BASE_URL}/gio-hang/khach-hang/${user.id}/add?ctspId=${itemId}&soLuong=${quantity}`, {
+        method: 'POST'
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || 'Không thể thêm sản phẩm vào giỏ hàng Database');
+      }
+      await initUserCart();
+      renderCartDrawer();
+      showToast(`Đã thêm <strong>${item.sanPham?.tenSp}</strong> vào giỏ hàng!`, 'success');
+    } catch (err) {
+      showToast(err.message || 'Lỗi thêm vào giỏ hàng', 'error');
+    }
   } else {
-    const pricing = getPricingInfo(item);
-    const images = getProductImages(item);
-    cart.push({
-      id: item.id,
-      maCtsp: item.maCtsp,
-      title: getProductDisplayTitle(item),
-      price: pricing.currentPrice,
-      image: images[0],
-      quantity: quantity
-    });
-  }
+    // CHƯA ĐĂNG NHẬP: Lưu vào localStorage
+    const existing = cart.find(c => c.id === itemId);
+    const currentQtyInCart = existing ? existing.quantity : 0;
+    if (currentQtyInCart + quantity > item.soLuong) {
+      showToast(`Kho chỉ còn <strong>${item.soLuong}</strong> máy khả dụng!`, 'error');
+      return;
+    }
 
-  saveCart();
-  updateCartBadge();
-  showToast(`Đã thêm <strong>${item.sanPham?.tenSp}</strong> vào giỏ hàng!`, 'success');
+    if (existing) {
+      existing.quantity += quantity;
+    } else {
+      const pricing = getPricingInfo(item);
+      const images = getProductImages(item);
+      cart.push({
+        id: item.id,
+        maCtsp: item.maCtsp,
+        title: getProductDisplayTitle(item),
+        price: pricing.currentPrice,
+        image: images[0],
+        quantity: quantity,
+        fromDb: false
+      });
+    }
+
+    saveCart();
+    updateCartBadge();
+    showToast(`Đã thêm <strong>${item.sanPham?.tenSp}</strong> vào giỏ hàng!`, 'success');
+  }
 }
 
 function saveCart() {
-  localStorage.setItem('laptop_store_cart', JSON.stringify(cart));
+  const user = getLoggedInCustomer();
+  if (!user) {
+    localStorage.setItem('laptop_store_cart', JSON.stringify(cart));
+  }
 }
 
 function updateCartBadge() {
@@ -1132,31 +1201,76 @@ function renderCartDrawer() {
   if (totalAmountEl) totalAmountEl.textContent = formatVND(total);
 }
 
-function updateItemQuantity(itemId, delta) {
+async function updateItemQuantity(itemId, delta) {
   const item = cart.find(c => c.id === itemId);
   if (!item) return;
-  if (delta > 0) {
-    const product = allProductDetails.find(p => p.id === itemId);
-    if (product && product.soLuong !== undefined && item.quantity + delta > product.soLuong) {
-      showToast(`Kho chỉ còn ${product.soLuong} sản phẩm khả dụng!`);
-      return;
+
+  const user = getLoggedInCustomer();
+  if (user && item.chiTietGioHangId) {
+    // ĐÃ ĐĂNG NHẬP: Gọi API DB
+    const newQty = item.quantity + delta;
+    try {
+      const res = await fetch(`${API_BASE_URL}/gio-hang/khach-hang/${user.id}/item/${item.chiTietGioHangId}/so-luong/${newQty}`, {
+        method: 'PUT'
+      });
+      if (res.ok) {
+        await initUserCart();
+        renderCartDrawer();
+      } else {
+        const err = await res.json().catch(() => ({}));
+        showToast(err.message || 'Lỗi cập nhật số lượng', 'error');
+      }
+    } catch (e) {
+      showToast('Lỗi kết nối khi cập nhật giỏ hàng', 'error');
     }
+  } else {
+    // CHƯA ĐĂNG NHẬP: Cập nhật trong localStorage
+    if (delta > 0) {
+      const product = allProductDetails.find(p => p.id === itemId);
+      if (product && product.soLuong !== undefined && item.quantity + delta > product.soLuong) {
+        showToast(`Kho chỉ còn ${product.soLuong} sản phẩm khả dụng!`);
+        return;
+      }
+    }
+    item.quantity += delta;
+    if (item.quantity <= 0) {
+      cart = cart.filter(c => c.id !== itemId);
+    }
+    saveCart();
+    updateCartBadge();
+    renderCartDrawer();
   }
-  item.quantity += delta;
-  if (item.quantity <= 0) {
-    cart = cart.filter(c => c.id !== itemId);
-  }
-  saveCart();
-  updateCartBadge();
-  renderCartDrawer();
 }
 
-function removeCartItem(itemId) {
-  cart = cart.filter(c => c.id !== itemId);
-  saveCart();
-  updateCartBadge();
-  renderCartDrawer();
-  showToast('Đã xóa sản phẩm khỏi giỏ hàng.');
+async function removeCartItem(itemId) {
+  const item = cart.find(c => c.id === itemId);
+  if (!item) return;
+
+  const user = getLoggedInCustomer();
+  if (user && item.chiTietGioHangId) {
+    // ĐÃ ĐĂNG NHẬP: Gọi API xóa trong DB
+    try {
+      const res = await fetch(`${API_BASE_URL}/gio-hang/khach-hang/${user.id}/item/${item.chiTietGioHangId}`, {
+        method: 'DELETE'
+      });
+      if (res.ok) {
+        await initUserCart();
+        renderCartDrawer();
+        showToast('Đã xóa sản phẩm khỏi giỏ hàng.');
+      } else {
+        showToast('Không thể xóa sản phẩm khỏi giỏ hàng DB', 'error');
+      }
+    } catch (e) {
+      showToast('Lỗi xóa sản phẩm', 'error');
+    }
+  } else {
+    // CHƯA ĐĂNG NHẬP: Xóa trong localStorage
+    cart = cart.filter(c => c.id !== itemId);
+    saveCart();
+    updateCartBadge();
+    renderCartDrawer();
+    showToast('Đã xóa sản phẩm khỏi giỏ hàng.');
+  }
 }
 
 // Toast notification
@@ -1292,5 +1406,6 @@ function renderHeaderAuth() {
 window.logoutUser = function() {
   localStorage.removeItem('laptop_store_user');
   sessionStorage.removeItem('laptop_store_user');
+  localStorage.removeItem('laptop_store_cart'); // Theo nghiệp vụ: giỏ khách vãng lai sau logout bắt đầu trống, không xóa DB
   window.location.reload();
 };

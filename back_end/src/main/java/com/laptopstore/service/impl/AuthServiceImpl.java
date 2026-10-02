@@ -21,6 +21,7 @@ public class AuthServiceImpl implements AuthService {
 
     private final NguoiDungRepository nguoiDungRepository;
     private final VaiTroRepository vaiTroRepository;
+    private final com.laptopstore.service.GioHangService gioHangService;
 
     @Override
     @Transactional
@@ -48,7 +49,15 @@ public class AuthServiceImpl implements AuthService {
             nguoiDungRepository.save(user);
         }
 
-        return buildAuthResponse(user, "Đăng nhập thành công!");
+        AuthResponse authResponse = buildAuthResponse(user, "Đăng nhập thành công!");
+
+        // Xử lý đồng bộ giỏ hàng theo đúng nghiệp vụ sau khi đăng nhập thành công
+        if (request.getGuestCart() != null) {
+            com.laptopstore.dto.CartSyncResponse cartSync = gioHangService.syncLoginCart(user.getId(), request.getGuestCart());
+            authResponse.setCartSync(cartSync);
+        }
+
+        return authResponse;
     }
 
     @Override

@@ -18,8 +18,15 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
-        return ResponseEntity.ok(authService.login(request));
+    public ResponseEntity<AuthResponse> login(
+            @Valid @RequestBody LoginRequest request,
+            jakarta.servlet.http.HttpSession session) {
+        AuthResponse response = authService.login(request);
+        if (session != null && response != null && response.getId() != null) {
+            session.setAttribute("CURRENT_USER_ID", response.getId());
+            session.setAttribute("CURRENT_USER", response);
+        }
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/register")
