@@ -60,24 +60,9 @@
             <span>DANH MỤC SẢN PHẨM</span>
           </button>
           
-          <!-- Category Popup Menu -->
+          <!-- Category Popup Menu (Populated dynamically from DB API /api/danh-muc) -->
           <div class="category-menu-popup" id="categoryMenuPopup">
-            <a href="javascript:void(0)" class="category-menu-item" onclick="filterByCategory('Laptop Gaming')">
-              <svg fill="currentColor" viewBox="0 0 24 24"><path d="M21 6H3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-10 7H8v3H6v-3H3v-2h3V8h2v3h3v2zm4.5 2c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm4-3c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>
-              Laptop Gaming
-            </a>
-            <a href="javascript:void(0)" class="category-menu-item" onclick="filterByCategory('Laptop Văn phòng')">
-              <svg fill="currentColor" viewBox="0 0 24 24"><path d="M20 18c1.1 0 1.99-.9 1.99-2L22 6c0-1.1-.9-2-2-2H4c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2H0v2h24v-2h-4zM4 6h16v10H4V6z"/></svg>
-              Laptop Văn phòng
-            </a>
-            <a href="javascript:void(0)" class="category-menu-item" onclick="filterByCategory('Laptop Đồ họa')">
-              <svg fill="currentColor" viewBox="0 0 24 24"><path d="M21 3H3C2 3 1 4 1 5v14c0 1.1.9 2 2 2h18c1 0 2-1 2-2V5c0-1-1-2-2-2zm0 16H3V5h18v14zM5 15l3.5-4.5 2.5 3.01L14.5 9l4.5 6H5z"/></svg>
-              Laptop Đồ họa - Kỹ thuật
-            </a>
-            <a href="javascript:void(0)" class="category-menu-item" onclick="filterByCategory('Laptop Mỏng nhẹ')">
-              <svg fill="currentColor" viewBox="0 0 24 24"><path d="M4 6h16v12H4z"/><path d="M20 2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H4V4h16v12z"/></svg>
-              Laptop Mỏng nhẹ Cao cấp
-            </a>
+            <div style="padding: 12px 16px; color: #64748b; font-size: 13px;">Đang tải danh mục...</div>
           </div>
         </div>
 
@@ -85,10 +70,6 @@
         <div class="search-container">
           <select class="search-category-select" id="searchCategorySelect">
             <option value="ALL">Tất cả danh mục</option>
-            <option value="1">Laptop Gaming</option>
-            <option value="2">Laptop Văn phòng</option>
-            <option value="3">Laptop Đồ họa</option>
-            <option value="4">Laptop Mỏng nhẹ</option>
           </select>
           <div class="search-divider"></div>
           <input type="text" class="search-input" id="searchInput" placeholder="Tìm kiếm sản phẩm theo tên, CPU, GPU, mã SP...">
