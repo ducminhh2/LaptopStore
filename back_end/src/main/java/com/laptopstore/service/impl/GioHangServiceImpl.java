@@ -382,8 +382,8 @@ public class GioHangServiceImpl implements GioHangService {
                     ? promo.getGiaBan()
                     : giaGoc;
             boolean coKM = promo != null && Boolean.TRUE.equals(promo.getCoKhuyenMai());
-            BigDecimal giaTriGiam = promo != null ? promo.getGiaTriGiam() : BigDecimal.ZERO;
-            Integer loaiGiam = promo != null ? promo.getLoaiGiam() : 0;
+            BigDecimal giaTriGiam = (promo != null && promo.getGiaTriGiam() != null) ? promo.getGiaTriGiam() : BigDecimal.ZERO;
+            Integer loaiGiam = (promo != null && promo.getLoaiGiam() != null) ? promo.getLoaiGiam() : Integer.valueOf(0);
             BigDecimal thanhTien = giaBan.multiply(BigDecimal.valueOf(cartQty));
 
             totalQty += cartQty;

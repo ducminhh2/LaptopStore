@@ -85,7 +85,8 @@ async function initCheckout() {
     }
 
     if (!res.ok) {
-      throw new Error('Không thể tải thông tin thanh toán từ hệ thống máy chủ.');
+      const errData = await res.json().catch(() => null);
+      throw new Error((errData && errData.message) ? errData.message : 'Không thể tải thông tin thanh toán từ hệ thống máy chủ.');
     }
 
     checkoutData = await res.json();
