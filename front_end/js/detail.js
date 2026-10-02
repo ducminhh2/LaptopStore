@@ -339,11 +339,17 @@ async function renderProductVariants(currentItem) {
       if (res.ok) {
         allVariantsOfProduct = await res.json();
       } else {
-        allVariantsOfProduct = [currentItem];
+        allVariantsOfProduct = typeof mockProductsDetail !== 'undefined'
+          ? mockProductsDetail.filter(p => p.sanPham?.id === spId)
+          : [currentItem];
+        if (allVariantsOfProduct.length === 0) allVariantsOfProduct = [currentItem];
       }
     } catch (err) {
-      console.warn('Cannot fetch variants, using currentItem', err);
-      allVariantsOfProduct = [currentItem];
+      console.warn('Cannot fetch variants, using currentItem or mock', err);
+      allVariantsOfProduct = typeof mockProductsDetail !== 'undefined'
+        ? mockProductsDetail.filter(p => p.sanPham?.id === spId)
+        : [currentItem];
+      if (allVariantsOfProduct.length === 0) allVariantsOfProduct = [currentItem];
     }
   }
 
@@ -363,15 +369,17 @@ async function renderProductVariants(currentItem) {
           const isActive = variant.id === currentItem.id;
           const pricing = getPricingInfo(variant);
           const cpu = variant.cpu?.tenCpu ? variant.cpu.tenCpu.replace('Intel Core ', '').replace('AMD ', '') : '';
+          const gpu = variant.cardDoHoa?.tenCard ? variant.cardDoHoa.tenCard.replace(/^NVIDIA GeForce /i, '').replace(/^NVIDIA /i, '').trim() : '';
           const ram = variant.ram?.dungLuong || '';
           const ssd = variant.ocung?.dungLuong || '';
           const color = variant.mauSac?.tenMau || '';
           const specText = `${ram} / ${ssd}${color ? ' - ' + color : ''}`;
+          const subSpecs = [cpu, gpu].filter(Boolean).join(' • ');
           
           return `
             <button type="button" class="variant-choice-btn ${isActive ? 'active' : ''}" onclick="selectProductVariant(${variant.id})">
               <span class="variant-spec-title">${specText}</span>
-              <span class="variant-sub-spec">${cpu}</span>
+              <span class="variant-sub-spec" title="${subSpecs}">${subSpecs}</span>
               <div class="variant-price-row">
                 <span class="variant-sale-price">${formatVND(pricing.giaBan)}</span>
                 ${pricing.coKhuyenMai ? `<span class="variant-old-price">${formatVND(pricing.giaGoc)}</span>` : ''}
