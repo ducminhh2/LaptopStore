@@ -144,6 +144,7 @@ document.addEventListener('DOMContentLoaded', () => {
   loadProductDetail();
   updateCartBadge();
   setupEventListeners();
+  renderHeaderAuth();
 });
 
 // Format VND currency
@@ -827,3 +828,94 @@ function setupEventListeners() {
     });
   }
 }
+
+// ============================================================================
+// AUTHENTICATION & SESSION UI INTEGRATION
+// ============================================================================
+function renderHeaderAuth() {
+  const userStr = localStorage.getItem('laptop_store_user') || sessionStorage.getItem('laptop_store_user');
+  let user = null;
+  try {
+    user = userStr ? JSON.parse(userStr) : null;
+  } catch(e) {}
+
+  const headerAuth = document.getElementById('headerAuthAction');
+  const topbarAuth = document.getElementById('topbarAuthSlot');
+
+  if (user && user.id) {
+    const roleName = user.vaiTro?.tenVaiTro || (user.roleCode === 'ADMIN' ? 'Quản trị viên' : (user.roleCode === 'NHAN_VIEN' ? 'Nhân viên' : 'Khách hàng'));
+    const isStaffOrAdmin = user.roleCode === 'ADMIN' || user.roleCode === 'NHAN_VIEN';
+
+    if (headerAuth) {
+      headerAuth.innerHTML = `
+        <div class="action-icon-circle" style="background:#2563eb; color:#ffffff;">
+          <svg style="width:18px; height:18px;" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+          </svg>
+        </div>
+        <div class="action-text">
+          <span class="action-label" style="font-weight:700; color:#1e293b; max-width:115px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+            ${user.ten || user.username}
+          </span>
+          <span class="action-value" style="color:#ef4444; font-size:11px; cursor:pointer;" onclick="event.stopPropagation(); logoutUser();" title="Đăng xuất khỏi tài khoản">
+            Đăng xuất ⎋
+          </span>
+        </div>
+      `;
+      headerAuth.onclick = () => {
+        if (isStaffOrAdmin) {
+          window.location.href = 'admin.html';
+        }
+      };
+    }
+
+    if (topbarAuth) {
+      topbarAuth.innerHTML = `
+        <span style="font-size:0.75rem; color:#cbd5e1;">Chào, <strong style="color:#fff;">${user.ten || user.username}</strong> (${roleName})</span>
+        ${isStaffOrAdmin ? `
+          <a href="admin.html" style="color: #ffffff; background: #dc2626; padding: 3px 10px; border-radius: 4px; font-size: 0.75rem; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 5px;">
+            ⚙️ Quản Trị / POS
+          </a>
+        ` : ''}
+        <button onclick="logoutUser()" type="button" style="background:rgba(255,255,255,0.15); border:none; color:#fff; padding:3px 8px; border-radius:4px; font-size:0.75rem; cursor:pointer;">
+          Đăng xuất
+        </button>
+      `;
+    }
+  } else {
+    if (headerAuth) {
+      headerAuth.innerHTML = `
+        <div class="action-icon-circle">
+          <svg style="width:18px; height:18px;" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+          </svg>
+        </div>
+        <div class="action-text">
+          <span class="action-label">Tài khoản</span>
+          <span class="action-value">Đăng nhập</span>
+        </div>
+      `;
+      headerAuth.onclick = () => window.location.href = 'login.html';
+    }
+
+    if (topbarAuth) {
+      topbarAuth.innerHTML = `
+        <a href="tel:0886976868" style="color: #cbd5e1; text-decoration: none; font-size: 0.78rem; display: flex; align-items: center; gap: 5px;">
+          <span>📞 Hotline: 088.697.6868</span>
+        </a>
+        <a href="login.html" style="color: #ffffff; background: #2563eb; padding: 4px 12px; border-radius: 4px; font-size: 0.75rem; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 5px;">
+          🔑 Đăng Nhập / Đăng Ký
+        </a>
+      `;
+    }
+  }
+}
+
+window.logoutUser = function() {
+  if (confirm('Bạn có chắc chắn muốn đăng xuất khỏi tài khoản?')) {
+    localStorage.removeItem('laptop_store_user');
+    sessionStorage.removeItem('laptop_store_user');
+    window.location.reload();
+  }
+};
+

@@ -31,10 +31,10 @@
           <span>Miễn phí vận chuyển toàn quốc</span>
         </div>
       </div>
-      <div style="display: flex; align-items: center; gap: 12px;">
-        <div class="backend-status-badge">
-          <span class="status-dot"></span> Hệ thống bảo hành điện tử chính hãng
-        </div>
+      <div style="display: flex; align-items: center; gap: 14px;" id="topbarAuthSlot">
+        <a href="tel:0886976868" style="color: #cbd5e1; text-decoration: none; font-size: 0.78rem; display: flex; align-items: center; gap: 5px;">
+          <span>📞 Hotline: 088.697.6868</span>
+        </a>
         <a href="admin.html" style="color: #ffffff; background: #e02424; padding: 3px 10px; border-radius: 4px; font-size: 0.75rem; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 5px;">
           ⚙️ Quản Trị / POS
         </a>
@@ -77,7 +77,7 @@
           </button>
         </div>
 
-        <!-- Header Actions: Hotline, Cart -->
+        <!-- Header Actions: Hotline, Cart, Account/Auth -->
         <div class="header-actions">
           
           <!-- Hotline -->
@@ -101,6 +101,11 @@
               <span class="action-label">Giỏ hàng</span>
               <span class="action-value">Xem ngay</span>
             </div>
+          </div>
+
+          <!-- Tài khoản / Đăng nhập / Đăng xuất -->
+          <div class="action-item" id="headerAuthAction" style="cursor: pointer;">
+            <!-- Rendered dynamically by renderHeaderAuth() -->
           </div>
 
         </div>
@@ -282,7 +287,7 @@
   </footer>
 
   <!-- Detail Script -->
-  <script src="../js/detail.js?v=20261002_1250"></script>
+  <script src="../js/detail.js?v=20261002_1255"></script>
 
 </body>
 </html>
