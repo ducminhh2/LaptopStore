@@ -307,6 +307,8 @@ function renderProductDetails(item) {
   const qtyInput = document.getElementById('detailQtyInput');
   const qtyBtns = document.querySelectorAll('.detail-qty-btn');
 
+  const actionButtonsWrapper = document.querySelector('.detail-action-buttons');
+
   if (addCartBtn) {
     if (!inStock) {
       addCartBtn.disabled = true;
@@ -327,13 +329,14 @@ function renderProductDetails(item) {
 
   if (buyNowBtn) {
     if (!inStock) {
-      buyNowBtn.disabled = true;
-      buyNowBtn.classList.add('disabled');
-      buyNowBtn.textContent = 'LIÊN HỆ ĐẶT TRƯỚC';
+      buyNowBtn.style.display = 'none';
+      if (actionButtonsWrapper) actionButtonsWrapper.style.gridTemplateColumns = '1fr';
     } else {
+      buyNowBtn.style.display = 'flex';
       buyNowBtn.disabled = false;
       buyNowBtn.classList.remove('disabled');
       buyNowBtn.textContent = 'ĐẶT HÀNG NGAY';
+      if (actionButtonsWrapper) actionButtonsWrapper.style.gridTemplateColumns = '1fr 1.3fr';
     }
   }
 
