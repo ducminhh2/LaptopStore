@@ -240,8 +240,7 @@ function renderProductDetails(item) {
   const ram = item.ram?.dungLuong ? item.ram.dungLuong : '';
   const categoryName = item.sanPham?.danhMuc?.tenDanhMuc || 'Laptop';
 
-  // Title matching screenshot: LAPTOP ... (Cấu hình chính hãng)
-  const fullTitle = `LAPTOP ${brand.toUpperCase()} ${spName.toUpperCase()} - ${cpu.toUpperCase()} - ${gpu.toUpperCase()} ${ram} (Cấu hình chính hãng)`;
+  const fullTitle = `${getProductDisplayTitle(item)} (Cấu hình chính hãng)`;
 
   // Update Breadcrumbs
   document.getElementById('breadcrumbCategory').textContent = categoryName;
@@ -496,9 +495,15 @@ function getProductDisplayTitle(item) {
   if (brand && spName.toLowerCase().startsWith(brand.toLowerCase())) {
     spName = spName.substring(brand.length).trim();
   }
-  const cpu = item.cpu?.tenCpu ? item.cpu.tenCpu.replace('Intel Core ', '').replace('AMD ', '') : '';
-  const gpu = item.cardDoHoa?.tenCard ? item.cardDoHoa.tenCard.replace('NVIDIA GeForce ', '') : '';
-  return `LAPTOP ${brand.toUpperCase()} ${spName.toUpperCase()} - ${cpu.toUpperCase()} - ${gpu.toUpperCase()}`;
+  const cpu = item.cpu?.tenCpu ? item.cpu.tenCpu.replace('Intel Core ', '').replace('AMD ', '').trim() : '';
+  const gpu = item.cardDoHoa?.tenCard ? item.cardDoHoa.tenCard.replace(/^NVIDIA GeForce /i, '').replace(/^NVIDIA /i, '').trim() : '';
+  const ram = item.ram?.dungLuong ? item.ram.dungLuong : '';
+
+  const brandPart = brand ? brand.toUpperCase() + ' ' : '';
+  const cpuPart = cpu ? ` - ${cpu.toUpperCase()}` : '';
+  const gpuPart = gpu ? ` - ${gpu.toUpperCase()}` : '';
+  const ramPart = ram ? ` ${ram.toUpperCase()}` : '';
+  return `LAPTOP ${brandPart}${spName.toUpperCase()}${cpuPart}${gpuPart}${ramPart}`.trim();
 }
 
 // Load and render Similar Products (SẢN PHẨM TƯƠNG TỰ)
@@ -591,9 +596,7 @@ function addToCartFromSimilar(itemId) {
 
   const pricing = getPricingInfo(item);
   const images = getProductImages(item);
-  const brand = item.sanPham?.thuongHieu?.tenThuongHieu || '';
-  const spName = item.sanPham?.tenSp || 'Laptop';
-  const title = `LAPTOP ${brand.toUpperCase()} ${spName.toUpperCase()}`;
+  const title = getProductDisplayTitle(item);
 
   const existing = cart.find(c => c.id === itemId);
   if (existing) {
@@ -676,9 +679,7 @@ function handleAddToCart(openDrawerAfterAdd = false) {
 
   const qty = parseInt(document.getElementById('detailQtyInput')?.value || '1', 10);
   const pricing = getPricingInfo(currentProduct);
-  const brand = currentProduct.sanPham?.thuongHieu?.tenThuongHieu || '';
-  const spName = currentProduct.sanPham?.tenSp || 'Laptop';
-  const title = `LAPTOP ${brand.toUpperCase()} ${spName.toUpperCase()}`;
+  const title = getProductDisplayTitle(currentProduct);
 
   const existing = cart.find(c => c.id === currentProduct.id);
   const currentQtyInCart = existing ? existing.quantity : 0;

@@ -255,13 +255,20 @@ function getPricingInfo(item) {
 // Build rich product display title
 function getProductDisplayTitle(item) {
   const brand = item.sanPham?.thuongHieu?.tenThuongHieu || '';
-  const spName = item.sanPham?.tenSp || 'Laptop';
-  const cpu = item.cpu?.tenCpu ? item.cpu.tenCpu.replace('Intel Core ', '').replace('AMD ', '') : '';
-  const gpu = item.cardDoHoa?.tenCard ? item.cardDoHoa.tenCard.replace('NVIDIA GeForce ', '') : '';
+  let spName = item.sanPham?.tenSp || 'Laptop';
+  if (brand && spName.toLowerCase().startsWith(brand.toLowerCase())) {
+    spName = spName.substring(brand.length).trim();
+  }
+  const cpu = item.cpu?.tenCpu ? item.cpu.tenCpu.replace('Intel Core ', '').replace('AMD ', '').trim() : '';
+  const gpu = item.cardDoHoa?.tenCard ? item.cardDoHoa.tenCard.replace(/^NVIDIA GeForce /i, '').replace(/^NVIDIA /i, '').trim() : '';
   const ram = item.ram?.dungLuong ? item.ram.dungLuong : '';
 
   // Matching screenshot uppercase title format
-  return `LAPTOP ${brand.toUpperCase()} ${spName.toUpperCase()} - ${cpu.toUpperCase()} - ${gpu.toUpperCase()} ${ram}`;
+  const brandPart = brand ? brand.toUpperCase() + ' ' : '';
+  const cpuPart = cpu ? ` - ${cpu.toUpperCase()}` : '';
+  const gpuPart = gpu ? ` - ${gpu.toUpperCase()}` : '';
+  const ramPart = ram ? ` ${ram.toUpperCase()}` : '';
+  return `LAPTOP ${brandPart}${spName.toUpperCase()}${cpuPart}${gpuPart}${ramPart}`.trim();
 }
 
 // Extract valid image list for product
