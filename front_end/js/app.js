@@ -574,9 +574,9 @@ function createProductCardHTML(item, index) {
 
       <!-- Bottom actions: Add to Cart button & Stock status -->
       <div class="product-card-actions">
-        <button class="btn-add-to-cart" onclick="addToCart(${item.id})">
+        <button class="btn-add-to-cart ${!inStock ? 'disabled' : ''}" ${!inStock ? 'disabled' : ''} onclick="${inStock ? `addToCart(${item.id})` : `event.stopPropagation(); showToast('Sản phẩm này hiện đã hết hàng!', 'error')`}" title="${inStock ? 'Thêm vào giỏ hàng' : 'Sản phẩm tạm thời hết hàng'}">
           <svg fill="currentColor" viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>
-          THÊM VÀO GIỎ
+          ${inStock ? 'THÊM VÀO GIỎ' : 'HẾT HÀNG'}
         </button>
         <span class="stock-status-badge ${inStock ? 'in-stock' : 'out-stock'}">
           ${inStock ? 'Còn hàng' : 'Hết hàng'}
@@ -714,11 +714,23 @@ function openProductQuickView(itemJson) {
 
   // Add to cart button inside modal
   const addBtn = document.getElementById('modalAddToCartBtn');
-  addBtn.onclick = () => {
-    const qty = parseInt(document.getElementById('modalQtyInput').value || '1', 10);
-    addToCart(item.id, qty);
-    closeQuickView();
-  };
+  const inStockModal = (item.soLuong > 0 && item.trangThai === 1);
+  if (addBtn) {
+    if (!inStockModal) {
+      addBtn.disabled = true;
+      addBtn.classList.add('disabled');
+      addBtn.textContent = 'TẠM HẾT HÀNG';
+    } else {
+      addBtn.disabled = false;
+      addBtn.classList.remove('disabled');
+      addBtn.textContent = 'THÊM VÀO GIỎ HÀNG';
+      addBtn.onclick = () => {
+        const qty = parseInt(document.getElementById('modalQtyInput').value || '1', 10);
+        addToCart(item.id, qty);
+        closeQuickView();
+      };
+    }
+  }
 
   modal.classList.add('active');
 }
@@ -739,7 +751,18 @@ function addToCart(itemId, quantity = 1) {
   const item = allProductDetails.find(p => p.id === itemId);
   if (!item) return;
 
+  if (!item.soLuong || item.soLuong <= 0 || item.trangThai !== 1) {
+    showToast(`Sản phẩm <strong>${item.sanPham?.tenSp || ''}</strong> hiện đã hết hàng!`, 'error');
+    return;
+  }
+
   const existing = cart.find(c => c.id === itemId);
+  const currentQtyInCart = existing ? existing.quantity : 0;
+  if (currentQtyInCart + quantity > item.soLuong) {
+    showToast(`Kho chỉ còn <strong>${item.soLuong}</strong> máy khả dụng!`, 'error');
+    return;
+  }
+
   if (existing) {
     existing.quantity += quantity;
   } else {
@@ -836,6 +859,13 @@ function renderCartDrawer() {
 function updateItemQuantity(itemId, delta) {
   const item = cart.find(c => c.id === itemId);
   if (!item) return;
+  if (delta > 0) {
+    const product = allProductDetails.find(p => p.id === itemId);
+    if (product && product.soLuong !== undefined && item.quantity + delta > product.soLuong) {
+      showToast(`Kho chỉ còn ${product.soLuong} sản phẩm khả dụng!`);
+      return;
+    }
+  }
   item.quantity += delta;
   if (item.quantity <= 0) {
     cart = cart.filter(c => c.id !== itemId);

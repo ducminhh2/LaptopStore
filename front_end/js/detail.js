@@ -681,6 +681,12 @@ function handleAddToCart(openDrawerAfterAdd = false) {
   const title = `LAPTOP ${brand.toUpperCase()} ${spName.toUpperCase()}`;
 
   const existing = cart.find(c => c.id === currentProduct.id);
+  const currentQtyInCart = existing ? existing.quantity : 0;
+  if (currentQtyInCart + qty > currentProduct.soLuong) {
+    showToast(`Kho chỉ còn <strong>${currentProduct.soLuong}</strong> máy khả dụng!`, 'error');
+    return;
+  }
+
   if (existing) {
     existing.quantity += qty;
   } else {

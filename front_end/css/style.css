@@ -762,6 +762,15 @@ input, select {
   transform: translateY(-1px);
 }
 
+.btn-add-to-cart.disabled {
+  background-color: #cbd5e1 !important;
+  color: #64748b !important;
+  cursor: not-allowed !important;
+  box-shadow: none !important;
+  transform: none !important;
+  opacity: 0.85 !important;
+}
+
 .btn-add-to-cart svg {
   width: 14px;
   height: 14px;
