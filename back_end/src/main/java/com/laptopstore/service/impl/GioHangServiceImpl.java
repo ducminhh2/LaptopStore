@@ -1,6 +1,8 @@
 package com.laptopstore.service.impl;
 
 import com.laptopstore.dto.CartSyncResponse;
+import com.laptopstore.dto.CheckoutItemDTO;
+import com.laptopstore.dto.CheckoutResponseDTO;
 import com.laptopstore.dto.GiaKhuyenMaiResponse;
 import com.laptopstore.dto.GuestCartItemRequest;
 import com.laptopstore.entity.ChiTietGioHang;
@@ -300,6 +302,160 @@ public class GioHangServiceImpl implements GioHangService {
         chiTietGioHangRepository.delete(item);
         recalculateGioHangTotals(gioHang);
         return chiTietGioHangRepository.findByGioHangId(gioHang.getId());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public CheckoutResponseDTO getCheckoutInfo(Integer khachHangId) {
+        NguoiDung khachHang = nguoiDungRepository.findById(khachHangId)
+                .orElseThrow(() -> new ResourceNotFoundException("Người dùng", "id", khachHangId));
+
+        Optional<GioHang> gioHangOpt = gioHangRepository.findByKhachHangId(khachHangId);
+        if (gioHangOpt.isEmpty()) {
+            return CheckoutResponseDTO.builder()
+                    .success(false)
+                    .message("Giỏ hàng của bạn đang trống.")
+                    .khachHangId(khachHang.getId())
+                    .hoTen(khachHang.getTen())
+                    .soDienThoai(khachHang.getDienThoai())
+                    .diaChi(khachHang.getDiaChi())
+                    .email(khachHang.getEmail())
+                    .items(new ArrayList<>())
+                    .tongSoLuong(0)
+                    .tongTienHang(BigDecimal.ZERO)
+                    .coCanhBaoTonKho(false)
+                    .build();
+        }
+
+        GioHang gioHang = gioHangOpt.get();
+        List<ChiTietGioHang> cartItems = chiTietGioHangRepository.findByGioHangId(gioHang.getId());
+        if (cartItems == null || cartItems.isEmpty()) {
+            return CheckoutResponseDTO.builder()
+                    .success(false)
+                    .message("Giỏ hàng của bạn đang trống.")
+                    .khachHangId(khachHang.getId())
+                    .hoTen(khachHang.getTen())
+                    .soDienThoai(khachHang.getDienThoai())
+                    .diaChi(khachHang.getDiaChi())
+                    .email(khachHang.getEmail())
+                    .items(new ArrayList<>())
+                    .tongSoLuong(0)
+                    .tongTienHang(BigDecimal.ZERO)
+                    .coCanhBaoTonKho(false)
+                    .build();
+        }
+
+        List<CheckoutItemDTO> checkoutItems = new ArrayList<>();
+        int totalQty = 0;
+        BigDecimal totalAmount = BigDecimal.ZERO;
+        boolean coCanhBaoTonKho = false;
+        StringBuilder canhBaoTongHop = new StringBuilder();
+
+        for (ChiTietGioHang it : cartItems) {
+            ChiTietSanPham ctsp = it.getChiTietSanPham();
+            if (ctsp == null) continue;
+
+            int cartQty = it.getSoLuong() != null ? it.getSoLuong() : 1;
+
+            // 1. Kiểm tra tồn kho IMEI khả dụng
+            int tonKhoKhaDung = imeiRepository.countAvailableByChiTietSanPhamId(ctsp.getId());
+            boolean vuotTon = cartQty > tonKhoKhaDung;
+            String canhBaoItem = null;
+            if (vuotTon) {
+                coCanhBaoTonKho = true;
+                if (tonKhoKhaDung <= 0) {
+                    canhBaoItem = "Sản phẩm hiện đã hết hàng trong kho!";
+                } else {
+                    canhBaoItem = "Sản phẩm hiện chỉ còn " + tonKhoKhaDung + " máy trong kho!";
+                }
+                if (canhBaoTongHop.length() > 0) canhBaoTongHop.append("; ");
+                String spTen = ctsp.getSanPham() != null ? ctsp.getSanPham().getTenSp() : ctsp.getMaCtsp();
+                canhBaoTongHop.append(spTen).append(": ").append(canhBaoItem);
+            }
+
+            // 2. Lấy giá bán có khuyến mãi từ Backend
+            GiaKhuyenMaiResponse promo = khuyenMaiService.tinhGiaBanHienTai(ctsp.getId());
+            BigDecimal giaGoc = (promo != null && promo.getGiaGoc() != null)
+                    ? promo.getGiaGoc()
+                    : (ctsp.getGia() != null ? ctsp.getGia() : BigDecimal.ZERO);
+            BigDecimal giaBan = (promo != null && promo.getGiaBan() != null)
+                    ? promo.getGiaBan()
+                    : giaGoc;
+            boolean coKM = promo != null && Boolean.TRUE.equals(promo.getCoKhuyenMai());
+            BigDecimal giaTriGiam = promo != null ? promo.getGiaTriGiam() : BigDecimal.ZERO;
+            Integer loaiGiam = promo != null ? promo.getLoaiGiam() : 0;
+            BigDecimal thanhTien = giaBan.multiply(BigDecimal.valueOf(cartQty));
+
+            totalQty += cartQty;
+            totalAmount = totalAmount.add(thanhTien);
+
+            // 3. Tên & Cấu hình chi tiết
+            String tenSp = ctsp.getSanPham() != null ? ctsp.getSanPham().getTenSp() : "Laptop";
+            String cpu = ctsp.getCpu() != null ? ctsp.getCpu().getTenCpu() : "";
+            String ram = ctsp.getRam() != null ? ctsp.getRam().getDungLuong() : "";
+            String oCung = ctsp.getOCung() != null ? ctsp.getOCung().getDungLuong() : "";
+            String gpu = ctsp.getCardDoHoa() != null ? ctsp.getCardDoHoa().getTenCard() : "";
+            String manHinh = ctsp.getManHinh() != null ? ctsp.getManHinh().getKichThuoc() : "";
+            String mauSac = ctsp.getMauSac() != null ? ctsp.getMauSac().getTenMau() : "";
+
+            List<String> specsParts = new ArrayList<>();
+            if (!cpu.isEmpty()) specsParts.add(cpu);
+            if (!ram.isEmpty()) specsParts.add(ram);
+            if (!oCung.isEmpty()) specsParts.add(oCung);
+            if (!gpu.isEmpty()) specsParts.add(gpu);
+            if (!manHinh.isEmpty()) specsParts.add(manHinh);
+            String cauHinhSummary = String.join(" / ", specsParts);
+
+            // 4. Hình ảnh sản phẩm
+            String hinhAnh = null;
+            if (ctsp.getDanhSachHinhAnh() != null && !ctsp.getDanhSachHinhAnh().isEmpty()) {
+                hinhAnh = ctsp.getDanhSachHinhAnh().get(0).getUrlHinhAnh();
+            } else if (ctsp.getSanPham() != null && ctsp.getSanPham().getDanhSachHinhAnh() != null && !ctsp.getSanPham().getDanhSachHinhAnh().isEmpty()) {
+                hinhAnh = ctsp.getSanPham().getDanhSachHinhAnh().get(0).getUrlHinhAnh();
+            }
+
+            CheckoutItemDTO itemDTO = CheckoutItemDTO.builder()
+                    .idChiTietGioHang(it.getId())
+                    .idChiTietSanPham(ctsp.getId())
+                    .maCtsp(ctsp.getMaCtsp())
+                    .tenSanPham(tenSp)
+                    .hinhAnh(hinhAnh)
+                    .cpu(cpu)
+                    .ram(ram)
+                    .oCung(oCung)
+                    .cardDoHoa(gpu)
+                    .manHinh(manHinh)
+                    .mauSac(mauSac)
+                    .cauHinhSummary(cauHinhSummary)
+                    .soLuong(cartQty)
+                    .giaGoc(giaGoc)
+                    .giaSauKhuyenMai(giaBan)
+                    .coKhuyenMai(coKM)
+                    .giaTriGiam(giaTriGiam)
+                    .loaiGiam(loaiGiam)
+                    .thanhTien(thanhTien)
+                    .soLuongTonKho(tonKhoKhaDung)
+                    .vuotTonKho(vuotTon)
+                    .canhBaoTonKho(canhBaoItem)
+                    .build();
+
+            checkoutItems.add(itemDTO);
+        }
+
+        return CheckoutResponseDTO.builder()
+                .success(true)
+                .message("Lấy thông tin thanh toán thành công")
+                .khachHangId(khachHang.getId())
+                .hoTen(khachHang.getTen())
+                .soDienThoai(khachHang.getDienThoai())
+                .diaChi(khachHang.getDiaChi())
+                .email(khachHang.getEmail())
+                .items(checkoutItems)
+                .tongSoLuong(totalQty)
+                .tongTienHang(totalAmount)
+                .coCanhBaoTonKho(coCanhBaoTonKho)
+                .thongBaoTonKho(canhBaoTongHop.length() > 0 ? canhBaoTongHop.toString() : null)
+                .build();
     }
 
     private GioHang getOrCreateGioHang(NguoiDung khachHang) {

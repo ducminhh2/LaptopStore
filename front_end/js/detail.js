@@ -918,6 +918,26 @@ async function removeCartItem(itemId) {
   }
 }
 
+// Xử lý chuyển sang trang thanh toán (Checkout)
+function handleProceedToCheckout() {
+  const user = getLoggedInCustomer();
+  if (!user) {
+    showToast('Vui lòng đăng nhập để tiến hành thanh toán!', 'warning');
+    setTimeout(() => {
+      window.location.href = 'login.html?redirect=checkout.html';
+    }, 800);
+    return;
+  }
+
+  if (!cart || cart.length === 0) {
+    showToast('Giỏ hàng của bạn đang trống!', 'warning');
+    return;
+  }
+
+  window.location.href = 'checkout.html';
+}
+window.handleProceedToCheckout = handleProceedToCheckout;
+
 // Toast
 function showToast(message, type = 'default') {
   const container = document.getElementById('toastContainer');

@@ -40,6 +40,27 @@ public class GioHangController {
         return ResponseEntity.ok(gioHangService.getCartItemsByKhachHang(khachHangId));
     }
 
+    @GetMapping("/checkout")
+    public ResponseEntity<com.laptopstore.dto.CheckoutResponseDTO> getCheckout(
+            HttpSession session,
+            @RequestHeader(value = "X-User-Id", required = false) Integer headerUserId) {
+        Integer khachHangId = null;
+        if (session != null) {
+            khachHangId = (Integer) session.getAttribute("CURRENT_USER_ID");
+        }
+        if (khachHangId == null && headerUserId != null) {
+            khachHangId = headerUserId;
+        }
+        if (khachHangId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(com.laptopstore.dto.CheckoutResponseDTO.builder()
+                            .success(false)
+                            .message("Vui lòng đăng nhập để tiến hành thanh toán!")
+                            .build());
+        }
+        return ResponseEntity.ok(gioHangService.getCheckoutInfo(khachHangId));
+    }
+
     @PostMapping("/sync-login-cart")
     public ResponseEntity<CartSyncResponse> syncLoginCart(
             @RequestBody SyncCartRequest request,
