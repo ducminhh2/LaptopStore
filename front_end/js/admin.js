@@ -2132,7 +2132,7 @@ function renderInvoiceDetailActionButtons(inv) {
       `;
       if (!isPaid) {
         actionBtnsHtml += `
-          <button class="btn-admin btn-primary" onclick="proceedOrderAction(${inv.id}, 'thanh-toan-tai-quay')" type="button" style="background:#16a34a; border-color:#16a34a; font-weight:800; display:inline-flex; align-items:center; gap:6px; box-shadow:0 2px 6px rgba(22,163,74,0.3);">
+          <button class="btn-admin btn-primary" onclick="openConfirmPrepaymentModal(${inv.id})" type="button" style="background:#16a34a; border-color:#16a34a; font-weight:800; display:inline-flex; align-items:center; gap:6px; box-shadow:0 2px 6px rgba(22,163,74,0.3);">
             <span>&#128179; Thanh Toán Tại Quầy</span>
           </button>
         `;
@@ -2146,7 +2146,7 @@ function renderInvoiceDetailActionButtons(inv) {
       `;
       if (!isPaid) {
         actionBtnsHtml += `
-          <button class="btn-admin btn-primary" onclick="proceedOrderAction(${inv.id}, 'thanh-toan-tai-quay')" type="button" style="background:#16a34a; border-color:#16a34a; font-weight:700; margin-right:4px;">
+          <button class="btn-admin btn-primary" onclick="openConfirmPrepaymentModal(${inv.id})" type="button" style="background:#16a34a; border-color:#16a34a; font-weight:700; margin-right:4px;">
             <span>&#128179; Thu Tiền Trước</span>
           </button>
         `;
@@ -2236,28 +2236,8 @@ window.proceedOrderAction = async function(invoiceId, actionType) {
       return;
     }
   } else if (actionType === 'thanh-toan-tai-quay') {
-    if (!confirm('Xác nhận thanh toán cho đơn hàng này?')) return;
-    try {
-      const currentUser = getLoggedInUser();
-      const staffUsername = (currentUser && currentUser.username) ? currentUser.username : '';
-      const res = await fetch(`${API_BASE_URL}/hoa-don/${invoiceId}/thanh-toan-tai-quay`, {
-        method: 'POST',
-        headers: { 'X-Staff-Username': staffUsername }
-      });
-      if (res.ok) {
-        showToast('Đã ghi nhận thanh toán thành công!', 'success');
-        await loadInvoicesList();
-        await openInvoiceDetail(invoiceId);
-        return;
-      } else {
-        const err = await res.json().catch(() => null);
-        showToast(err?.message || 'Không thể thanh toán đơn hàng này.', 'error');
-        return;
-      }
-    } catch(e) {
-      showToast('Lỗi khi thanh toán: ' + e.message, 'error');
-      return;
-    }
+    openConfirmPrepaymentModal(invoiceId);
+    return;
   } else if (actionType === 'xac-nhan') {
     openConfirmAcceptOrderModal(invoiceId);
     return;
@@ -2391,6 +2371,119 @@ window.submitCodPaymentConfirmation = async function() {
 window.closeInvoiceDetailModal = function() {
   const modal = document.getElementById('invoiceDetailModal');
   if (modal) modal.classList.remove('active');
+};
+
+// ============================================================================
+// MODAL 8B: PREPAYMENT / IN-STORE PAYMENT CONFIRMATION LOGIC
+// ============================================================================
+let currentPrepaymentInvoiceId = null;
+
+window.openConfirmPrepaymentModal = function(invoiceId) {
+  const inv = (state.invoicesList && state.invoicesList.find(i => i.id === invoiceId)) || state.selectedInvoice;
+  if (!inv) return;
+  currentPrepaymentInvoiceId = invoiceId;
+
+  const modalMa = document.getElementById('prepaymentModalMa');
+  if (modalMa) modalMa.textContent = inv.ma || ('HD' + inv.id);
+
+  const customerName = inv.tenNguoiNhan || inv.khachHang?.ten || 'Khách lẻ tại quầy';
+  const phone = inv.dienThoai || inv.khachHang?.dienThoai || '';
+  const modalKhach = document.getElementById('prepaymentModalKhach');
+  if (modalKhach) modalKhach.textContent = `${customerName} (${phone})`;
+
+  const pmEl = document.getElementById('prepaymentModalPhuongThuc');
+  if (pmEl) pmEl.textContent = inv.thanhToan?.phuongThuc || 'TIEN_MAT';
+
+  const totalAmount = inv.thanhToan?.soTien || 0;
+  const formattedTotal = formatCurrency(totalAmount);
+  const totalEl = document.getElementById('prepaymentModalTotal');
+  if (totalEl) totalEl.textContent = formattedTotal;
+  const totalTextEl = document.getElementById('prepaymentModalTotalText');
+  if (totalTextEl) totalTextEl.textContent = formattedTotal;
+
+  const isGiaoHang = (inv.moTa && inv.moTa.includes('Giao hàng tận nơi'))
+    || (inv.diaChi !== 'Tại quầy Store' && (!inv.moTa || !inv.moTa.includes('Nhận tại quầy')));
+
+  const titleEl = document.getElementById('prepaymentModalTitle');
+  const alertTitleEl = document.getElementById('prepaymentAlertTitle');
+
+  if (isGiaoHang) {
+    if (titleEl) titleEl.textContent = 'Xác nhận thu tiền trước';
+    if (alertTitleEl) alertTitleEl.textContent = 'Bạn đang xác nhận đã thu đủ tiền thanh toán trước cho đơn hàng';
+  } else {
+    if (titleEl) titleEl.textContent = 'Xác nhận thanh toán tại quầy';
+    if (alertTitleEl) alertTitleEl.textContent = 'Bạn đang xác nhận đã thu đủ tiền thanh toán cho đơn hàng';
+  }
+
+  const chk = document.getElementById('chkPrepaymentCollected');
+  if (chk) chk.checked = false;
+  togglePrepaymentConfirmBtn(false);
+
+  const modal = document.getElementById('confirmPrepaymentModal');
+  if (modal) modal.classList.add('active');
+};
+
+window.closeConfirmPrepaymentModal = function() {
+  const modal = document.getElementById('confirmPrepaymentModal');
+  if (modal) modal.classList.remove('active');
+};
+
+window.togglePrepaymentConfirmBtn = function(isChecked) {
+  const btn = document.getElementById('btnSubmitPrepaymentConfirm');
+  if (!btn) return;
+  if (isChecked) {
+    btn.disabled = false;
+    btn.style.opacity = '1';
+    btn.style.cursor = 'pointer';
+  } else {
+    btn.disabled = true;
+    btn.style.opacity = '0.5';
+    btn.style.cursor = 'not-allowed';
+  }
+};
+
+window.submitPrepaymentConfirmation = async function() {
+  const invoiceId = currentPrepaymentInvoiceId || state.selectedInvoice?.id;
+  if (!invoiceId) return;
+
+  const chk = document.getElementById('chkPrepaymentCollected');
+  if (!chk || !chk.checked) {
+    showToast('Vui lòng tích xác nhận "Đã thu đủ tiền từ khách hàng"!', 'error');
+    return;
+  }
+
+  const btn = document.getElementById('btnSubmitPrepaymentConfirm');
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = 'ĐANG XỬ LÝ...';
+  }
+
+  try {
+    const currentUser = getLoggedInUser();
+    const staffUsername = (currentUser && currentUser.username) ? currentUser.username : '';
+    const res = await fetch(`${API_BASE_URL}/hoa-don/${invoiceId}/thanh-toan-tai-quay`, {
+      method: 'POST',
+      headers: { 'X-Staff-Username': staffUsername }
+    });
+
+    if (res.ok) {
+      showToast('Đã ghi nhận thu tiền & thanh toán thành công!', 'success');
+      closeConfirmPrepaymentModal();
+      await loadInvoicesList();
+      loadProductsList();
+      await openInvoiceDetail(invoiceId);
+    } else {
+      const err = await res.json().catch(() => null);
+      showToast(err?.message || 'Không thể thanh toán đơn hàng này.', 'error');
+    }
+  } catch(e) {
+    showToast('Lỗi khi thanh toán: ' + e.message, 'error');
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = '✓ Xác nhận';
+    }
+  }
 };
 
 // ============================================================================

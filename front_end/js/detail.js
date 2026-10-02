@@ -989,39 +989,53 @@ function renderHeaderAuth() {
     const isStaffOrAdmin = user.roleCode === 'ADMIN' || user.roleCode === 'NHAN_VIEN';
 
     if (headerAuth) {
+      headerAuth.onclick = null;
       headerAuth.innerHTML = `
-        <div class="action-icon-circle" style="background:#2563eb; color:#ffffff;">
-          <svg style="width:18px; height:18px;" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
-          </svg>
-        </div>
-        <div class="action-text">
-          <span class="action-label" style="font-weight:700; color:#1e293b; max-width:115px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
-            ${user.ten || user.username}
-          </span>
-          <span class="action-value" style="color:#ef4444; font-size:11px; cursor:pointer;" onclick="event.stopPropagation(); logoutUser();" title="Đăng xuất khỏi tài khoản">
-            Đăng xuất ⎋
-          </span>
+        <div class="user-dropdown-wrapper" id="userAvatarContainer" onclick="toggleUserDropdown(event)">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <div class="action-icon-circle" style="background:#2563eb; color:#ffffff; border-color:#2563eb;">
+              <svg style="width:20px; height:20px;" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+              </svg>
+            </div>
+            <div class="action-text">
+              <span class="action-label" style="font-weight:700; color:#1e293b; max-width:120px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+                ${user.ten || user.username}
+              </span>
+              <span class="action-value" style="font-size:0.75rem; color:#64748b; display:flex; align-items:center; gap:3px;">
+                Tài khoản <span style="font-size:0.6rem;">▼</span>
+              </span>
+            </div>
+          </div>
+
+          <div class="user-dropdown-menu" id="userDropdownMenu">
+            <div class="user-dropdown-header">
+              <div class="user-dropdown-name">${user.ten || user.username}</div>
+              <div class="user-dropdown-role">${roleName}</div>
+            </div>
+            <a class="user-dropdown-item" href="order-history.html" onclick="event.stopPropagation();">
+              <svg style="width:16px; height:16px;" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+              <span>Xem đơn hàng của tôi</span>
+            </a>
+            ${isStaffOrAdmin ? `
+              <a class="user-dropdown-item" href="admin.html" onclick="event.stopPropagation();">
+                <svg style="width:16px; height:16px;" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                <span>Quản trị / POS</span>
+              </a>
+            ` : ''}
+            <div class="user-dropdown-divider"></div>
+            <button type="button" class="user-dropdown-item logout-item" onclick="event.stopPropagation(); logoutUser();">
+              <svg style="width:16px; height:16px;" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+              <span>Đăng xuất</span>
+            </button>
+          </div>
         </div>
       `;
-      headerAuth.onclick = () => {
-        if (isStaffOrAdmin) {
-          window.location.href = 'admin.html';
-        }
-      };
     }
 
     if (topbarAuth) {
       topbarAuth.innerHTML = `
-        <span style="font-size:0.75rem; color:#cbd5e1;">Chào, <strong style="color:#fff;">${user.ten || user.username}</strong> (${roleName})</span>
-        ${isStaffOrAdmin ? `
-          <a href="admin.html" style="color: #ffffff; background: #dc2626; padding: 3px 10px; border-radius: 4px; font-size: 0.75rem; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 5px;">
-            ⚙️ Quản Trị / POS
-          </a>
-        ` : ''}
-        <button onclick="logoutUser()" type="button" style="background:rgba(255,255,255,0.15); border:none; color:#fff; padding:3px 8px; border-radius:4px; font-size:0.75rem; cursor:pointer;">
-          Đăng xuất
-        </button>
+        <span style="font-size:0.75rem; color:#cbd5e1;">Chào, <strong style="color:#fff;">${user.ten || user.username}</strong></span>
       `;
     }
   } else {
@@ -1061,4 +1075,21 @@ window.logoutUser = function() {
     window.location.reload();
   }
 };
+
+window.toggleUserDropdown = function(e) {
+  if (e) e.stopPropagation();
+  const dropdown = document.getElementById('userDropdownMenu');
+  if (dropdown) {
+    dropdown.classList.toggle('show');
+  }
+};
+
+window.addEventListener('click', function(e) {
+  const dropdown = document.getElementById('userDropdownMenu');
+  const container = document.getElementById('userAvatarContainer');
+  if (dropdown && container && !container.contains(e.target)) {
+    dropdown.classList.remove('show');
+  }
+});
+
 

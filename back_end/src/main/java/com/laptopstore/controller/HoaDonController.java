@@ -1,7 +1,9 @@
 package com.laptopstore.controller;
 
+import com.laptopstore.dto.LichSuDonHangDTO;
 import com.laptopstore.entity.HoaDon;
 import com.laptopstore.service.HoaDonService;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +18,27 @@ import java.util.Map;
 public class HoaDonController {
 
     private final HoaDonService hoaDonService;
+
+    @GetMapping("/lich-su")
+    public ResponseEntity<?> getLichSuDonHang(
+            HttpSession session,
+            @RequestHeader(value = "X-User-Id", required = false) Integer headerUserId) {
+        Integer khachHangId = null;
+        if (session != null) {
+            khachHangId = (Integer) session.getAttribute("CURRENT_USER_ID");
+        }
+        if (khachHangId == null && headerUserId != null) {
+            khachHangId = headerUserId;
+        }
+
+        if (khachHangId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("message", "Vui lòng đăng nhập để xem lịch sử đơn hàng!"));
+        }
+
+        List<LichSuDonHangDTO> lichSu = hoaDonService.getLichSuDonHangKhachHang(khachHangId);
+        return ResponseEntity.ok(lichSu);
+    }
 
     @GetMapping
     public ResponseEntity<List<HoaDon>> getAll() {

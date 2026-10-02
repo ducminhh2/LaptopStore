@@ -4,5 +4,6 @@
     "**/front_end/images/**",
     "**/.vscode/**",
     "**/back_end/**"
-  ]
+  ],
+  "liveServer.settings.port": 5501
 }

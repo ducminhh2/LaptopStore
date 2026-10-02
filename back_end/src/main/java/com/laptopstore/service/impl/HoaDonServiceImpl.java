@@ -14,8 +14,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.laptopstore.dto.LichSuDonHangDTO;
+import com.laptopstore.dto.LichSuDonHangItemDTO;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -33,6 +36,7 @@ public class HoaDonServiceImpl implements HoaDonService {
     private final VoucherRepository voucherRepository;
     private final VoucherService voucherService;
     private final KhuyenMaiService khuyenMaiService;
+    private final HinhAnhRepository hinhAnhRepository;
 
     @Override
     public List<HoaDon> getAll() {
@@ -699,6 +703,196 @@ public class HoaDonServiceImpl implements HoaDonService {
         if (amount == null) return "0đ";
         long val = amount.longValue();
         return String.format(Locale.GERMANY, "%,dđ", val);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<LichSuDonHangDTO> getLichSuDonHangKhachHang(Integer khachHangId) {
+        if (khachHangId == null) {
+            return Collections.emptyList();
+        }
+
+        // 1. Lấy danh sách hóa đơn của khách hàng, sắp xếp ngayTao DESC (đã fetch thanhToan, voucher)
+        List<HoaDon> hoaDons = hoaDonRepository.findLichSuByKhachHangId(khachHangId);
+        if (hoaDons.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        // 2. Lấy toàn bộ chi tiết hóa đơn (chi_tiet_hoa_don) kèm CTSP, SanPham, CPU, RAM... trong 1 query duy nhất (tránh N+1)
+        List<Integer> hoaDonIds = hoaDons.stream().map(HoaDon::getId).toList();
+        List<ChiTietHoaDon> chiTiets = chiTietHoaDonRepository.findByHoaDonIdIn(hoaDonIds);
+        Map<Integer, List<ChiTietHoaDon>> chiTietsByHoaDonId = chiTiets.stream()
+                .collect(Collectors.groupingBy(c -> c.getHoaDon().getId()));
+
+        // 3. Lấy ảnh đại diện sản phẩm theo danh sách sanPhamId trong 1 query
+        List<Integer> sanPhamIds = chiTiets.stream()
+                .map(c -> c.getChiTietSanPham() != null && c.getChiTietSanPham().getSanPham() != null 
+                        ? c.getChiTietSanPham().getSanPham().getId() : null)
+                .filter(Objects::nonNull)
+                .distinct()
+                .toList();
+
+        Map<Integer, String> hinhAnhBySanPhamId = new HashMap<>();
+        if (!sanPhamIds.isEmpty()) {
+            List<HinhAnh> hinhAnhs = hinhAnhRepository.findBySanPhamIdIn(sanPhamIds);
+            for (HinhAnh ha : hinhAnhs) {
+                if (ha.getSanPham() != null && !hinhAnhBySanPhamId.containsKey(ha.getSanPham().getId())) {
+                    hinhAnhBySanPhamId.put(ha.getSanPham().getId(), ha.getUrlHinhAnh());
+                }
+            }
+        }
+
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+
+        // 4. Map từng hóa đơn sang DTO (sử dụng 100% snapshot, không tính lại giá hiện tại)
+        List<LichSuDonHangDTO> result = new ArrayList<>();
+
+        for (HoaDon h : hoaDons) {
+            List<ChiTietHoaDon> itemsOfOrder = chiTietsByHoaDonId.getOrDefault(h.getId(), Collections.emptyList());
+
+            int tongSoLuong = 0;
+            BigDecimal tongTienHang = BigDecimal.ZERO;
+            List<LichSuDonHangItemDTO> itemDTOs = new ArrayList<>();
+
+            for (ChiTietHoaDon c : itemsOfOrder) {
+                int qty = c.getSoLuong() != null ? c.getSoLuong() : 0;
+                tongSoLuong += qty;
+
+                // Giá mua SNAPSHOT từ chi_tiet_hoa_don.gia_tung_san_pham
+                BigDecimal giaMua = c.getGiaTungSanPham() != null ? c.getGiaTungSanPham() : BigDecimal.ZERO;
+                BigDecimal thanhTien = giaMua.multiply(BigDecimal.valueOf(qty));
+                tongTienHang = tongTienHang.add(thanhTien);
+
+                ChiTietSanPham ctsp = c.getChiTietSanPham();
+                String tenSanPham = (ctsp != null && ctsp.getSanPham() != null) ? ctsp.getSanPham().getTenSp() : "Sản phẩm";
+                String maCtsp = ctsp != null ? ctsp.getMaCtsp() : "";
+                Integer idCtsp = ctsp != null ? ctsp.getId() : null;
+
+                // Cấu hình tóm tắt
+                String cauHinh = buildCauHinhSummary(ctsp);
+
+                // Ảnh sản phẩm
+                Integer spId = (ctsp != null && ctsp.getSanPham() != null) ? ctsp.getSanPham().getId() : null;
+                String urlAnh = (spId != null) ? hinhAnhBySanPhamId.get(spId) : null;
+                if (urlAnh == null || urlAnh.isBlank()) {
+                    urlAnh = "https://images.unsplash.com/photo-1603302576837-37561b2e2302?auto=format&fit=crop&w=800&q=80";
+                }
+
+                itemDTOs.add(LichSuDonHangItemDTO.builder()
+                        .idChiTietHoaDon(c.getId())
+                        .idChiTietSanPham(idCtsp)
+                        .maCtsp(maCtsp)
+                        .tenSanPham(tenSanPham)
+                        .hinhAnh(urlAnh)
+                        .cauHinh(cauHinh)
+                        .soLuong(qty)
+                        .giaMua(giaMua)
+                        .thanhTien(thanhTien)
+                        .build());
+            }
+
+            // Snapshot Voucher
+            BigDecimal tienGiamVoucher = h.getTienGiamVoucher() != null ? h.getTienGiamVoucher() : BigDecimal.ZERO;
+            String maVoucher = h.getVoucher() != null ? h.getVoucher().getMa() : null;
+
+            // Snapshot Tổng thanh toán từ thanh_toan.so_tien
+            BigDecimal tongThanhToan;
+            if (h.getThanhToan() != null && h.getThanhToan().getSoTien() != null) {
+                tongThanhToan = h.getThanhToan().getSoTien();
+            } else {
+                tongThanhToan = tongTienHang.subtract(tienGiamVoucher).max(BigDecimal.ZERO);
+            }
+
+            // Trạng thái đơn hàng (0: Chờ xác nhận, 1: Đã xác nhận, 2: Đang giao hàng, 3: Hoàn thành, 4: Đã hủy)
+            int orderStatus = h.getTrangThai() != null ? h.getTrangThai() : 0;
+            String orderStatusText;
+            String orderBadgeClass;
+            switch (orderStatus) {
+                case 0:
+                    orderStatusText = "Chờ xác nhận";
+                    orderBadgeClass = "badge-pending";
+                    break;
+                case 1:
+                    orderStatusText = "Đã xác nhận";
+                    orderBadgeClass = "badge-confirmed";
+                    break;
+                case 2:
+                    orderStatusText = "Đang giao hàng";
+                    orderBadgeClass = "badge-shipping";
+                    break;
+                case 3:
+                    orderStatusText = "Hoàn thành";
+                    orderBadgeClass = "badge-completed";
+                    break;
+                case 4:
+                    orderStatusText = "Đã hủy";
+                    orderBadgeClass = "badge-cancelled";
+                    break;
+                default:
+                    orderStatusText = "Không xác định";
+                    orderBadgeClass = "badge-unknown";
+            }
+
+            // Trạng thái thanh toán (0: Chưa thanh toán, 1: Đã thanh toán)
+            int payStatus = (h.getThanhToan() != null && h.getThanhToan().getTrangThai() != null) 
+                    ? h.getThanhToan().getTrangThai() : 0;
+            String payStatusText = (payStatus == 1) ? "Đã thanh toán" : "Chưa thanh toán";
+            String payBadgeClass = (payStatus == 1) ? "badge-paid" : "badge-unpaid";
+
+            // Phương thức thanh toán
+            String rawPayMethod = (h.getThanhToan() != null && h.getThanhToan().getPhuongThuc() != null)
+                    ? h.getThanhToan().getPhuongThuc() : "COD";
+            String payMethodText;
+            if ("COD".equalsIgnoreCase(rawPayMethod)) {
+                payMethodText = "Thanh toán khi nhận hàng (COD)";
+            } else if ("CHUYEN_KHOAN".equalsIgnoreCase(rawPayMethod)) {
+                payMethodText = "Chuyển khoản ngân hàng";
+            } else if ("TIEN_MAT".equalsIgnoreCase(rawPayMethod)) {
+                payMethodText = "Tiền mặt tại quầy";
+            } else {
+                payMethodText = rawPayMethod;
+            }
+
+            String ngayTaoStr = h.getNgayTao() != null ? h.getNgayTao().format(dtf) : "";
+
+            result.add(LichSuDonHangDTO.builder()
+                    .idHoaDon(h.getId())
+                    .maHoaDon(h.getMa())
+                    .ngayTao(h.getNgayTao())
+                    .ngayTaoFormatted(ngayTaoStr)
+                    .trangThai(orderStatus)
+                    .trangThaiHienThi(orderStatusText)
+                    .trangThaiBadgeClass(orderBadgeClass)
+                    .trangThaiThanhToan(payStatus)
+                    .trangThaiThanhToanHienThi(payStatusText)
+                    .trangThaiThanhToanBadgeClass(payBadgeClass)
+                    .phuongThucThanhToan(rawPayMethod)
+                    .phuongThucThanhToanHienThi(payMethodText)
+                    .tenNguoiNhan(h.getTenNguoiNhan())
+                    .dienThoai(h.getDienThoai())
+                    .diaChi(h.getDiaChi())
+                    .moTa(h.getMoTa())
+                    .tongSoLuong(tongSoLuong)
+                    .tongTienHang(tongTienHang)
+                    .tienGiamVoucher(tienGiamVoucher)
+                    .maVoucher(maVoucher)
+                    .tongThanhToan(tongThanhToan)
+                    .items(itemDTOs)
+                    .build());
+        }
+
+        return result;
+    }
+
+    private String buildCauHinhSummary(ChiTietSanPham ctsp) {
+        if (ctsp == null) return "";
+        List<String> parts = new ArrayList<>();
+        if (ctsp.getCpu() != null && ctsp.getCpu().getTenCpu() != null) parts.add(ctsp.getCpu().getTenCpu());
+        if (ctsp.getRam() != null && ctsp.getRam().getDungLuong() != null) parts.add(ctsp.getRam().getDungLuong());
+        if (ctsp.getOCung() != null && ctsp.getOCung().getDungLuong() != null) parts.add(ctsp.getOCung().getDungLuong());
+        if (ctsp.getCardDoHoa() != null && ctsp.getCardDoHoa().getTenCard() != null) parts.add(ctsp.getCardDoHoa().getTenCard());
+        if (ctsp.getMauSac() != null && ctsp.getMauSac().getTenMau() != null) parts.add(ctsp.getMauSac().getTenMau());
+        return String.join(" / ", parts);
     }
 
     @Override

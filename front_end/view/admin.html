@@ -1344,6 +1344,68 @@
   </div>
 
   <!-- ======================================================================
+       MODAL 8B: XÁC NHẬN THU TIỀN TRƯỚC / THANH TOÁN TẠI QUẦY
+       ====================================================================== -->
+  <div class="admin-modal-overlay" id="confirmPrepaymentModal" style="z-index: 2150;">
+    <div class="admin-modal-container" style="max-width: 500px;">
+      <div class="admin-modal-header" style="border-bottom: 1px solid var(--admin-border);">
+        <div class="admin-modal-title" id="prepaymentModalTitle" style="font-size: 1.05rem; font-weight: 800;">Xác nhận thu tiền trước</div>
+        <button class="admin-modal-close" onclick="closeConfirmPrepaymentModal()" type="button">&times;</button>
+      </div>
+
+      <div style="padding: 18px 20px;">
+        <!-- Alert box -->
+        <div class="alert-warning-cod" id="prepaymentAlertBox" style="align-items: center; margin-bottom: 16px;">
+          <div class="icon">!</div>
+          <div id="prepaymentAlertTitle" style="font-weight: 700; font-size: 0.9rem; line-height: 1.4;">Bạn đang xác nhận đã thu đủ tiền thanh toán trước cho đơn hàng</div>
+        </div>
+
+        <!-- Order info box -->
+        <div style="background: #f8fafc; border: 1px solid var(--admin-border); border-radius: 8px; padding: 14px 16px; margin-bottom: 16px;">
+          <div style="font-weight: 700; font-size: 0.88rem; margin-bottom: 8px; color: #1e293b;">Thông tin đơn hàng</div>
+          <div style="display: flex; flex-direction: column; gap: 6px; font-size: 0.86rem;">
+            <div style="display: flex; justify-content: space-between;">
+              <span style="color: var(--admin-text-muted);">Mã hóa đơn:</span>
+              <strong id="prepaymentModalMa">---</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+              <span style="color: var(--admin-text-muted);">Khách hàng:</span>
+              <strong id="prepaymentModalKhach">---</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="color: var(--admin-text-muted);">Phương thức thanh toán:</span>
+              <span class="badge-status" id="prepaymentModalPhuongThuc" style="background: #fef3c7; color: #b45309; border: 1px solid #fde68a; font-weight: 700;">---</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px; border-top: 1px dashed var(--admin-border); padding-top: 6px;">
+              <span style="color: var(--admin-text-muted);">Tổng tiền:</span>
+              <strong id="prepaymentModalTotal" style="color: #dc2626; font-size: 1.15rem; font-weight: 900;">0 đ</strong>
+            </div>
+          </div>
+        </div>
+
+        <!-- Confirmation Checkbox -->
+        <div style="margin-bottom: 8px;">
+          <div style="font-weight: 700; font-size: 0.88rem; margin-bottom: 4px; color: #1e293b;">Xác nhận thu tiền</div>
+          <div style="font-size: 0.83rem; color: var(--admin-text-muted); margin-bottom: 8px;">
+            Tôi xác nhận đã nhận đủ số tiền <strong id="prepaymentModalTotalText" style="color: #dc2626;">0 đ</strong> từ khách hàng.
+          </div>
+          <label style="display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 0.9rem; cursor: pointer; color: #0f172a; background: #eff6ff; padding: 10px 12px; border-radius: 6px; border: 1px solid #bfdbfe;">
+            <input type="checkbox" id="chkPrepaymentCollected" onchange="togglePrepaymentConfirmBtn(this.checked)" style="width: 18px; height: 18px; cursor: pointer; accent-color: var(--admin-primary);">
+            <span>Đã thu đủ tiền từ khách hàng</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="admin-modal-footer" style="padding: 12px 20px; border-top: 1px solid var(--admin-border); display: flex; justify-content: flex-end; gap: 8px;">
+        <button class="btn-admin btn-outline" onclick="closeConfirmPrepaymentModal()" type="button">Hủy</button>
+        <button class="btn-admin btn-primary" id="btnSubmitPrepaymentConfirm" onclick="submitPrepaymentConfirmation()" type="button" disabled style="opacity: 0.5; cursor: not-allowed; font-weight: 700; background: #16a34a; border-color: #16a34a;">
+          ✓ Xác nhận
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================================
        MODAL 9: XÁC NHẬN ĐƠN HÀNG (TIẾP NHẬN XỬ LÝ & CHỌN IMEI)
        ====================================================================== -->
   <div class="admin-modal-overlay" id="confirmAcceptOrderModal" style="z-index: 2200;">
@@ -2328,7 +2390,7 @@
   <!-- ======================================================================
        ADMIN JAVASCRIPT LOGIC
        ====================================================================== -->
-  <script src="../js/admin.js?v=20261002_0055"></script>
+  <script src="../js/admin.js?v=20261002_1835"></script>
 </body>
 
 </html>

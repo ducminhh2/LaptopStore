@@ -9,4 +9,5 @@ import java.util.List;
 @Repository
 public interface HinhAnhRepository extends JpaRepository<HinhAnh, Integer> {
     List<HinhAnh> findBySanPhamId(Integer sanPhamId);
+    List<HinhAnh> findBySanPhamIdIn(List<Integer> sanPhamIds);
 }

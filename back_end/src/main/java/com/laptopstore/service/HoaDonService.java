@@ -22,5 +22,6 @@ public interface HoaDonService {
     HoaDon huyHoaDon(Integer id, String lyDo);
     HoaDon posCheckout(com.laptopstore.dto.PosCheckoutRequest request);
     HoaDon thanhToanTaiQuay(Integer id, String username);
+    List<com.laptopstore.dto.LichSuDonHangDTO> getLichSuDonHangKhachHang(Integer khachHangId);
     void delete(Integer id);
 }
