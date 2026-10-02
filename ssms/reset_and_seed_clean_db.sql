@@ -1,342 +1,84 @@
-IF NOT EXISTS (SELECT * FROM sys.databases WHERE name = 'LaptopStoreDB')
-BEGIN
-    CREATE DATABASE LaptopStoreDB;
-END
-GO
-
 USE LaptopStoreDB;
 GO
 
 SET NOCOUNT ON;
 
-/* ============================================================================
-   XÓA BẢNG CŨ THEO THỨ TỰ RÀNG BUỘC (NẾU ĐÃ TỒN TẠI)
-   ============================================================================ */
-IF OBJECT_ID('dbo.bao_hanh', 'U') IS NOT NULL DROP TABLE dbo.bao_hanh;
-IF OBJECT_ID('dbo.chi_tiet_hoa_don_imei', 'U') IS NOT NULL DROP TABLE dbo.chi_tiet_hoa_don_imei;
-IF OBJECT_ID('dbo.chi_tiet_hoa_don', 'U') IS NOT NULL DROP TABLE dbo.chi_tiet_hoa_don;
-IF OBJECT_ID('dbo.hoa_don', 'U') IS NOT NULL DROP TABLE dbo.hoa_don;
-IF OBJECT_ID('dbo.chi_tiet_gio_hang', 'U') IS NOT NULL DROP TABLE dbo.chi_tiet_gio_hang;
-IF OBJECT_ID('dbo.gio_hang', 'U') IS NOT NULL DROP TABLE dbo.gio_hang;
-IF OBJECT_ID('dbo.imei', 'U') IS NOT NULL DROP TABLE dbo.imei;
-IF OBJECT_ID('dbo.hinh_anh_chi_tiet', 'U') IS NOT NULL DROP TABLE dbo.hinh_anh_chi_tiet;
-IF OBJECT_ID('dbo.chi_tiet_khuyen_mai', 'U') IS NOT NULL DROP TABLE dbo.chi_tiet_khuyen_mai;
-IF OBJECT_ID('dbo.chi_tiet_san_pham', 'U') IS NOT NULL DROP TABLE dbo.chi_tiet_san_pham;
-IF OBJECT_ID('dbo.hinh_anh', 'U') IS NOT NULL DROP TABLE dbo.hinh_anh;
-IF OBJECT_ID('dbo.san_pham', 'U') IS NOT NULL DROP TABLE dbo.san_pham;
-IF OBJECT_ID('dbo.khuyen_mai', 'U') IS NOT NULL DROP TABLE dbo.khuyen_mai;
-IF OBJECT_ID('dbo.voucher', 'U') IS NOT NULL DROP TABLE dbo.voucher;
-IF OBJECT_ID('dbo.thanh_toan', 'U') IS NOT NULL DROP TABLE dbo.thanh_toan;
-IF OBJECT_ID('dbo.nguoi_dung', 'U') IS NOT NULL DROP TABLE dbo.nguoi_dung;
-IF OBJECT_ID('dbo.vai_tro', 'U') IS NOT NULL DROP TABLE dbo.vai_tro;
-IF OBJECT_ID('dbo.danh_muc', 'U') IS NOT NULL DROP TABLE dbo.danh_muc;
-IF OBJECT_ID('dbo.thuong_hieu', 'U') IS NOT NULL DROP TABLE dbo.thuong_hieu;
-IF OBJECT_ID('dbo.mau_sac', 'U') IS NOT NULL DROP TABLE dbo.mau_sac;
-IF OBJECT_ID('dbo.cpu', 'U') IS NOT NULL DROP TABLE dbo.cpu;
-IF OBJECT_ID('dbo.ram', 'U') IS NOT NULL DROP TABLE dbo.ram;
-IF OBJECT_ID('dbo.o_cung', 'U') IS NOT NULL DROP TABLE dbo.o_cung;
-IF OBJECT_ID('dbo.card_do_hoa', 'U') IS NOT NULL DROP TABLE dbo.card_do_hoa;
-IF OBJECT_ID('dbo.man_hinh', 'U') IS NOT NULL DROP TABLE dbo.man_hinh;
+PRINT N'=== BẮT ĐẦU XÓA DỮ LIỆU CŨ VÀ TÁI TẠO CSDL LAPTOP STORE SẠCH SẼ ===';
+
+-- 1. Vô hiệu hóa constraints tạm thời
+EXEC sp_MSforeachtable "ALTER TABLE ? NOCHECK CONSTRAINT all";
+
+-- 2. Xóa dữ liệu các bảng
+DELETE FROM chi_tiet_hoa_don_imei;
+DELETE FROM chi_tiet_hoa_don;
+DELETE FROM hoa_don;
+DELETE FROM thanh_toan;
+DELETE FROM bao_hanh;
+DELETE FROM chi_tiet_khuyen_mai;
+DELETE FROM khuyen_mai;
+DELETE FROM voucher;
+DELETE FROM chi_tiet_gio_hang;
+DELETE FROM gio_hang;
+DELETE FROM imei;
+DELETE FROM hinh_anh_chi_tiet;
+DELETE FROM hinh_anh;
+DELETE FROM chi_tiet_san_pham;
+DELETE FROM san_pham;
+DELETE FROM thuong_hieu;
+DELETE FROM danh_muc;
+DELETE FROM mau_sac;
+DELETE FROM cpu;
+DELETE FROM ram;
+DELETE FROM o_cung;
+DELETE FROM card_do_hoa;
+DELETE FROM man_hinh;
+DELETE FROM nguoi_dung;
+DELETE FROM vai_tro;
+
+-- 3. Bật lại constraints
+EXEC sp_MSforeachtable "ALTER TABLE ? WITH CHECK CHECK CONSTRAINT all";
+
+-- 4. Reseed Identity về 0 để tự tăng từ 1
+DBCC CHECKIDENT ('vai_tro', RESEED, 0);
+DBCC CHECKIDENT ('nguoi_dung', RESEED, 0);
+DBCC CHECKIDENT ('danh_muc', RESEED, 0);
+DBCC CHECKIDENT ('thuong_hieu', RESEED, 0);
+DBCC CHECKIDENT ('san_pham', RESEED, 0);
+DBCC CHECKIDENT ('hinh_anh', RESEED, 0);
+DBCC CHECKIDENT ('mau_sac', RESEED, 0);
+DBCC CHECKIDENT ('cpu', RESEED, 0);
+DBCC CHECKIDENT ('ram', RESEED, 0);
+DBCC CHECKIDENT ('o_cung', RESEED, 0);
+DBCC CHECKIDENT ('card_do_hoa', RESEED, 0);
+DBCC CHECKIDENT ('man_hinh', RESEED, 0);
+DBCC CHECKIDENT ('chi_tiet_san_pham', RESEED, 0);
+DBCC CHECKIDENT ('hinh_anh_chi_tiet', RESEED, 0);
+DBCC CHECKIDENT ('imei', RESEED, 0);
+DBCC CHECKIDENT ('gio_hang', RESEED, 0);
+DBCC CHECKIDENT ('chi_tiet_gio_hang', RESEED, 0);
+DBCC CHECKIDENT ('thanh_toan', RESEED, 0);
+DBCC CHECKIDENT ('hoa_don', RESEED, 0);
+DBCC CHECKIDENT ('chi_tiet_hoa_don', RESEED, 0);
+DBCC CHECKIDENT ('chi_tiet_hoa_don_imei', RESEED, 0);
+DBCC CHECKIDENT ('bao_hanh', RESEED, 0);
+DBCC CHECKIDENT ('khuyen_mai', RESEED, 0);
+DBCC CHECKIDENT ('chi_tiet_khuyen_mai', RESEED, 0);
+DBCC CHECKIDENT ('voucher', RESEED, 0);
 GO
 
 /* ============================================================================
-   TẠO BẢNG CSDL (CHÍNH XÁC NGUYÊN BẢN THEO LOGIC BACKEND)
+   1. BẢNG VAI TRÒ (3 vai trò)
    ============================================================================ */
-
--- 1. Vai trò
-CREATE TABLE vai_tro (
-    id INT IDENTITY(1,1) PRIMARY KEY,
-    ten_vai_tro NVARCHAR(50) NOT NULL
-);
-GO
-
--- 2. Người dùng
-CREATE TABLE nguoi_dung (
-    id INT IDENTITY(1,1) PRIMARY KEY,
-    ma VARCHAR(50) UNIQUE NOT NULL,
-    ten NVARCHAR(100) NOT NULL,
-    username VARCHAR(50) UNIQUE NOT NULL,
-    password VARCHAR(255) NOT NULL,
-    dia_chi NVARCHAR(255),
-    dien_thoai VARCHAR(20),
-    email VARCHAR(100),
-    id_vai_tro INT NOT NULL,
-    CONSTRAINT FK_NguoiDung_VaiTro FOREIGN KEY (id_vai_tro) REFERENCES vai_tro(id)
-);
-GO
-
--- 3. Danh mục
-CREATE TABLE danh_muc (
-    id INT IDENTITY(1,1) PRIMARY KEY,
-    ten_danh_muc NVARCHAR(100) NOT NULL
-);
-GO
-
--- 4. Thương hiệu
-CREATE TABLE thuong_hieu (
-    id INT IDENTITY(1,1) PRIMARY KEY,
-    ten_thuong_hieu NVARCHAR(100) NOT NULL
-);
-GO
-
--- 5. Màu sắc
-CREATE TABLE mau_sac (
-    id INT IDENTITY(1,1) PRIMARY KEY,
-    ten_mau NVARCHAR(50) NOT NULL
-);
-GO
-
--- 6. CPU
-CREATE TABLE cpu (
-    id INT IDENTITY(1,1) PRIMARY KEY,
-    ten_cpu NVARCHAR(100) NOT NULL
-);
-GO
-
--- 7. RAM
-CREATE TABLE ram (
-    id INT IDENTITY(1,1) PRIMARY KEY,
-    dung_luong NVARCHAR(50) NOT NULL,
-    loai_ram NVARCHAR(50)
-);
-GO
-
--- 8. Ổ cứng
-CREATE TABLE o_cung (
-    id INT IDENTITY(1,1) PRIMARY KEY,
-    loai_o_cung NVARCHAR(50) NOT NULL,
-    dung_luong NVARCHAR(50) NOT NULL
-);
-GO
-
--- 9. Card đồ họa
-CREATE TABLE card_do_hoa (
-    id INT IDENTITY(1,1) PRIMARY KEY,
-    ten_card NVARCHAR(100) NOT NULL
-);
-GO
-
--- 10. Màn hình
-CREATE TABLE man_hinh (
-    id INT IDENTITY(1,1) PRIMARY KEY,
-    kich_thuoc NVARCHAR(50) NOT NULL,
-    do_phan_giai NVARCHAR(50) NOT NULL,
-    tan_so_quet NVARCHAR(50)
-);
-GO
-
--- 11. Sản phẩm
-CREATE TABLE san_pham (
-    id INT IDENTITY(1,1) PRIMARY KEY,
-    ma_sp VARCHAR(50) UNIQUE NOT NULL,
-    ten_sp NVARCHAR(200) NOT NULL,
-    gia_co_ban DECIMAL(18, 2) DEFAULT 0,
-    mo_ta NVARCHAR(MAX),
-    id_danh_muc INT NOT NULL,
-    id_thuong_hieu INT NOT NULL,
-    CONSTRAINT FK_SanPham_DanhMuc FOREIGN KEY (id_danh_muc) REFERENCES danh_muc(id),
-    CONSTRAINT FK_SanPham_ThuongHieu FOREIGN KEY (id_thuong_hieu) REFERENCES thuong_hieu(id)
-);
-GO
-
--- 12. Hình ảnh sản phẩm
-CREATE TABLE hinh_anh (
-    id INT IDENTITY(1,1) PRIMARY KEY,
-    url_hinh_anh VARCHAR(500) NOT NULL,
-    id_san_pham INT NOT NULL,
-    CONSTRAINT FK_HinhAnh_SanPham FOREIGN KEY (id_san_pham) REFERENCES san_pham(id) ON DELETE CASCADE
-);
-GO
-
--- 13. Chi tiết sản phẩm (CTSP)
-CREATE TABLE chi_tiet_san_pham (
-    id INT IDENTITY(1,1) PRIMARY KEY,
-    ma_ctsp VARCHAR(50) UNIQUE NOT NULL,
-    id_san_pham INT NOT NULL,
-    id_mau_sac INT NOT NULL,
-    id_cpu INT NOT NULL,
-    id_ram INT NOT NULL,
-    id_o_cung INT NOT NULL,
-    id_card_do_hoa INT NOT NULL,
-    id_man_hinh INT NOT NULL,
-    so_luong INT DEFAULT 0,
-    gia DECIMAL(18, 2) NOT NULL,
-    mo_ta NVARCHAR(MAX),
-    trang_thai INT DEFAULT 1,
-    CONSTRAINT FK_CTSP_SanPham FOREIGN KEY (id_san_pham) REFERENCES san_pham(id),
-    CONSTRAINT FK_CTSP_MauSac FOREIGN KEY (id_mau_sac) REFERENCES mau_sac(id),
-    CONSTRAINT FK_CTSP_CPU FOREIGN KEY (id_cpu) REFERENCES cpu(id),
-    CONSTRAINT FK_CTSP_RAM FOREIGN KEY (id_ram) REFERENCES ram(id),
-    CONSTRAINT FK_CTSP_OCung FOREIGN KEY (id_o_cung) REFERENCES o_cung(id),
-    CONSTRAINT FK_CTSP_Card FOREIGN KEY (id_card_do_hoa) REFERENCES card_do_hoa(id),
-    CONSTRAINT FK_CTSP_ManHinh FOREIGN KEY (id_man_hinh) REFERENCES man_hinh(id)
-);
-GO
-
--- 14. Hình ảnh chi tiết
-CREATE TABLE hinh_anh_chi_tiet (
-    id INT IDENTITY(1,1) PRIMARY KEY,
-    url_hinh_anh VARCHAR(500) NOT NULL,
-    id_ctsp INT NOT NULL,
-    CONSTRAINT FK_HinhAnhCT_CTSP FOREIGN KEY (id_ctsp) REFERENCES chi_tiet_san_pham(id) ON DELETE CASCADE
-);
-GO
-
--- 15. IMEI
-CREATE TABLE imei (
-    id INT IDENTITY(1,1) PRIMARY KEY,
-    so_imei VARCHAR(100) UNIQUE NOT NULL,
-    id_chi_tiet_san_pham INT NOT NULL,
-    trang_thai INT DEFAULT 0, 
-    ngay_nhap DATETIME DEFAULT GETDATE(),
-    CONSTRAINT FK_IMEI_CTSP FOREIGN KEY (id_chi_tiet_san_pham) REFERENCES chi_tiet_san_pham(id)
-);
-GO
-
--- 16. Giỏ hàng
-CREATE TABLE gio_hang (
-    id INT IDENTITY(1,1) PRIMARY KEY,
-    ma VARCHAR(50) UNIQUE NOT NULL,
-    id_khach_hang INT NOT NULL,
-    tong_so_tien DECIMAL(18, 2) DEFAULT 0,
-    tong_so_luong INT DEFAULT 0,
-    CONSTRAINT FK_GioHang_KhachHang FOREIGN KEY (id_khach_hang) REFERENCES nguoi_dung(id)
-);
-GO
-
--- 17. Chi tiết giỏ hàng
-CREATE TABLE chi_tiet_gio_hang (
-    id INT IDENTITY(1,1) PRIMARY KEY,
-    ma VARCHAR(50),
-    so_luong INT NOT NULL DEFAULT 1,
-    id_gio_hang INT NOT NULL,
-    id_chi_tiet_san_pham INT NOT NULL,
-    gia_tung_san_pham DECIMAL(18, 2) NOT NULL,
-    CONSTRAINT FK_CTGioHang_GioHang FOREIGN KEY (id_gio_hang) REFERENCES gio_hang(id) ON DELETE CASCADE,
-    CONSTRAINT FK_CTGioHang_CTSP FOREIGN KEY (id_chi_tiet_san_pham) REFERENCES chi_tiet_san_pham(id)
-);
-GO
-
--- 18. Phương thức thanh toán
-CREATE TABLE thanh_toan (
-    id INT IDENTITY(1,1) PRIMARY KEY,
-    ma VARCHAR(50) UNIQUE NOT NULL,
-    phuong_thuc NVARCHAR(100) NOT NULL,
-    so_tien DECIMAL(18, 2) NOT NULL,
-    trang_thai INT DEFAULT 0,
-    ngay_thanh_toan DATETIME NULL
-);
-GO
-
--- 19. Voucher
-CREATE TABLE voucher (
-    id INT IDENTITY(1,1) PRIMARY KEY,
-    ma VARCHAR(50) UNIQUE NOT NULL,
-    ten_voucher NVARCHAR(200) NOT NULL,
-    loai_giam INT NOT NULL,                     -- 1: Giảm %, 2: Giảm số tiền VNĐ
-    gia_tri_giam DECIMAL(18, 2) NOT NULL,
-    gia_tri_don_toi_thieu DECIMAL(18, 2) NOT NULL DEFAULT 0,
-    giam_toi_da DECIMAL(18, 2) NULL,
-    ngay_bat_dau DATETIME NOT NULL,
-    ngay_ket_thuc DATETIME NOT NULL,
-    trang_thai INT NOT NULL DEFAULT 1           -- 0: Ngừng hoạt động, 1: Đang hoạt động
-);
-GO
-
--- 20. Hóa đơn
-CREATE TABLE hoa_don (
-    id INT IDENTITY(1,1) PRIMARY KEY,
-    ma VARCHAR(50) UNIQUE NOT NULL,
-    id_khach_hang INT NOT NULL,
-    dia_chi NVARCHAR(255) NOT NULL,
-    dien_thoai VARCHAR(20) NOT NULL,
-    ngay_tao DATETIME DEFAULT GETDATE(),
-    ten_nguoi_nhan NVARCHAR(100) NOT NULL,
-    trang_thai INT DEFAULT 0,
-    id_thanh_toan INT,
-    id_nhan_vien INT,
-    id_voucher INT,
-    tien_giam_voucher DECIMAL(18, 2) NOT NULL DEFAULT 0,
-    mo_ta NVARCHAR(MAX),
-    CONSTRAINT FK_HoaDon_KhachHang FOREIGN KEY (id_khach_hang) REFERENCES nguoi_dung(id),
-    CONSTRAINT FK_HoaDon_ThanhToan FOREIGN KEY (id_thanh_toan) REFERENCES thanh_toan(id),
-    CONSTRAINT FK_HoaDon_NhanVien FOREIGN KEY (id_nhan_vien) REFERENCES nguoi_dung(id),
-    CONSTRAINT FK_HoaDon_Voucher FOREIGN KEY (id_voucher) REFERENCES voucher(id)
-);
-GO
-
--- 21. Chi tiết hóa đơn
-CREATE TABLE chi_tiet_hoa_don (
-    id INT IDENTITY(1,1) PRIMARY KEY,
-    ma VARCHAR(50),
-    id_hoa_don INT NOT NULL,
-    id_chi_tiet_san_pham INT NOT NULL,
-    so_luong INT NOT NULL,
-    gia_tung_san_pham DECIMAL(18, 2) NOT NULL,
-    CONSTRAINT FK_CTHoaDon_HoaDon FOREIGN KEY (id_hoa_don) REFERENCES hoa_don(id) ON DELETE CASCADE,
-    CONSTRAINT FK_CTHoaDon_CTSP FOREIGN KEY (id_chi_tiet_san_pham) REFERENCES chi_tiet_san_pham(id)
-);
-GO
-
--- 22. Chi tiết hóa đơn - IMEI
-CREATE TABLE chi_tiet_hoa_don_imei (
-    id INT IDENTITY(1,1) PRIMARY KEY,
-    id_chi_tiet_hoa_don INT NOT NULL,
-    id_imei INT UNIQUE NOT NULL,
-    CONSTRAINT FK_CTHD_IMEI_CTHD FOREIGN KEY (id_chi_tiet_hoa_don) REFERENCES chi_tiet_hoa_don(id) ON DELETE CASCADE,
-    CONSTRAINT FK_CTHD_IMEI_IMEI FOREIGN KEY (id_imei) REFERENCES imei(id)
-);
-GO
-
--- 23. Bảo hành
-CREATE TABLE bao_hanh (
-    id INT IDENTITY(1,1) PRIMARY KEY,
-    ma_phieu VARCHAR(50) UNIQUE NOT NULL,
-    id_imei INT UNIQUE NOT NULL,
-    ngay_kich_hoat DATETIME DEFAULT GETDATE(),
-    ngay_het_han DATETIME NOT NULL,
-    trang_thai INT DEFAULT 1,
-    CONSTRAINT FK_BaoHanh_IMEI FOREIGN KEY (id_imei) REFERENCES imei(id)
-);
-GO
-
--- 24. Khuyến mãi sản phẩm
-CREATE TABLE khuyen_mai (
-    id INT IDENTITY(1,1) PRIMARY KEY,
-    ma VARCHAR(50) UNIQUE NOT NULL,
-    ten_km NVARCHAR(200) NOT NULL,
-    loai_giam INT NOT NULL DEFAULT 1, -- 1: Giảm %, 2: Giảm số tiền
-    gia_tri_giam DECIMAL(18, 2) NOT NULL DEFAULT 0,
-    ngay_bat_dau DATETIME NOT NULL,
-    ngay_ket_thuc DATETIME NOT NULL,
-    trang_thai INT DEFAULT 1          -- 0: Ngừng hoạt động, 1: Hoạt động
-);
-GO
-
--- 25. Chi tiết khuyến mãi
-CREATE TABLE chi_tiet_khuyen_mai (
-    id INT IDENTITY(1,1) PRIMARY KEY,
-    ma_ctkm VARCHAR(50),
-    id_ctsp INT NOT NULL,
-    id_khuyen_mai INT NOT NULL,
-    CONSTRAINT FK_CTKM_CTSP FOREIGN KEY (id_ctsp) REFERENCES chi_tiet_san_pham(id) ON DELETE CASCADE,
-    CONSTRAINT FK_CTKM_KhuyenMai FOREIGN KEY (id_khuyen_mai) REFERENCES khuyen_mai(id) ON DELETE CASCADE,
-    CONSTRAINT UQ_CTKM_CTSP_KM UNIQUE (id_ctsp, id_khuyen_mai)
-);
-GO
-
-/* ============================================================================
-   INSERT DỮ LIỆU CHUẨN MỚI 100%
-   ============================================================================ */
-
-/* 1. BẢNG VAI TRÒ */
 INSERT INTO vai_tro (ten_vai_tro) VALUES
 (N'Quản trị viên'), -- ID 1
 (N'Nhân viên'),     -- ID 2
 (N'Khách hàng');    -- ID 3
 GO
 
-/* 2. BẢNG NGƯỜI DÙNG */
+/* ============================================================================
+   2. BẢNG NGƯỜI DÙNG (1 Admin, 3 Nhân viên, 1 Khách lẻ, 3 Khách hàng)
+   Mật khẩu tất cả đều là: 123456
+   ============================================================================ */
 INSERT INTO nguoi_dung (ma, ten, username, password, dia_chi, dien_thoai, email, id_vai_tro) VALUES
 ('AD001', N'Quản trị viên Hệ Thống', 'admin', '123456', N'Hà Nội', '0900000001', 'admin@laptopstore.vn', 1),
 ('NV001', N'Nguyễn Minh Đức', 'minhduc', '123456', N'Số 1 Đại Cồ Việt, Hai Bà Trưng, Hà Nội', '0912345671', 'minhduc@laptopstore.vn', 2),
@@ -348,7 +90,9 @@ INSERT INTO nguoi_dung (ma, ten, username, password, dia_chi, dien_thoai, email,
 ('KH003', N'Lê Hoàng Nam', 'lehoangnam', '123456', N'Số 19 Nguyễn Trãi, Thanh Xuân, Hà Nội', '0965432109', 'hoangnam@gmail.com', 3);
 GO
 
-/* 3. GIỎ HÀNG KHỞI TẠO CHO KHÁCH HÀNG */
+/* ============================================================================
+   3. TẠO SẴN GIỎ HÀNG RỖNG CHO 3 KHÁCH HÀNG (KH001, KH002, KH003)
+   ============================================================================ */
 INSERT INTO gio_hang (ma, id_khach_hang, tong_so_tien, tong_so_luong)
 SELECT 'GH0001', id, 0, 0 FROM nguoi_dung WHERE username = 'nguyenvanan';
 
@@ -359,83 +103,95 @@ INSERT INTO gio_hang (ma, id_khach_hang, tong_so_tien, tong_so_luong)
 SELECT 'GH0003', id, 0, 0 FROM nguoi_dung WHERE username = 'lehoangnam';
 GO
 
-/* 4. THUỘC TÍNH SẢN PHẨM */
--- CPU (10 mẫu)
+/* ============================================================================
+   4. THUỘC TÍNH SẢN PHẨM
+   - 10 CPU
+   - 10 Card đồ họa
+   - 5 Danh mục
+   - 5 Thương hiệu
+   - 5 RAM
+   - 5 Ổ cứng
+   - 5 Màn hình
+   - 5 Màu sắc
+   ============================================================================ */
+-- 4.1. CPU (10 mẫu)
 INSERT INTO cpu (ten_cpu) VALUES
-(N'Intel Core i5-12450H'),
-(N'Intel Core i5-13500H'),
-(N'Intel Core i7-13700H'),
-(N'Intel Core i9-13900HX'),
-(N'Intel Core Ultra 7 155H'),
-(N'AMD Ryzen 5 7535HS'),
-(N'AMD Ryzen 7 7735HS'),
-(N'AMD Ryzen 7 7840HS'),
-(N'AMD Ryzen 9 7940HS'),
-(N'Apple M3 Pro Chip');
+(N'Intel Core i5-12450H'),  -- ID 1
+(N'Intel Core i5-13500H'),  -- ID 2
+(N'Intel Core i7-13700H'),  -- ID 3
+(N'Intel Core i9-13900HX'), -- ID 4
+(N'Intel Core Ultra 7 155H'),-- ID 5
+(N'AMD Ryzen 5 7535HS'),    -- ID 6
+(N'AMD Ryzen 7 7735HS'),    -- ID 7
+(N'AMD Ryzen 7 7840HS'),    -- ID 8
+(N'AMD Ryzen 9 7940HS'),    -- ID 9
+(N'Apple M3 Pro Chip');     -- ID 10
 
--- Card đồ họa (10 mẫu)
+-- 4.2. Card đồ họa (10 mẫu)
 INSERT INTO card_do_hoa (ten_card) VALUES
-(N'NVIDIA GeForce RTX 3050 4GB'),
-(N'NVIDIA GeForce RTX 4050 6GB'),
-(N'NVIDIA GeForce RTX 4060 8GB'),
-(N'NVIDIA GeForce RTX 4070 8GB'),
-(N'NVIDIA GeForce RTX 4080 12GB'),
-(N'AMD Radeon RX 7600S 8GB'),
-(N'AMD Radeon 680M'),
-(N'AMD Radeon 780M'),
-(N'Intel Iris Xe Graphics'),
-(N'Apple 14-Core GPU');
+(N'NVIDIA GeForce RTX 3050 4GB'), -- ID 1
+(N'NVIDIA GeForce RTX 4050 6GB'), -- ID 2
+(N'NVIDIA GeForce RTX 4060 8GB'), -- ID 3
+(N'NVIDIA GeForce RTX 4070 8GB'), -- ID 4
+(N'NVIDIA GeForce RTX 4080 12GB'),-- ID 5
+(N'AMD Radeon RX 7600S 8GB'),     -- ID 6
+(N'AMD Radeon 680M'),             -- ID 7
+(N'AMD Radeon 780M'),             -- ID 8
+(N'Intel Iris Xe Graphics'),      -- ID 9
+(N'Apple 14-Core GPU');           -- ID 10
 
--- Danh mục (5 cái)
+-- 4.3. Danh mục (5 cái)
 INSERT INTO danh_muc (ten_danh_muc) VALUES
-(N'Laptop Gaming'),
-(N'Laptop Đồ Họa - Kỹ Thuật'),
-(N'Laptop Mỏng Nhẹ - Cao Cấp'),
-(N'Laptop Học Tập - Văn Phòng'),
-(N'Laptop Doanh Nhân');
+(N'Laptop Gaming'),             -- ID 1
+(N'Laptop Đồ Họa - Kỹ Thuật'),   -- ID 2
+(N'Laptop Mỏng Nhẹ - Cao Cấp'),  -- ID 3
+(N'Laptop Học Tập - Văn Phòng'), -- ID 4
+(N'Laptop Doanh Nhân');          -- ID 5
 
--- Thương hiệu (5 hãng)
+-- 4.4. Thương hiệu (5 hãng)
 INSERT INTO thuong_hieu (ten_thuong_hieu) VALUES
-(N'ASUS'),
-(N'Dell'),
-(N'Lenovo'),
-(N'Acer'),
-(N'HP');
+(N'ASUS'),   -- ID 1
+(N'Dell'),   -- ID 2
+(N'Lenovo'), -- ID 3
+(N'Acer'),   -- ID 4
+(N'HP');     -- ID 5
 
--- RAM (5 cái)
+-- 4.5. RAM (5 cái)
 INSERT INTO ram (dung_luong, loai_ram) VALUES
-(N'8GB', N'DDR4 3200MHz'),
-(N'16GB', N'DDR4 3200MHz'),
-(N'16GB', N'DDR5 4800MHz'),
-(N'32GB', N'DDR5 5200MHz'),
-(N'64GB', N'DDR5 5600MHz');
+(N'8GB', N'DDR4 3200MHz'),   -- ID 1
+(N'16GB', N'DDR4 3200MHz'),  -- ID 2
+(N'16GB', N'DDR5 4800MHz'),  -- ID 3
+(N'32GB', N'DDR5 5200MHz'),  -- ID 4
+(N'64GB', N'DDR5 5600MHz');  -- ID 5
 
--- Ổ cứng (5 cái)
+-- 4.6. Ổ cứng (5 cái)
 INSERT INTO o_cung (loai_o_cung, dung_luong) VALUES
-(N'SSD NVMe PCIe Gen3', N'256GB'),
-(N'SSD NVMe PCIe Gen4', N'512GB'),
-(N'SSD NVMe PCIe Gen4', N'1TB'),
-(N'SSD NVMe PCIe Gen4', N'2TB'),
-(N'SSD NVMe PCIe Gen3', N'512GB');
+(N'SSD NVMe PCIe Gen3', N'256GB'), -- ID 1
+(N'SSD NVMe PCIe Gen4', N'512GB'), -- ID 2
+(N'SSD NVMe PCIe Gen4', N'1TB'),   -- ID 3
+(N'SSD NVMe PCIe Gen4', N'2TB'),   -- ID 4
+(N'SSD NVMe PCIe Gen3', N'512GB'); -- ID 5
 
--- Màn hình (5 cái)
+-- 4.7. Màn hình (5 cái)
 INSERT INTO man_hinh (kich_thuoc, do_phan_giai, tan_so_quet) VALUES
-(N'14.0 inch', N'Full HD (1920x1080) IPS', N'60Hz'),
-(N'14.0 inch', N'2.8K (2880x1800) OLED', N'120Hz'),
-(N'15.6 inch', N'Full HD (1920x1080) IPS', N'144Hz'),
-(N'15.6 inch', N'2K QHD (2560x1440) IPS', N'165Hz'),
-(N'16.0 inch', N'WQXGA (2560x1600) IPS', N'165Hz');
+(N'14.0 inch', N'Full HD (1920x1080) IPS', N'60Hz'),    -- ID 1
+(N'14.0 inch', N'2.8K (2880x1800) OLED', N'120Hz'),     -- ID 2
+(N'15.6 inch', N'Full HD (1920x1080) IPS', N'144Hz'),   -- ID 3
+(N'15.6 inch', N'2K QHD (2560x1440) IPS', N'165Hz'),    -- ID 4
+(N'16.0 inch', N'WQXGA (2560x1600) IPS', N'165Hz');    -- ID 5
 
--- Màu sắc (5 cái)
+-- 4.8. Màu sắc (5 cái)
 INSERT INTO mau_sac (ten_mau) VALUES
-(N'Xám không gian (Space Gray)'),
-(N'Đen bóng đêm (Midnight Black)'),
-(N'Bạc ánh trăng (Luna Silver)'),
-(N'Trắng tuyết (Glacier White)'),
-(N'Xanh đậm (Dark Blue)');
+(N'Xám không gian (Space Gray)'), -- ID 1
+(N'Đen bóng đêm (Midnight Black)'),-- ID 2
+(N'Bạc ánh trăng (Luna Silver)'), -- ID 3
+(N'Trắng tuyết (Glacier White)'), -- ID 4
+(N'Xanh đậm (Dark Blue)');        -- ID 5
 GO
 
-/* 5. BẢNG SẢN PHẨM (Mỗi hãng 3 sản phẩm = 15 sản phẩm) */
+/* ============================================================================
+   5. BẢNG SẢN PHẨM (Mỗi hãng 3 sản phẩm = 15 sản phẩm)
+   ============================================================================ */
 INSERT INTO san_pham (ma_sp, ten_sp, gia_co_ban, mo_ta, id_danh_muc, id_thuong_hieu) VALUES
 -- ASUS (Hãng 1)
 ('SP001', N'ASUS TUF Gaming A15', 19990000, N'Laptop Gaming chiến game đỉnh cao, chuẩn độ bền quân đội Mỹ.', 1, 1),
@@ -463,7 +219,9 @@ INSERT INTO san_pham (ma_sp, ten_sp, gia_co_ban, mo_ta, id_danh_muc, id_thuong_h
 ('SP015', N'HP Envy x360 14', 23990000, N'Laptop xoay gập 360 độ cao cấp với bút cảm ứng tiện lợi.', 3, 5);
 GO
 
-/* 6. HÌNH ẢNH SẢN PHẨM */
+/* ============================================================================
+   6. HÌNH ẢNH SẢN PHẨM (Mỗi sản phẩm 1 ảnh đại diện)
+   ============================================================================ */
 INSERT INTO hinh_anh (url_hinh_anh, id_san_pham) VALUES
 ('https://images.unsplash.com/photo-1603302576837-37561b2e2302?auto=format&fit=crop&w=800&q=80', 1),
 ('https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?auto=format&fit=crop&w=800&q=80', 2),
@@ -482,7 +240,10 @@ INSERT INTO hinh_anh (url_hinh_anh, id_san_pham) VALUES
 ('https://images.unsplash.com/photo-1531297484001-80022131f5a1?auto=format&fit=crop&w=800&q=80', 15);
 GO
 
-/* 7. CHI TIẾT SẢN PHẨM (Mỗi sản phẩm 3 cấu hình = 45 CTSP, so_luong = 5) */
+/* ============================================================================
+   7. CHI TIẾT SẢN PHẨM (Mỗi sản phẩm 3 cấu hình = 45 CTSP)
+   so_luong = 5 (tương ứng với 5 IMEI trong kho)
+   ============================================================================ */
 INSERT INTO chi_tiet_san_pham 
 (ma_ctsp, id_san_pham, id_mau_sac, id_cpu, id_ram, id_o_cung, id_card_do_hoa, id_man_hinh, so_luong, gia, mo_ta, trang_thai)
 VALUES
@@ -562,14 +323,18 @@ VALUES
 ('CTSP045', 15, 3, 5, 4, 3, 9, 2, 5, 31990000, N'Core Ultra 7 155H / RAM 32GB DDR5 / SSD 1TB / Intel Arc / 14" 2.8K OLED Cảm ứng / Bạc', 1);
 GO
 
-/* 8. HÌNH ẢNH CHO 45 CHI TIẾT SẢN PHẨM */
+/* ============================================================================
+   8. HÌNH ẢNH CHO 45 CHI TIẾT SẢN PHẨM
+   ============================================================================ */
 INSERT INTO hinh_anh_chi_tiet (url_hinh_anh, id_ctsp)
 SELECT h.url_hinh_anh, ct.id
 FROM chi_tiet_san_pham ct
 JOIN hinh_anh h ON h.id_san_pham = ct.id_san_pham;
 GO
 
-/* 9. BẢNG IMEI (Mỗi cấu hình 5 IMEI x 45 CTSP = 225 IMEI, trang_thai = 0 Trong kho) */
+/* ============================================================================
+   9. BẢNG IMEI (Mỗi cấu hình 5 IMEI x 45 CTSP = 225 IMEI, trang_thai = 0 - Trong kho)
+   ============================================================================ */
 DECLARE @ctspId INT;
 DECLARE @imeiIndex INT;
 DECLARE @soImei VARCHAR(100);
@@ -598,7 +363,9 @@ CLOSE ctsp_cursor;
 DEALLOCATE ctsp_cursor;
 GO
 
-/* 10. VOUCHER HÓA ĐƠN */
+/* ============================================================================
+   10. VOUCHER HÓA ĐƠN (3 Voucher đang hoạt động)
+   ============================================================================ */
 INSERT INTO voucher 
 (ma, ten_voucher, loai_giam, gia_tri_giam, gia_tri_don_toi_thieu, giam_toi_da, ngay_bat_dau, ngay_ket_thuc, trang_thai)
 VALUES
@@ -607,7 +374,9 @@ VALUES
 ('VIPMEMBER', N'Ưu Đãi Khách Thân Thiết 1.000.000đ', 2, 1000000, 25000000, NULL, '2026-01-01 00:00:00', '2026-12-31 23:59:59', 1);
 GO
 
-/* 11. KHUYẾN MÃI SẢN PHẨM */
+/* ============================================================================
+   11. KHUYẾN MÃI SẢN PHẨM (3 Chương trình đang hoạt động & Gán CTSP)
+   ============================================================================ */
 INSERT INTO khuyen_mai 
 (ma, ten_km, loai_giam, gia_tri_giam, ngay_bat_dau, ngay_ket_thuc, trang_thai)
 VALUES
@@ -617,6 +386,7 @@ VALUES
 GO
 
 -- Gán Khuyến Mãi vào một số CTSP:
+-- KM 1 (Giảm 10%): áp dụng cho CTSP 1, 4, 10, 28 (Gaming + Mỏng nhẹ phổ biến)
 INSERT INTO chi_tiet_khuyen_mai (ma_ctkm, id_ctsp, id_khuyen_mai)
 SELECT 'CTKM_01', ct.id, km.id FROM chi_tiet_san_pham ct, khuyen_mai km WHERE ct.ma_ctsp = 'CTSP001' AND km.ma = 'KM_HOT_SALE';
 
@@ -629,6 +399,7 @@ SELECT 'CTKM_10', ct.id, km.id FROM chi_tiet_san_pham ct, khuyen_mai km WHERE ct
 INSERT INTO chi_tiet_khuyen_mai (ma_ctkm, id_ctsp, id_khuyen_mai)
 SELECT 'CTKM_28', ct.id, km.id FROM chi_tiet_san_pham ct, khuyen_mai km WHERE ct.ma_ctsp = 'CTSP028' AND km.ma = 'KM_HOT_SALE';
 
+-- KM 2 (Giảm 1.500.000đ): áp dụng cho CTSP 2, 7, 16, 19, 31 (Gaming cao cấp)
 INSERT INTO chi_tiet_khuyen_mai (ma_ctkm, id_ctsp, id_khuyen_mai)
 SELECT 'CTKM_02', ct.id, km.id FROM chi_tiet_san_pham ct, khuyen_mai km WHERE ct.ma_ctsp = 'CTSP002' AND km.ma = 'KM_GAMING';
 
@@ -644,6 +415,7 @@ SELECT 'CTKM_19', ct.id, km.id FROM chi_tiet_san_pham ct, khuyen_mai km WHERE ct
 INSERT INTO chi_tiet_khuyen_mai (ma_ctkm, id_ctsp, id_khuyen_mai)
 SELECT 'CTKM_31', ct.id, km.id FROM chi_tiet_san_pham ct, khuyen_mai km WHERE ct.ma_ctsp = 'CTSP031' AND km.ma = 'KM_GAMING';
 
+-- KM 3 (Giảm 5%): áp dụng cho CTSP 22, 25, 37, 40 (Văn phòng, sinh viên)
 INSERT INTO chi_tiet_khuyen_mai (ma_ctkm, id_ctsp, id_khuyen_mai)
 SELECT 'CTKM_22', ct.id, km.id FROM chi_tiet_san_pham ct, khuyen_mai km WHERE ct.ma_ctsp = 'CTSP022' AND km.ma = 'KM_STUDENT';
 
@@ -657,5 +429,5 @@ INSERT INTO chi_tiet_khuyen_mai (ma_ctkm, id_ctsp, id_khuyen_mai)
 SELECT 'CTKM_40', ct.id, km.id FROM chi_tiet_san_pham ct, khuyen_mai km WHERE ct.ma_ctsp = 'CTSP040' AND km.ma = 'KM_STUDENT';
 GO
 
-PRINT N'=== ĐÃ KHỞI TẠO BẢNG VÀ INSERT DỮ LIỆU LAPTOP STORE THÀNH CÔNG RỰC RỠ! ===';
+PRINT N'=== TÁI TẠO CƠ SỞ DỮ LIỆU THÀNH CÔNG RỰC RỠ! ===';
 GO
