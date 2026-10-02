@@ -168,7 +168,7 @@ function getPricingInfo(item) {
     if (loaiGiam === 1) {
       discountLabel = `-${giaTriGiam}%`;
     } else if (loaiGiam === 2) {
-      discountLabel = `Giảm ${formatVND(giaTriGiam)}`;
+      discountLabel = `-${formatVND(giaTriGiam)}`;
     }
   }
 
@@ -265,7 +265,9 @@ function renderProductDetails(item) {
     }
     if (saveAmountEl) {
       saveAmountEl.style.display = 'inline-block';
-      saveAmountEl.textContent = `Tiết kiệm: ${formatVND(pricing.tienGiam)} (${pricing.discountLabel})`;
+      saveAmountEl.textContent = (pricing.loaiGiam === 1) 
+        ? `Tiết kiệm: ${formatVND(pricing.tienGiam)} (${pricing.discountLabel})` 
+        : `Tiết kiệm: ${formatVND(pricing.tienGiam)}`;
     }
   } else {
     if (oldPriceEl) oldPriceEl.style.display = 'none';

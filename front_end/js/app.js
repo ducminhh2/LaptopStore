@@ -234,7 +234,7 @@ function getPricingInfo(item) {
     if (loaiGiam === 1) {
       discountLabel = `-${giaTriGiam}%`;
     } else if (loaiGiam === 2) {
-      discountLabel = `Giảm ${formatVND(giaTriGiam)}`;
+      discountLabel = `-${formatVND(giaTriGiam)}`;
     }
   }
 
