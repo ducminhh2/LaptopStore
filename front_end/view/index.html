@@ -121,6 +121,61 @@
   <main class="container">
 
     <!-- ==========================================================================
+         CUSTOMER FILTER BAR (Lọc Giá, Thương Hiệu & Sắp Xếp)
+         ========================================================================== -->
+    <div class="customer-filter-bar" id="customerFilterBar">
+      
+      <!-- Dòng 1: Lọc Thương Hiệu -->
+      <div class="filter-row">
+        <div class="filter-row-label">
+          <svg style="width: 16px; height: 16px; color: var(--primary-red);" fill="currentColor" viewBox="0 0 24 24"><path d="M21.41 11.58l-9-9C12.05 2.22 11.55 2 11 2H4c-1.1 0-2 .9-2 2v7c0 .55.22 1.05.59 1.42l9 9c.36.36.86.58 1.41.58.55 0 1.05-.22 1.41-.59l7-7c.37-.36.59-.86.59-1.41 0-.55-.23-1.06-.59-1.42zM5.5 7C4.67 7 4 6.33 4 5.5S4.67 4 5.5 4 7 4.67 7 5.5 6.33 7 5.5 7z"/></svg>
+          <span>Thương hiệu:</span>
+        </div>
+        <div class="filter-pills-list" id="brandFilterList">
+          <button type="button" class="filter-pill-btn active" data-brand="ALL" onclick="setBrandFilter('ALL')">Tất cả</button>
+          <!-- Brands dynamically loaded from /api/thuong-hieu -->
+        </div>
+      </div>
+
+      <!-- Dòng 2: Lọc Mức Giá -->
+      <div class="filter-row">
+        <div class="filter-row-label">
+          <svg style="width: 16px; height: 16px; color: var(--primary-red);" fill="currentColor" viewBox="0 0 24 24"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg>
+          <span>Mức giá:</span>
+        </div>
+        <div class="filter-pills-list" id="priceFilterList">
+          <button type="button" class="filter-pill-btn active" data-price="ALL" onclick="setPriceFilter('ALL')">Tất cả mức giá</button>
+          <button type="button" class="filter-pill-btn" data-price="under15" onclick="setPriceFilter('under15')">Dưới 15 triệu</button>
+          <button type="button" class="filter-pill-btn" data-price="15to20" onclick="setPriceFilter('15to20')">15 - 20 triệu</button>
+          <button type="button" class="filter-pill-btn" data-price="20to25" onclick="setPriceFilter('20to25')">20 - 25 triệu</button>
+          <button type="button" class="filter-pill-btn" data-price="25to30" onclick="setPriceFilter('25to30')">25 - 30 triệu</button>
+          <button type="button" class="filter-pill-btn" data-price="above30" onclick="setPriceFilter('above30')">Trên 30 triệu</button>
+        </div>
+      </div>
+
+      <!-- Dòng 3: Trạng thái lọc, Sắp xếp & Nút Reset -->
+      <div class="filter-bottom-bar" id="filterBottomBar">
+        <div class="filter-status-info" id="filterStatusInfo">
+          <span>Đang hiển thị tất cả sản phẩm theo danh mục</span>
+        </div>
+        <div class="filter-tools-right">
+          <div style="display: flex; align-items: center; gap: 6px; font-size: 0.82rem; color: #475569;">
+            <span>Sắp xếp:</span>
+            <select class="filter-sort-select" id="filterSortSelect" onchange="setSortOrder(this.value)">
+              <option value="DEFAULT">Mặc định</option>
+              <option value="PRICE_ASC">Giá tăng dần ↑</option>
+              <option value="PRICE_DESC">Giá giảm dần ↓</option>
+            </select>
+          </div>
+          <button type="button" class="filter-reset-btn" id="filterResetBtn" onclick="resetCustomerFilters()" style="display: none;">
+            ✕ Xóa bộ lọc
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ==========================================================================
          DYNAMIC PRODUCT SECTIONS (Rendered strictly by category from Database)
          ========================================================================== -->
     <div id="dynamicProductSections">
@@ -305,7 +360,7 @@
   </script>
 
   <!-- Main JavaScript File -->
-  <script src="../js/app.js?v=20261002_1305"></script>
+  <script src="../js/app.js?v=20261002_1315"></script>
 
 </body>
 </html>

@@ -374,6 +374,144 @@ input, select {
 }
 
 /* ==========================================================================
+   CUSTOMER FILTER BAR (Lọc Giá, Thương Hiệu & Sắp Xếp)
+   ========================================================================== */
+.customer-filter-bar {
+  background: #ffffff;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+  padding: 16px 20px;
+  margin-top: 20px;
+  margin-bottom: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.filter-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.filter-row-label {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #1e293b;
+  min-width: 110px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.filter-pills-list {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  flex: 1;
+}
+
+.filter-pill-btn {
+  background: #f8fafc;
+  color: #334155;
+  border: 1px solid #cbd5e1;
+  border-radius: 20px;
+  padding: 5px 14px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.filter-pill-btn:hover {
+  border-color: var(--primary-red);
+  color: var(--primary-red);
+  background: #fff5f5;
+  transform: translateY(-1px);
+}
+
+.filter-pill-btn.active {
+  background: var(--primary-red);
+  color: #ffffff;
+  border-color: var(--primary-red);
+  font-weight: 700;
+  box-shadow: 0 2px 8px rgba(234, 40, 40, 0.28);
+}
+
+.filter-bottom-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px dashed #e2e8f0;
+  padding-top: 10px;
+  margin-top: 2px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.filter-status-info {
+  font-size: 0.82rem;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.filter-status-info strong {
+  color: #0f172a;
+}
+
+.filter-tools-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.filter-sort-select {
+  padding: 5px 10px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 0.82rem;
+  color: #334155;
+  background: #ffffff;
+  font-weight: 500;
+  cursor: pointer;
+  outline: none;
+}
+
+.filter-sort-select:focus {
+  border-color: var(--primary-red);
+}
+
+.filter-reset-btn {
+  background: #fee2e2;
+  color: #ef4444;
+  border: none;
+  padding: 5px 12px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.2s ease;
+}
+
+.filter-reset-btn:hover {
+  background: #fecaca;
+  color: #dc2626;
+}
+
+/* ==========================================================================
    PRODUCT SECTION (MATCHING SCREENSHOT)
    ========================================================================== */
 .product-section {
