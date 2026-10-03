@@ -58,26 +58,24 @@ public class ImeiServiceImpl implements ImeiService {
                 dto.setNgayNhapFormatted(imei.getNgayNhap().format(dtf));
             }
 
+            ChiTietHoaDonImei cthdImei = imeiInvoiceMap.get(imei.getId());
             int st = imei.getTrangThai() != null ? imei.getTrangThai() : 0;
             switch (st) {
                 case 0 -> {
-                    dto.setTenTrangThai("Còn hàng");
-                    dto.setBadgeClass("badge-success");
+                    if (cthdImei != null) {
+                        dto.setTenTrangThai("Đang phân bổ");
+                        dto.setBadgeClass("badge-info");
+                    } else {
+                        dto.setTenTrangThai("Trong kho");
+                        dto.setBadgeClass("badge-success");
+                    }
                 }
                 case 1 -> {
                     dto.setTenTrangThai("Đã bán");
                     dto.setBadgeClass("badge-secondary");
                 }
                 case 2 -> {
-                    dto.setTenTrangThai("Lỗi / Hỏng");
-                    dto.setBadgeClass("badge-danger");
-                }
-                case 3 -> {
-                    dto.setTenTrangThai("Bảo hành");
-                    dto.setBadgeClass("badge-warning");
-                }
-                case 4 -> {
-                    dto.setTenTrangThai("Xuất hủy / Trả NCC");
+                    dto.setTenTrangThai("Ngừng sử dụng");
                     dto.setBadgeClass("badge-danger");
                 }
                 default -> {
@@ -86,7 +84,6 @@ public class ImeiServiceImpl implements ImeiService {
                 }
             }
 
-            ChiTietHoaDonImei cthdImei = imeiInvoiceMap.get(imei.getId());
             if (cthdImei != null && cthdImei.getChiTietHoaDon() != null) {
                 ChiTietHoaDon cthd = cthdImei.getChiTietHoaDon();
                 HoaDon hd = cthd.getHoaDon();
@@ -268,5 +265,131 @@ public class ImeiServiceImpl implements ImeiService {
     @Override
     public List<Imei> getAvailableByChiTietSanPham(Integer ctspId) {
         return imeiRepository.findAvailableByChiTietSanPhamId(ctspId);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Imei ngungSuDungImei(Integer id) {
+        if (id == null) {
+            throw new IllegalArgumentException("Mã IMEI không hợp lệ.");
+        }
+        Imei existing = getById(id);
+        if (existing.getTrangThai() == null || existing.getTrangThai() != 0) {
+            throw new IllegalStateException("Chỉ có thể ngừng sử dụng IMEI đang ở trạng thái 'Trong kho' (0). Trạng thái hiện tại: " + existing.getTrangThai());
+        }
+        if (chiTietHoaDonImeiRepository.findByImeiId(id).isPresent()) {
+            throw new IllegalStateException("Không thể ngừng sử dụng IMEI đang được phân bổ cho đơn hàng!");
+        }
+        existing.setTrangThai(2); // 2: Ngừng sử dụng
+        Imei saved = imeiRepository.save(existing);
+
+        // Tự động đồng bộ số lượng tồn kho khả dụng của CTSP
+        if (existing.getChiTietSanPham() != null && existing.getChiTietSanPham().getId() != null) {
+            Integer ctspId = existing.getChiTietSanPham().getId();
+            int availableCount = imeiRepository.countAvailableByChiTietSanPhamId(ctspId);
+            chiTietSanPhamRepository.updateSoLuong(ctspId, availableCount);
+        }
+        return saved;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Imei kichHoatLaiImei(Integer id) {
+        if (id == null) {
+            throw new IllegalArgumentException("Mã IMEI không hợp lệ.");
+        }
+        Imei existing = getById(id);
+        if (existing.getTrangThai() == null || existing.getTrangThai() != 2) {
+            throw new IllegalStateException("Chỉ có thể kích hoạt lại IMEI đang ở trạng thái 'Ngừng sử dụng' (2). Trạng thái hiện tại: " + existing.getTrangThai());
+        }
+        if (chiTietHoaDonImeiRepository.findByImeiId(id).isPresent()) {
+            throw new IllegalStateException("Phát hiện liên kết hóa đơn bất thường đối với IMEI này!");
+        }
+        existing.setTrangThai(0); // 0: Trong kho / Có thể sử dụng
+        Imei saved = imeiRepository.save(existing);
+
+        // Tự động đồng bộ số lượng tồn kho khả dụng của CTSP
+        if (existing.getChiTietSanPham() != null && existing.getChiTietSanPham().getId() != null) {
+            Integer ctspId = existing.getChiTietSanPham().getId();
+            int availableCount = imeiRepository.countAvailableByChiTietSanPhamId(ctspId);
+            chiTietSanPhamRepository.updateSoLuong(ctspId, availableCount);
+        }
+        return saved;
+    }
+
+    @Override
+    public List<ImeiResponseDTO> getImeisByCtsp(Integer ctspId) {
+        if (ctspId == null) return List.of();
+        List<Imei> imeis = imeiRepository.findByChiTietSanPhamId(ctspId);
+        List<ChiTietHoaDonImei> cthdImeis = chiTietHoaDonImeiRepository.findAll();
+        Map<Integer, ChiTietHoaDonImei> imeiInvoiceMap = new HashMap<>();
+        for (ChiTietHoaDonImei link : cthdImeis) {
+            if (link.getImei() != null && link.getImei().getId() != null) {
+                imeiInvoiceMap.put(link.getImei().getId(), link);
+            }
+        }
+
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy");
+
+        return imeis.stream().map(imei -> {
+            ImeiResponseDTO dto = new ImeiResponseDTO();
+            dto.setId(imei.getId());
+            dto.setSoImei(imei.getSoImei());
+            dto.setChiTietSanPham(imei.getChiTietSanPham());
+            dto.setTrangThai(imei.getTrangThai());
+            dto.setNgayNhap(imei.getNgayNhap());
+            if (imei.getNgayNhap() != null) {
+                dto.setNgayNhapFormatted(imei.getNgayNhap().format(dtf));
+            }
+
+            ChiTietHoaDonImei cthdImei = imeiInvoiceMap.get(imei.getId());
+            int st = imei.getTrangThai() != null ? imei.getTrangThai() : 0;
+            switch (st) {
+                case 0 -> {
+                    if (cthdImei != null) {
+                        dto.setTenTrangThai("Đang phân bổ");
+                        dto.setBadgeClass("badge-info");
+                    } else {
+                        dto.setTenTrangThai("Trong kho");
+                        dto.setBadgeClass("badge-success");
+                    }
+                }
+                case 1 -> {
+                    dto.setTenTrangThai("Đã bán");
+                    dto.setBadgeClass("badge-secondary");
+                }
+                case 2 -> {
+                    dto.setTenTrangThai("Ngừng sử dụng");
+                    dto.setBadgeClass("badge-danger");
+                }
+                default -> {
+                    dto.setTenTrangThai("Khác");
+                    dto.setBadgeClass("badge-info");
+                }
+            }
+
+            if (cthdImei != null && cthdImei.getChiTietHoaDon() != null) {
+                ChiTietHoaDon cthd = cthdImei.getChiTietHoaDon();
+                HoaDon hd = cthd.getHoaDon();
+                if (hd != null) {
+                    dto.setIdHoaDon(hd.getId());
+                    dto.setMaHoaDon(hd.getMa());
+                    dto.setNgayBan(hd.getNgayTao());
+                    if (hd.getNgayTao() != null) {
+                        dto.setNgayBanFormatted(hd.getNgayTao().format(dtf));
+                    }
+                    if (hd.getKhachHang() != null) {
+                        dto.setTenKhachHang(hd.getKhachHang().getTen());
+                        dto.setSoDienThoai(hd.getKhachHang().getDienThoai());
+                    } else if (hd.getTenNguoiNhan() != null) {
+                        dto.setTenKhachHang(hd.getTenNguoiNhan());
+                        dto.setSoDienThoai(hd.getDienThoai());
+                    }
+                    dto.setTrangThaiHoaDon(hd.getTrangThai());
+                }
+            }
+
+            return dto;
+        }).collect(Collectors.toList());
     }
 }

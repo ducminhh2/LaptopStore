@@ -24,4 +24,7 @@ public interface ImeiService {
     List<String> findExistingImeis(List<String> soImeis);
     Map<String, Object> addImeisToCtsp(ThemImeiRequest request);
     List<Imei> getAvailableByChiTietSanPham(Integer ctspId);
+    Imei ngungSuDungImei(Integer id);
+    Imei kichHoatLaiImei(Integer id);
+    List<ImeiResponseDTO> getImeisByCtsp(Integer ctspId);
 }

@@ -97,4 +97,19 @@ public class ImeiController {
         }
         return ResponseEntity.ok(imeiService.getAvailableByChiTietSanPham(targetCtspId));
     }
+
+    @PostMapping("/{id}/ngung-su-dung")
+    public ResponseEntity<Imei> ngungSuDung(@PathVariable Integer id) {
+        return ResponseEntity.ok(imeiService.ngungSuDungImei(id));
+    }
+
+    @PostMapping("/{id}/kich-hoat-lai")
+    public ResponseEntity<Imei> kichHoatLai(@PathVariable Integer id) {
+        return ResponseEntity.ok(imeiService.kichHoatLaiImei(id));
+    }
+
+    @GetMapping("/chi-tiet-san-pham/{ctspId}/quan-ly")
+    public ResponseEntity<List<ImeiResponseDTO>> getByCtspForManagement(@PathVariable Integer ctspId) {
+        return ResponseEntity.ok(imeiService.getImeisByCtsp(ctspId));
+    }
 }

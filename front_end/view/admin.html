@@ -1060,11 +1060,10 @@
                 <select class="select-admin" id="filterImeiStatus" onchange="filterImeisTable()"
                   style="min-width:160px;">
                   <option value="ALL">Trạng thái (Tất cả)</option>
-                  <option value="0">Còn hàng (Trong kho)</option>
+                  <option value="0">Trong kho</option>
+                  <option value="ALLOCATED">Đang phân bổ</option>
                   <option value="1">Đã bán</option>
-                  <option value="2">Lỗi / Hỏng</option>
-                  <option value="3">Bảo hành</option>
-                  <option value="4">Xuất hủy / Trả NCC</option>
+                  <option value="2">Ngừng sử dụng</option>
                 </select>
 
                 <!-- Lọc Sản Phẩm -->
@@ -2469,78 +2468,70 @@
 
         <!-- Số lượng IMEI thuộc CTSP -->
         <div style="background:#f1f5f9; padding:12px 16px; border-radius:8px; display:flex; justify-content:space-between; align-items:center;">
-          <span style="font-size:0.85rem; color:#475569; font-weight:600;">Tổng số máy (IMEI) đã nhập của cấu hình này:</span>
+          <span style="font-size:0.85rem; color:#475569; font-weight:600;">Tổng số IMEI của phiên bản này:</span>
           <span id="imeiCtspTotalImeiBadge" class="badge-status badge-info" style="font-weight:700; font-size:0.85rem;">0 máy</span>
         </div>
       </div>
 
       <div class="admin-modal-footer" style="padding: 14px 22px; border-top: 1px solid #e2e8f0; display: flex; justify-content: flex-end; gap: 10px;">
         <button class="btn-admin btn-outline" onclick="closeImeiCtspModal()" type="button">Đóng</button>
-        <button class="btn-admin btn-primary" id="btnGoToVariantEdit" onclick="goToVariantFromImeiModal()" type="button">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-          <span>Quản Lý Cấu Hình Trong Kho</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================================
+       MODAL: NGỪNG SỬ DỤNG IMEI / SERIAL
+       ====================================================================== -->
+  <div class="admin-modal-overlay" id="modalNgungSuDungImei" style="z-index: 2200;">
+    <div class="admin-modal-container" style="max-width: 480px;">
+      <div class="admin-modal-header" style="background: #fef2f2; border-bottom: 1px solid #fee2e2;">
+        <div class="admin-modal-title" style="color: #991b1b; display: flex; align-items: center; gap: 8px; font-weight:800;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+          <span>NGỪNG SỬ DỤNG IMEI / SERIAL</span>
+        </div>
+        <button class="admin-modal-close" onclick="closeNgungSuDungImeiModal()" type="button">&times;</button>
+      </div>
+      <div style="padding: 22px; font-size: 0.95rem; color: #334155; line-height: 1.6;">
+        <input type="hidden" id="ngungSuDungImeiId">
+        <div>Bạn có chắc muốn ngừng sử dụng:</div>
+        <div id="ngungSuDungImeiCodeDisplay" style="font-family: monospace; font-size: 1.25rem; font-weight: 800; color: #991b1b; margin: 10px 0 0 0;">-</div>
+      </div>
+      <div class="admin-modal-footer" style="padding: 12px 20px; border-top: 1px solid #e2e8f0; display: flex; justify-content: flex-end; gap: 10px;">
+        <button class="btn-admin btn-outline" onclick="closeNgungSuDungImeiModal()" type="button">QUAY LẠI</button>
+        <button class="btn-admin btn-danger" onclick="confirmNgungSuDungImei()" type="button" id="btnConfirmNgungSuDung" style="background:#dc2626; border-color:#b91c1c; color:#fff;">
+          XÁC NHẬN
         </button>
       </div>
     </div>
   </div>
 
   <!-- ======================================================================
-       MODAL: ĐỔI TRẠNG THÁI IMEI (KÈM TRỪ/CỘNG TỒN KHO CTSP)
+       MODAL: KÍCH HOẠT LẠI IMEI / SERIAL
        ====================================================================== -->
-  <div class="admin-modal-overlay" id="imeiChangeStatusModal" style="z-index: 2300;">
-    <div class="admin-modal-container" style="max-width: 540px; display: flex; flex-direction: column;">
-      <div class="admin-modal-header">
-        <div class="admin-modal-title" style="font-size: 1.15rem; font-weight: 800; display:flex; align-items:center; gap:8px;">
+  <div class="admin-modal-overlay" id="modalKichHoatLaiImei" style="z-index: 2200;">
+    <div class="admin-modal-container" style="max-width: 480px;">
+      <div class="admin-modal-header" style="background: #f0fdf4; border-bottom: 1px solid #dcfce7;">
+        <div class="admin-modal-title" style="color: #166534; display: flex; align-items: center; gap: 8px; font-weight:800;">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polyline points="23 4 23 10 17 10"></polyline>
-            <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
-          </svg>
-          <span>CẬP NHẬT TRẠNG THÁI IMEI</span>
-        </div>
-        <button class="admin-modal-close" onclick="closeChangeImeiStatusModal()" type="button">&times;</button>
-      </div>
-
-      <div style="padding: 22px; display: flex; flex-direction: column; gap: 14px;">
-        <input type="hidden" id="changeImeiId">
-
-        <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:14px;">
-          <div style="font-size:0.78rem; font-weight:700; color:#64748b; text-transform:uppercase;">Số IMEI</div>
-          <div id="changeImeiCodeDisplay" style="font-family:monospace; font-weight:800; font-size:1.2rem; color:#1e293b; margin-top:2px;">-</div>
-          <div id="changeImeiProductName" style="font-weight:600; color:#475569; font-size:0.9rem; margin-top:4px;">-</div>
-          <div style="display:flex; align-items:center; gap:8px; margin-top:8px;">
-            <span style="font-size:0.8rem; color:#64748b;">Trạng thái hiện tại:</span>
-            <span id="changeImeiCurrentStatusBadge">-</span>
-          </div>
-        </div>
-
-        <div>
-          <label for="changeImeiNewStatusSelect" class="form-label" style="font-weight:700; font-size:0.9rem; display:block; margin-bottom:6px;">
-            Chọn trạng thái mới:
-          </label>
-          <select id="changeImeiNewStatusSelect" class="select-admin" style="width:100%; height:40px; font-size:0.95rem; font-weight:600;">
-            <option value="0">Còn hàng (Trong kho / Khả dụng)</option>
-            <option value="2">Lỗi / Hỏng (Trừ tồn kho)</option>
-            <option value="3">Bảo hành hãng (Trừ tồn kho)</option>
-            <option value="4">Xuất hủy / Trả NCC (Trừ tồn kho)</option>
-          </select>
-        </div>
-
-        <div style="background:#eff6ff; border:1px solid #bfdbfe; border-radius:8px; padding:12px 14px; font-size:0.85rem; color:#1e40af; line-height:1.5;">
-          <div style="font-weight:700; display:flex; align-items:center; gap:6px; margin-bottom:4px;">
-            <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path></svg>
-            <span>Quy tắc trừ số lượng tồn kho tự động:</span>
-          </div>
-          <div>Khi chuyển trạng thái từ <strong>Còn hàng</strong> sang <strong>Lỗi/Hỏng</strong>, <strong>Bảo hành</strong> hoặc <strong>Xuất hủy</strong>, số lượng tồn kho của cấu hình laptop này sẽ tự động bị <strong>trừ 1</strong>. Nếu chuyển ngược lại về <strong>Còn hàng</strong>, số lượng kho sẽ tự động <strong>cộng lại 1</strong>.</div>
-        </div>
-      </div>
-
-      <div class="admin-modal-footer" style="padding: 14px 22px; border-top: 1px solid #e2e8f0; display: flex; justify-content: flex-end; gap: 10px;">
-        <button class="btn-admin btn-outline" onclick="closeChangeImeiStatusModal()" type="button">Hủy bỏ</button>
-        <button class="btn-admin btn-primary" onclick="submitChangeImeiStatus()" type="button">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
             <polyline points="20 6 9 17 4 12"></polyline>
           </svg>
-          <span>Xác Nhận Đổi Trạng Thái</span>
+          <span>KÍCH HOẠT LẠI IMEI / SERIAL</span>
+        </div>
+        <button class="admin-modal-close" onclick="closeKichHoatLaiImeiModal()" type="button">&times;</button>
+      </div>
+      <div style="padding: 22px; font-size: 0.95rem; color: #334155; line-height: 1.6;">
+        <input type="hidden" id="kichHoatLaiImeiId">
+        <div>Bạn có chắc muốn kích hoạt lại:</div>
+        <div id="kichHoatLaiImeiCodeDisplay" style="font-family: monospace; font-size: 1.25rem; font-weight: 800; color: #166534; margin: 10px 0 0 0;">-</div>
+      </div>
+      <div class="admin-modal-footer" style="padding: 12px 20px; border-top: 1px solid #e2e8f0; display: flex; justify-content: flex-end; gap: 10px;">
+        <button class="btn-admin btn-outline" onclick="closeKichHoatLaiImeiModal()" type="button">QUAY LẠI</button>
+        <button class="btn-admin btn-success" onclick="confirmKichHoatLaiImei()" type="button" id="btnConfirmKichHoatLai" style="background:#16a34a; border-color:#15803d; color:#fff;">
+          XÁC NHẬN
         </button>
       </div>
     </div>
@@ -2554,7 +2545,7 @@
   <!-- ======================================================================
        ADMIN JAVASCRIPT LOGIC
        ====================================================================== -->
-  <script src="../js/admin.js?v=20261003_2201"></script>
+  <script src="../js/admin.js?v=20261004_0148"></script>
 </body>
 
 </html>

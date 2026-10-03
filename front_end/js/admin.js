@@ -4968,18 +4968,18 @@ window.refreshEditVariantImeis = async function(ctspId) {
   listEl.innerHTML = '<div style="text-align:center; padding:10px; color:#64748b; font-size:12px;"><i class="fa fa-spinner fa-spin"></i> Đang tải danh sách IMEI...</div>';
 
   try {
-    const imeiRes = await fetch(`${API_BASE_URL}/imei/chi-tiet-san-pham/${ctspId}`);
+    const imeiRes = await fetch(`${API_BASE_URL}/imei/chi-tiet-san-pham/${ctspId}/quan-ly`);
     if (imeiRes.ok) {
       const imeis = await imeiRes.json();
-      const inStockImeis = imeis.filter(im => Number(im.trangThai) === 0);
+      const inStockImeis = imeis.filter(im => Number(im.trangThai) === 0 && !im.idHoaDon);
       const inStockCount = inStockImeis.length;
 
-      // Cập nhật số lượng kho và badge theo số IMEI Trong kho (0)
+      // Cập nhật số lượng kho khả dụng và badge
       if (soLuongInput) {
         soLuongInput.value = inStockCount;
       }
       if (badgeEl) {
-        badgeEl.textContent = `${inStockCount} IMEI trong kho`;
+        badgeEl.textContent = `${inStockCount} khả dụng / ${imeis.length} IMEI`;
         badgeEl.className = 'badge-status badge-info';
       }
 
@@ -4987,18 +4987,69 @@ window.refreshEditVariantImeis = async function(ctspId) {
         listEl.innerHTML = '<div style="color:#94a3b8; font-size:12px; text-align:center; padding:8px;">Chưa có IMEI nào cho phiên bản này.</div>';
       } else {
         listEl.innerHTML = `
-          <div style="display:flex; flex-wrap:wrap; gap:8px; max-height:140px; overflow-y:auto; padding:4px;">
-            ${imeis.map(im => {
-              const isSold = Number(im.trangThai) === 1;
-              return `
-                <span style="font-family:monospace; font-size:12.5px; font-weight:700; padding:5px 10px; border-radius:6px; background:#e0f2fe; color:#0284c7; border:1px solid #bae6fd; display:inline-flex; align-items:center; gap:6px;">
-                  <span>${im.soImei}</span>
-                  ${isSold 
-                    ? '<span style="color:#ef4444; font-size:11.5px; font-weight:600;">(Đã bán)</span>' 
-                    : '<span style="color:#10b981; font-size:11.5px; font-weight:600;">(Trong kho)</span>'}
-                </span>
-              `;
-            }).join('')}
+          <div class="table-responsive" style="max-height: 250px; overflow-y: auto;">
+            <table class="admin-table" style="width:100%; font-size:12px; margin:0; border-collapse:collapse;">
+              <thead>
+                <tr style="background:#f1f5f9; position:sticky; top:0; z-index:1;">
+                  <th style="padding:6px 10px; font-weight:700; text-align:left;">IMEI / SERIAL</th>
+                  <th style="padding:6px 10px; font-weight:700; text-align:center;">TRẠNG THÁI</th>
+                  <th style="padding:6px 10px; font-weight:700; text-align:center;">THAO TÁC</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${imeis.map(im => {
+                  const s = Number(im.trangThai);
+                  const isAlloc = (s === 0 && Boolean(im.idHoaDon));
+                  let statusHtml = '';
+                  let actionBtnHtml = '-';
+
+                  if (s === 0 && !im.idHoaDon) {
+                    statusHtml = `<span class="badge-status badge-success" style="font-size:11px; padding:2px 8px;">Trong kho</span>`;
+                    actionBtnHtml = `
+                      <button type="button" class="btn-admin btn-outline btn-sm"
+                        onclick="openNgungSuDungImeiModal(${im.id}, '${escapeHtml(im.soImei)}')"
+                        style="padding:2px 8px; font-size:11px; color:#b91c1c; border-color:#fca5a5; background:#fef2f2; cursor:pointer;"
+                        title="Ngừng sử dụng IMEI này">
+                        Ngừng sử dụng
+                      </button>
+                    `;
+                  } else if (isAlloc) {
+                    statusHtml = `<span class="badge-status badge-info" style="font-size:11px; padding:2px 8px; background:#eff6ff; color:#2563eb; border:1px solid #bfdbfe;">Đang phân bổ</span>`;
+                    actionBtnHtml = `<span style="color:#94a3b8; font-size:12px;">-</span>`;
+                  } else if (s === 1) {
+                    statusHtml = `<span class="badge-status badge-secondary" style="font-size:11px; padding:2px 8px; background:#e2e8f0; color:#334155;">Đã bán</span>`;
+                    actionBtnHtml = `<span style="color:#94a3b8; font-size:12px;">-</span>`;
+                  } else if (s === 2) {
+                    statusHtml = `<span class="badge-status badge-danger" style="font-size:11px; padding:2px 8px; background:#fee2e2; color:#b91c1c; border:1px solid #fecaca;">Ngừng sử dụng</span>`;
+                    actionBtnHtml = `
+                      <button type="button" class="btn-admin btn-outline btn-sm"
+                        onclick="openKichHoatLaiImeiModal(${im.id}, '${escapeHtml(im.soImei)}')"
+                        style="padding:2px 8px; font-size:11px; color:#15803d; border-color:#86efac; background:#f0fdf4; cursor:pointer;"
+                        title="Kích hoạt lại IMEI này">
+                        Kích hoạt lại
+                      </button>
+                    `;
+                  } else {
+                    statusHtml = `<span class="badge-status badge-info" style="font-size:11px; padding:2px 8px;">Khác</span>`;
+                    actionBtnHtml = `<span style="color:#94a3b8; font-size:12px;">-</span>`;
+                  }
+
+                  return `
+                    <tr style="border-bottom:1px solid #e2e8f0;">
+                      <td style="padding:6px 10px; font-family:monospace; font-weight:700; font-size:12.5px; color:#1e293b;">
+                        ${escapeHtml(im.soImei)}
+                      </td>
+                      <td style="padding:6px 10px; text-align:center;">
+                        ${statusHtml}
+                      </td>
+                      <td style="padding:6px 10px; text-align:center;">
+                        ${actionBtnHtml}
+                      </td>
+                    </tr>
+                  `;
+                }).join('')}
+              </tbody>
+            </table>
           </div>
         `;
       }
@@ -5658,15 +5709,14 @@ function formatCompactSpec(ctsp) {
 function getImeiStatusBadge(item) {
   const s = Number(item.trangThai);
   if (s === 0) {
-    return `<span class="badge-status badge-success" style="padding:4px 10px; font-weight:700; font-size:12px;">Còn hàng</span>`;
+    if (item.idHoaDon) {
+      return `<span class="badge-status badge-info" style="padding:4px 10px; font-weight:700; font-size:12px; background:#eff6ff; color:#2563eb; border:1px solid #bfdbfe;">Đang phân bổ</span>`;
+    }
+    return `<span class="badge-status badge-success" style="padding:4px 10px; font-weight:700; font-size:12px;">Trong kho</span>`;
   } else if (s === 1) {
     return `<span class="badge-status badge-secondary" style="padding:4px 10px; font-weight:700; font-size:12px; background:#e2e8f0; color:#334155; border:1px solid #cbd5e1;">Đã bán</span>`;
   } else if (s === 2) {
-    return `<span class="badge-status badge-danger" style="padding:4px 10px; font-weight:700; font-size:12px; background:#fee2e2; color:#b91c1c; border:1px solid #fecaca;">Lỗi / Hỏng</span>`;
-  } else if (s === 3) {
-    return `<span class="badge-status badge-warning" style="padding:4px 10px; font-weight:700; font-size:12px; background:#fef3c7; color:#b45309; border:1px solid #fde68a;">Bảo hành</span>`;
-  } else if (s === 4) {
-    return `<span class="badge-status badge-danger" style="padding:4px 10px; font-weight:700; font-size:12px; background:#ffe4e6; color:#9f1239; border:1px solid #fecdd3;">Xuất hủy</span>`;
+    return `<span class="badge-status badge-danger" style="padding:4px 10px; font-weight:700; font-size:12px; background:#fee2e2; color:#b91c1c; border:1px solid #fecaca;">Ngừng sử dụng</span>`;
   }
   return `<span class="badge-status badge-info" style="padding:4px 10px; font-weight:700; font-size:12px;">Khác</span>`;
 }
@@ -5770,85 +5820,111 @@ window.goToVariantFromImeiModal = function() {
   }
 };
 
-// ----------------------------------------------------------------------------
-// MODAL: ĐỔI TRẠNG THÁI IMEI (ĐỒNG BỘ TRỪ / CỘNG TỒN KHO)
-// ----------------------------------------------------------------------------
-window.openChangeImeiStatusModal = function(imeiId) {
-  const item = (state.allImeis || []).find(i => i.id === imeiId);
-  if (!item) return;
-
-  document.getElementById('changeImeiId').value = item.id;
-  document.getElementById('changeImeiCodeDisplay').textContent = item.soImei;
-
-  const ctsp = item.chiTietSanPham || {};
-  const sp = ctsp.sanPham || {};
-  document.getElementById('changeImeiProductName').textContent = `${sp.tenSp || 'Laptop'} (${ctsp.maCtsp || 'CTSP'}) - Màu: ${ctsp.mauSac?.tenMau || 'Tiêu chuẩn'}`;
-
-  // Current status badge
-  document.getElementById('changeImeiCurrentStatusBadge').innerHTML = getImeiStatusBadge(item);
-
-  // New status selector
-  const sel = document.getElementById('changeImeiNewStatusSelect');
-  if (sel) {
-    const curr = Number(item.trangThai || 0);
-    // Suggest a different status
-    if (curr === 0) sel.value = '2'; // Default to Lỗi/Hỏng
-    else if (curr === 2) sel.value = '0';
-    else if (curr === 3) sel.value = '0';
-    else if (curr === 4) sel.value = '0';
-    else sel.value = '0';
-  }
-
-  const modal = document.getElementById('imeiChangeStatusModal');
+window.openNgungSuDungImeiModal = function(id, soImei) {
+  document.getElementById('ngungSuDungImeiId').value = id;
+  document.getElementById('ngungSuDungImeiCodeDisplay').textContent = soImei || ('IMEI #' + id);
+  const modal = document.getElementById('modalNgungSuDungImei');
   if (modal) modal.classList.add('active');
 };
 
-window.closeChangeImeiStatusModal = function() {
-  const modal = document.getElementById('imeiChangeStatusModal');
+window.closeNgungSuDungImeiModal = function() {
+  const modal = document.getElementById('modalNgungSuDungImei');
   if (modal) modal.classList.remove('active');
 };
 
-window.submitChangeImeiStatus = async function() {
-  const id = document.getElementById('changeImeiId')?.value;
-  const newStatus = Number(document.getElementById('changeImeiNewStatusSelect')?.value);
-
+window.confirmNgungSuDungImei = async function() {
+  const id = document.getElementById('ngungSuDungImeiId')?.value;
   if (!id) return;
-
-  const item = (state.allImeis || []).find(i => i.id === Number(id));
-  if (!item) return;
-
-  const statusNames = {
-    0: 'Còn hàng (Trong kho / Khả dụng)',
-    1: 'Đã bán',
-    2: 'Lỗi / Hỏng',
-    3: 'Bảo hành',
-    4: 'Xuất hủy / Trả NCC'
-  };
-
-  const newStatusName = statusNames[newStatus] || 'Mới';
+  const btn = document.getElementById('btnConfirmNgungSuDung');
+  if (btn) { btn.disabled = true; btn.textContent = 'Đang xử lý...'; }
 
   try {
-    const res = await fetch(`${API_BASE_URL}/imei/${id}/trang-thai/${newStatus}`, {
-      method: 'PATCH'
+    const res = await fetch(`${API_BASE_URL}/imei/${id}/ngung-su-dung`, {
+      method: 'POST'
     });
-
+    const data = await res.json();
     if (res.ok) {
-      closeChangeImeiStatusModal();
-      if (newStatus === 0) {
-        showToast(`Đã chuyển IMEI "${item.soImei}" sang "Còn hàng". Số lượng tồn kho cấu hình đã được cộng lại 1!`, 'success');
-      } else {
-        showToast(`Đã chuyển IMEI "${item.soImei}" sang "${newStatusName}". Số lượng tồn kho khả dụng đã được tự động trừ 1!`, 'success');
-      }
+      closeNgungSuDungImeiModal();
+      showToast(`Đã ngừng sử dụng IMEI "${data.soImei || id}".`, 'success');
       await loadImeisTable();
+      if (state.editingVariantId) {
+        await refreshEditVariantImeis(state.editingVariantId);
+      }
       if (typeof loadVariantsTable === 'function') {
         loadVariantsTable();
       }
+      if (typeof loadProductsList === 'function') {
+        loadProductsList();
+      }
     } else {
-      showToast('Không thể cập nhật trạng thái IMEI.', 'error');
+      showToast(data.message || 'Không thể ngừng sử dụng IMEI này.', 'error');
     }
   } catch(e) {
-    showToast('Lỗi khi cập nhật trạng thái: ' + e.message, 'error');
+    showToast('Lỗi khi thực hiện: ' + e.message, 'error');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = 'XÁC NHẬN'; }
   }
+};
+
+window.openKichHoatLaiImeiModal = function(id, soImei) {
+  document.getElementById('kichHoatLaiImeiId').value = id;
+  document.getElementById('kichHoatLaiImeiCodeDisplay').textContent = soImei || ('IMEI #' + id);
+  const modal = document.getElementById('modalKichHoatLaiImei');
+  if (modal) modal.classList.add('active');
+};
+
+window.closeKichHoatLaiImeiModal = function() {
+  const modal = document.getElementById('modalKichHoatLaiImei');
+  if (modal) modal.classList.remove('active');
+};
+
+window.confirmKichHoatLaiImei = async function() {
+  const id = document.getElementById('kichHoatLaiImeiId')?.value;
+  if (!id) return;
+  const btn = document.getElementById('btnConfirmKichHoatLai');
+  if (btn) { btn.disabled = true; btn.textContent = 'Đang xử lý...'; }
+
+  try {
+    const res = await fetch(`${API_BASE_URL}/imei/${id}/kich-hoat-lai`, {
+      method: 'POST'
+    });
+    const data = await res.json();
+    if (res.ok) {
+      closeKichHoatLaiImeiModal();
+      showToast(`Đã kích hoạt lại IMEI "${data.soImei || id}".`, 'success');
+      await loadImeisTable();
+      if (state.editingVariantId) {
+        await refreshEditVariantImeis(state.editingVariantId);
+      }
+      if (typeof loadVariantsTable === 'function') {
+        loadVariantsTable();
+      }
+      if (typeof loadProductsList === 'function') {
+        loadProductsList();
+      }
+    } else {
+      showToast(data.message || 'Không thể kích hoạt lại IMEI này.', 'error');
+    }
+  } catch(e) {
+    showToast('Lỗi khi thực hiện: ' + e.message, 'error');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = 'XÁC NHẬN'; }
+  }
+};
+
+window.openChangeImeiStatusModal = function(id) {
+  const item = (state.allImeis || []).find(i => i.id === id);
+  if (!item) return;
+  if (Number(item.trangThai) === 2) {
+    openKichHoatLaiImeiModal(id, item.soImei);
+  } else {
+    openNgungSuDungImeiModal(id, item.soImei);
+  }
+};
+
+window.closeChangeImeiStatusModal = function() {
+  closeNgungSuDungImeiModal();
+  closeKichHoatLaiImeiModal();
 };
 
 window.filterImeisTable = function() {
@@ -5877,8 +5953,14 @@ window.filterImeisTable = function() {
   }
 
   if (statusFilter !== 'ALL') {
-    const s = Number(statusFilter);
-    list = list.filter(item => Number(item.trangThai) === s);
+    if (statusFilter === 'ALLOCATED') {
+      list = list.filter(item => Number(item.trangThai) === 0 && Boolean(item.idHoaDon));
+    } else if (statusFilter === '0') {
+      list = list.filter(item => Number(item.trangThai) === 0 && !item.idHoaDon);
+    } else {
+      const s = Number(statusFilter);
+      list = list.filter(item => Number(item.trangThai) === s);
+    }
   }
 
   if (productFilter !== 'ALL') {
@@ -5918,6 +6000,9 @@ function renderImeisTable() {
     const compactSpec = formatCompactSpec(ctsp);
     const statusBadge = getImeiStatusBadge(item);
     const isSold = (Number(item.trangThai) === 1);
+    const isAllocated = (Number(item.trangThai) === 0 && Boolean(item.idHoaDon));
+    const isAvailable = (Number(item.trangThai) === 0 && !item.idHoaDon);
+    const isStopped = (Number(item.trangThai) === 2);
 
     // Hóa đơn HTML
     let invoiceHtml = '';
@@ -5951,20 +6036,8 @@ function renderImeisTable() {
       `;
     } else if (Number(item.trangThai) === 2) {
       invoiceHtml = `
-        <span class="badge-status badge-danger" style="font-size:11px; padding:3px 8px;">
-          Hàng lỗi kỹ thuật
-        </span>
-      `;
-    } else if (Number(item.trangThai) === 3) {
-      invoiceHtml = `
-        <span class="badge-status badge-warning" style="font-size:11px; padding:3px 8px;">
-          Đang gửi bảo hành
-        </span>
-      `;
-    } else if (Number(item.trangThai) === 4) {
-      invoiceHtml = `
-        <span class="badge-status badge-danger" style="font-size:11px; padding:3px 8px;">
-          Xuất hủy / Trả NCC
+        <span class="badge-status badge-danger" style="font-size:11px; padding:3px 8px; background:#fee2e2; color:#b91c1c; border:1px solid #fecaca;">
+          Ngừng sử dụng
         </span>
       `;
     } else {
@@ -5975,40 +6048,56 @@ function renderImeisTable() {
     let actionHtml = '';
     if (isSold && item.idHoaDon) {
       actionHtml = `
-        <div style="display:flex; justify-content:center; gap:6px;">
+        <div style="display:flex; justify-content:center;">
           <button type="button" class="btn-admin btn-outline btn-sm"
             onclick="openInvoiceDetail(${item.idHoaDon})"
-            style="padding:4px 8px; font-size:11.5px; font-weight:600; display:inline-flex; align-items:center; gap:4px;"
+            style="padding:4px 10px; font-size:11.5px; font-weight:600; display:inline-flex; align-items:center; gap:4px;"
             title="Xem chi tiết hóa đơn của IMEI này">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
             <span>Hóa đơn</span>
           </button>
+        </div>
+      `;
+    } else if (isAllocated) {
+      actionHtml = `
+        <div style="display:flex; justify-content:center;">
           <button type="button" class="btn-admin btn-outline btn-sm"
-            onclick="openImeiCtspModal(${item.id})"
-            style="padding:4px 8px; font-size:11.5px; font-weight:600; display:inline-flex; align-items:center; gap:4px;"
-            title="Xem chi tiết phiên bản cấu hình">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-            <span>CTSP</span>
+            onclick="openInvoiceDetail(${item.idHoaDon})"
+            style="padding:4px 10px; font-size:11.5px; font-weight:600; display:inline-flex; align-items:center; gap:4px;"
+            title="Xem đơn hàng đang giữ IMEI này">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+            <span>Đơn hàng</span>
+          </button>
+        </div>
+      `;
+    } else if (isAvailable) {
+      actionHtml = `
+        <div style="display:flex; justify-content:center;">
+          <button type="button" class="btn-admin btn-outline btn-sm"
+            onclick="openNgungSuDungImeiModal(${item.id}, '${escapeHtml(item.soImei)}')"
+            style="padding:4px 10px; font-size:11.5px; font-weight:600; display:inline-flex; align-items:center; gap:4px; color:#b91c1c; border-color:#fca5a5; background:#fef2f2;"
+            title="Ngừng sử dụng IMEI này">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+            <span>Ngừng sử dụng</span>
+          </button>
+        </div>
+      `;
+    } else if (isStopped) {
+      actionHtml = `
+        <div style="display:flex; justify-content:center;">
+          <button type="button" class="btn-admin btn-outline btn-sm"
+            onclick="openKichHoatLaiImeiModal(${item.id}, '${escapeHtml(item.soImei)}')"
+            style="padding:4px 10px; font-size:11.5px; font-weight:600; display:inline-flex; align-items:center; gap:4px; color:#15803d; border-color:#86efac; background:#f0fdf4;"
+            title="Kích hoạt lại IMEI này">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            <span>Kích hoạt lại</span>
           </button>
         </div>
       `;
     } else {
       actionHtml = `
-        <div style="display:flex; justify-content:center; gap:6px;">
-          <button type="button" class="btn-admin btn-outline btn-sm"
-            onclick="openChangeImeiStatusModal(${item.id})"
-            style="padding:4px 8px; font-size:11.5px; font-weight:600; display:inline-flex; align-items:center; gap:4px; color:#2563eb; border-color:#93c5fd; background:#eff6ff;"
-            title="Đổi trạng thái IMEI và tự động trừ/cộng tồn kho CTSP">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
-            <span>Đổi trạng thái</span>
-          </button>
-          <button type="button" class="btn-admin btn-outline btn-sm"
-            onclick="openImeiCtspModal(${item.id})"
-            style="padding:4px 8px; font-size:11.5px; font-weight:600; display:inline-flex; align-items:center; gap:4px;"
-            title="Xem chi tiết phiên bản cấu hình">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-            <span>CTSP</span>
-          </button>
+        <div style="display:flex; justify-content:center;">
+          <span style="color:#94a3b8; font-size:12px;">-</span>
         </div>
       `;
     }
@@ -6019,7 +6108,7 @@ function renderImeisTable() {
         <td style="font-family:monospace; font-weight:800; font-size:13.5px; color:#1e293b; letter-spacing:0.5px;">
           <div>${escapeHtml(item.soImei)}</div>
           <div style="font-family:sans-serif; font-size:11px; color:#64748b; font-weight:500; margin-top:2px;">
-            Nhập: ${item.ngayNhapFormatted || '---'}
+            Thêm: ${item.ngayNhapFormatted || '---'}
           </div>
         </td>
 
@@ -6047,7 +6136,7 @@ function renderImeisTable() {
           <button type="button" class="btn-admin btn-link"
             style="padding:0; font-size:11.5px; color:#2563eb; text-decoration:underline; cursor:pointer; background:none; border:none; margin-top:3px;"
             onclick="openImeiCtspModal(${item.id})">
-            Xem thông số ↗
+            Xem thông số 
           </button>
         </td>
 

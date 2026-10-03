@@ -25,7 +25,7 @@ public class Imei {
 
     @Column(name = "trang_thai")
     @Builder.Default
-    private Integer trangThai = 0; // 0: Trong kho, 1: Đã bán, 2: Đang giao, 3: Lỗi/Đổi trả, 4: Bảo hành
+    private Integer trangThai = 0; // 0: Trong kho / Có thể sử dụng, 1: Đã bán, 2: Ngừng sử dụng
 
     @Column(name = "ngay_nhap")
     @Builder.Default

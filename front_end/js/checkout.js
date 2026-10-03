@@ -315,8 +315,9 @@ async function handlePlaceOrder() {
     phoneInput?.focus();
     return;
   }
-  if (!/^(0[3|5|7|8|9])[0-9]{8}$/.test(phone)) {
-    showToast('Số điện thoại nhận hàng không hợp lệ (10 chữ số)!', 'warning');
+  const cleanPhone = phone.replace(/[\s.-]/g, '');
+  if (!/^[0-9]{10}$/.test(cleanPhone)) {
+    showToast('Số điện thoại nhận hàng không hợp lệ (yêu cầu đúng 10 chữ số)!', 'warning');
     phoneInput?.focus();
     return;
   }
@@ -355,7 +356,7 @@ async function handlePlaceOrder() {
 
     const payload = {
       tenNguoiNhan: name,
-      dienThoai: phone,
+      dienThoai: cleanPhone,
       diaChi: address,
       ghiChu: note,
       voucherId: voucherId,

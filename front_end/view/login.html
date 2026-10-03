@@ -48,14 +48,14 @@
           <div class="auth-form-group">
             <label class="auth-label" for="loginUsername">Tên đăng nhập hoặc Email <span class="req">*</span></label>
             <div class="auth-input-wrapper">
-              <input type="text" class="auth-input" id="loginUsername" placeholder="Nhập tên đăng nhập hoặc email" required autocomplete="username">
+              <input type="text" class="auth-input" id="loginUsername" required autocomplete="username">
             </div>
           </div>
 
           <div class="auth-form-group">
             <label class="auth-label" for="loginPassword">Mật khẩu <span class="req">*</span></label>
             <div class="auth-input-wrapper">
-              <input type="password" class="auth-input auth-input-pwd" id="loginPassword" placeholder="Nhập mật khẩu của bạn" required autocomplete="current-password">
+              <input type="password" class="auth-input auth-input-pwd" id="loginPassword" required autocomplete="current-password">
               <button type="button" class="auth-toggle-pwd" onclick="togglePassword('loginPassword', this)" title="Ẩn/Hiện mật khẩu" aria-label="Ẩn/Hiện mật khẩu">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
@@ -88,7 +88,7 @@
           <div class="auth-form-group">
             <label class="auth-label" for="regTen">Họ và tên <span class="req">*</span></label>
             <div class="auth-input-wrapper">
-              <input type="text" class="auth-input" id="regTen" placeholder="Ví dụ: Nguyễn Văn An" required>
+              <input type="text" class="auth-input" id="regTen" required>
             </div>
           </div>
 
@@ -96,14 +96,14 @@
             <div class="auth-form-group">
               <label class="auth-label" for="regUsername">Tên đăng nhập <span class="req">*</span></label>
               <div class="auth-input-wrapper">
-                <input type="text" class="auth-input" id="regUsername" placeholder="Từ 3-50 ký tự" required autocomplete="username">
+                <input type="text" class="auth-input" id="regUsername" required autocomplete="username">
               </div>
             </div>
 
             <div class="auth-form-group">
               <label class="auth-label" for="regPhone">Số điện thoại</label>
               <div class="auth-input-wrapper">
-                <input type="tel" class="auth-input" id="regPhone" placeholder="09xxxxxxxx">
+                <input type="tel" class="auth-input" id="regPhone">
               </div>
             </div>
           </div>
@@ -111,14 +111,14 @@
           <div class="auth-form-group">
             <label class="auth-label" for="regEmail">Địa chỉ Email</label>
             <div class="auth-input-wrapper">
-              <input type="email" class="auth-input" id="regEmail" placeholder="email@gmail.com">
+              <input type="email" class="auth-input" id="regEmail">
             </div>
           </div>
 
           <div class="auth-form-group">
             <label class="auth-label" for="regDiaChi">Địa chỉ</label>
             <div class="auth-input-wrapper">
-              <input type="text" class="auth-input" id="regDiaChi" placeholder="Quận/Huyện, Tỉnh/Thành phố">
+              <input type="text" class="auth-input" id="regDiaChi">
             </div>
           </div>
 
@@ -126,7 +126,7 @@
             <div class="auth-form-group">
               <label class="auth-label" for="regPassword">Mật khẩu <span class="req">*</span></label>
               <div class="auth-input-wrapper">
-                <input type="password" class="auth-input auth-input-pwd" id="regPassword" placeholder="Ít nhất 6 ký tự" required autocomplete="new-password">
+                <input type="password" class="auth-input auth-input-pwd" id="regPassword" required autocomplete="new-password">
                 <button type="button" class="auth-toggle-pwd" onclick="togglePassword('regPassword', this)" title="Ẩn/Hiện mật khẩu" aria-label="Ẩn/Hiện mật khẩu">
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
@@ -139,14 +139,10 @@
             <div class="auth-form-group">
               <label class="auth-label" for="regConfirmPassword">Xác nhận mật khẩu <span class="req">*</span></label>
               <div class="auth-input-wrapper">
-                <input type="password" class="auth-input" id="regConfirmPassword" placeholder="Nhập lại mật khẩu" required autocomplete="new-password">
+                <input type="password" class="auth-input" id="regConfirmPassword" required autocomplete="new-password">
               </div>
             </div>
           </div>
-
-          <p class="auth-note">
-            Mật khẩu được mã hóa an toàn (BCrypt) trước khi lưu trữ vào hệ thống.
-          </p>
 
           <button type="submit" class="btn-auth-submit" id="btnRegisterSubmit">
             Đăng Ký Tài Khoản

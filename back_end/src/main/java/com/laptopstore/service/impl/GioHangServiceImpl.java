@@ -591,12 +591,12 @@ public class GioHangServiceImpl implements GioHangService {
             throw new IllegalArgumentException("Họ và tên người nhận hàng không được để trống!");
         }
 
-        String dienThoai = request.getDienThoai() != null ? request.getDienThoai().trim() : "";
+        String dienThoai = request.getDienThoai() != null ? request.getDienThoai().trim().replaceAll("[\\s.-]", "") : "";
         if (dienThoai.isEmpty()) {
             throw new IllegalArgumentException("Số điện thoại nhận hàng không được để trống!");
         }
-        if (!dienThoai.matches("^(0[3|5|7|8|9])[0-9]{8}$")) {
-            throw new IllegalArgumentException("Số điện thoại nhận hàng không đúng định dạng Việt Nam (10 chữ số)!");
+        if (!dienThoai.matches("^[0-9]{10}$")) {
+            throw new IllegalArgumentException("Số điện thoại nhận hàng không hợp lệ (yêu cầu đúng 10 chữ số)!");
         }
 
         String diaChi = request.getDiaChi() != null ? request.getDiaChi().trim() : "";
