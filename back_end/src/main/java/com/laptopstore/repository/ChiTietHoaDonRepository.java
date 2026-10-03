@@ -24,4 +24,16 @@ public interface ChiTietHoaDonRepository extends JpaRepository<ChiTietHoaDon, In
            "LEFT JOIN FETCH ct.manHinh " +
            "WHERE c.hoaDon.id IN :hoaDonIds")
     List<ChiTietHoaDon> findByHoaDonIdIn(@Param("hoaDonIds") List<Integer> hoaDonIds);
+
+    @Query("SELECT c FROM ChiTietHoaDon c " +
+           "JOIN FETCH c.chiTietSanPham ct " +
+           "JOIN FETCH ct.sanPham sp " +
+           "LEFT JOIN FETCH ct.mauSac " +
+           "LEFT JOIN FETCH ct.cpu " +
+           "LEFT JOIN FETCH ct.ram " +
+           "LEFT JOIN FETCH ct.oCung " +
+           "LEFT JOIN FETCH ct.cardDoHoa " +
+           "LEFT JOIN FETCH ct.manHinh " +
+           "WHERE c.hoaDon.id = :hoaDonId")
+    List<ChiTietHoaDon> findChiTietByHoaDonId(@Param("hoaDonId") Integer hoaDonId);
 }

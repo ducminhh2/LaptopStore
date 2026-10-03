@@ -1,9 +1,14 @@
 package com.laptopstore.service.impl;
-
+ 
+import com.laptopstore.dto.ImeiResponseDTO;
 import com.laptopstore.dto.ThemImeiRequest;
+import com.laptopstore.entity.ChiTietHoaDon;
+import com.laptopstore.entity.ChiTietHoaDonImei;
 import com.laptopstore.entity.ChiTietSanPham;
+import com.laptopstore.entity.HoaDon;
 import com.laptopstore.entity.Imei;
 import com.laptopstore.exception.ResourceNotFoundException;
+import com.laptopstore.repository.ChiTietHoaDonImeiRepository;
 import com.laptopstore.repository.ChiTietSanPhamRepository;
 import com.laptopstore.repository.ImeiRepository;
 import com.laptopstore.service.ImeiService;
@@ -12,7 +17,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -20,10 +27,100 @@ public class ImeiServiceImpl implements ImeiService {
 
     private final ImeiRepository imeiRepository;
     private final ChiTietSanPhamRepository chiTietSanPhamRepository;
+    private final ChiTietHoaDonImeiRepository chiTietHoaDonImeiRepository;
 
     @Override
     public List<Imei> getAll() {
         return imeiRepository.findAll();
+    }
+
+    @Override
+    public List<ImeiResponseDTO> getAllImeiResponses() {
+        List<Imei> imeis = imeiRepository.findAll();
+        List<ChiTietHoaDonImei> cthdImeis = chiTietHoaDonImeiRepository.findAll();
+        Map<Integer, ChiTietHoaDonImei> imeiInvoiceMap = new HashMap<>();
+        for (ChiTietHoaDonImei link : cthdImeis) {
+            if (link.getImei() != null && link.getImei().getId() != null) {
+                imeiInvoiceMap.put(link.getImei().getId(), link);
+            }
+        }
+
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy");
+
+        return imeis.stream().map(imei -> {
+            ImeiResponseDTO dto = new ImeiResponseDTO();
+            dto.setId(imei.getId());
+            dto.setSoImei(imei.getSoImei());
+            dto.setChiTietSanPham(imei.getChiTietSanPham());
+            dto.setTrangThai(imei.getTrangThai());
+            dto.setNgayNhap(imei.getNgayNhap());
+            if (imei.getNgayNhap() != null) {
+                dto.setNgayNhapFormatted(imei.getNgayNhap().format(dtf));
+            }
+
+            int st = imei.getTrangThai() != null ? imei.getTrangThai() : 0;
+            switch (st) {
+                case 0 -> {
+                    dto.setTenTrangThai("Còn hàng");
+                    dto.setBadgeClass("badge-success");
+                }
+                case 1 -> {
+                    dto.setTenTrangThai("Đã bán");
+                    dto.setBadgeClass("badge-secondary");
+                }
+                case 2 -> {
+                    dto.setTenTrangThai("Lỗi / Hỏng");
+                    dto.setBadgeClass("badge-danger");
+                }
+                case 3 -> {
+                    dto.setTenTrangThai("Bảo hành");
+                    dto.setBadgeClass("badge-warning");
+                }
+                case 4 -> {
+                    dto.setTenTrangThai("Xuất hủy / Trả NCC");
+                    dto.setBadgeClass("badge-danger");
+                }
+                default -> {
+                    dto.setTenTrangThai("Khác");
+                    dto.setBadgeClass("badge-info");
+                }
+            }
+
+            ChiTietHoaDonImei cthdImei = imeiInvoiceMap.get(imei.getId());
+            if (cthdImei != null && cthdImei.getChiTietHoaDon() != null) {
+                ChiTietHoaDon cthd = cthdImei.getChiTietHoaDon();
+                HoaDon hd = cthd.getHoaDon();
+                if (hd != null) {
+                    dto.setIdHoaDon(hd.getId());
+                    dto.setMaHoaDon(hd.getMa());
+                    dto.setNgayBan(hd.getNgayTao());
+                    if (hd.getNgayTao() != null) {
+                        dto.setNgayBanFormatted(hd.getNgayTao().format(dtf));
+                    }
+                    if (hd.getKhachHang() != null) {
+                        dto.setTenKhachHang(hd.getKhachHang().getTen());
+                        dto.setSoDienThoai(hd.getKhachHang().getDienThoai());
+                    } else if (hd.getTenNguoiNhan() != null) {
+                        dto.setTenKhachHang(hd.getTenNguoiNhan());
+                        dto.setSoDienThoai(hd.getDienThoai());
+                    }
+                    dto.setTrangThaiHoaDon(hd.getTrangThai());
+
+                    if (hd.getTrangThai() != null) {
+                        switch (hd.getTrangThai()) {
+                            case 0 -> dto.setTenTrangThaiHoaDon("Chờ xác nhận");
+                            case 1 -> dto.setTenTrangThaiHoaDon("Đã xác nhận");
+                            case 2 -> dto.setTenTrangThaiHoaDon("Đang giao hàng");
+                            case 3 -> dto.setTenTrangThaiHoaDon("Hoàn thành");
+                            case 4 -> dto.setTenTrangThaiHoaDon("Đã hủy");
+                            default -> dto.setTenTrangThaiHoaDon("Đơn hàng");
+                        }
+                    }
+                }
+            }
+
+            return dto;
+        }).collect(Collectors.toList());
     }
 
     @Override
@@ -70,10 +167,23 @@ public class ImeiServiceImpl implements ImeiService {
     }
 
     @Override
+    @Transactional
     public Imei updateTrangThai(Integer id, Integer trangThai) {
         Imei existing = getById(id);
         existing.setTrangThai(trangThai);
-        return imeiRepository.save(existing);
+        Imei saved = imeiRepository.save(existing);
+
+        // Tự động đồng bộ số lượng tồn kho khả dụng của CTSP khi trạng thái IMEI thay đổi
+        if (existing.getChiTietSanPham() != null && existing.getChiTietSanPham().getId() != null) {
+            Integer ctspId = existing.getChiTietSanPham().getId();
+            int availableCount = imeiRepository.countAvailableByChiTietSanPhamId(ctspId);
+            chiTietSanPhamRepository.findById(ctspId).ifPresent(ctsp -> {
+                ctsp.setSoLuong(availableCount);
+                chiTietSanPhamRepository.save(ctsp);
+            });
+        }
+
+        return saved;
     }
 
     @Override

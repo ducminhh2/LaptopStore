@@ -6,8 +6,11 @@ import java.util.List;
 import com.laptopstore.dto.ThemImeiRequest;
 import java.util.Map;
 
+import com.laptopstore.dto.ImeiResponseDTO;
+
 public interface ImeiService {
     List<Imei> getAll();
+    List<ImeiResponseDTO> getAllImeiResponses();
     Imei getById(Integer id);
     Imei getBySoImei(String soImei);
     List<Imei> getByChiTietSanPham(Integer ctspId);

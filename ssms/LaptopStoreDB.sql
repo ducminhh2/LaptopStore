@@ -9,9 +9,7 @@ GO
 
 SET NOCOUNT ON;
 
-/* ============================================================================
-   XÓA BẢNG CŨ THEO THỨ TỰ RÀNG BUỘC (NẾU ĐÃ TỒN TẠI)
-   ============================================================================ */
+
 IF OBJECT_ID('dbo.bao_hanh', 'U') IS NOT NULL DROP TABLE dbo.bao_hanh;
 IF OBJECT_ID('dbo.chi_tiet_hoa_don_imei', 'U') IS NOT NULL DROP TABLE dbo.chi_tiet_hoa_don_imei;
 IF OBJECT_ID('dbo.chi_tiet_hoa_don', 'U') IS NOT NULL DROP TABLE dbo.chi_tiet_hoa_don;
@@ -39,9 +37,7 @@ IF OBJECT_ID('dbo.card_do_hoa', 'U') IS NOT NULL DROP TABLE dbo.card_do_hoa;
 IF OBJECT_ID('dbo.man_hinh', 'U') IS NOT NULL DROP TABLE dbo.man_hinh;
 GO
 
-/* ============================================================================
-   TẠO BẢNG CSDL (CHÍNH XÁC NGUYÊN BẢN THEO LOGIC BACKEND)
-   ============================================================================ */
+
 
 -- 1. Vai trò
 CREATE TABLE vai_tro (
@@ -288,7 +284,21 @@ CREATE TABLE chi_tiet_hoa_don_imei (
 );
 GO
 
--- 23. Bảo hành
+-- 23. Lịch sử trạng thái hóa đơn
+CREATE TABLE lich_su_hoa_don (
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    id_hoa_don INT NOT NULL,
+    trang_thai INT NOT NULL,
+    thoi_gian DATETIME NOT NULL DEFAULT GETDATE(),
+    id_nhan_vien INT NULL,
+    ten_nguoi_thuc_hien NVARCHAR(100) NULL,
+    ghi_chu NVARCHAR(500) NULL,
+    CONSTRAINT FK_LSHoaDon_HoaDon FOREIGN KEY (id_hoa_don) REFERENCES hoa_don(id) ON DELETE CASCADE,
+    CONSTRAINT FK_LSHoaDon_NhanVien FOREIGN KEY (id_nhan_vien) REFERENCES nguoi_dung(id)
+);
+GO
+
+-- 24. Bảo hành
 CREATE TABLE bao_hanh (
     id INT IDENTITY(1,1) PRIMARY KEY,
     ma_phieu VARCHAR(50) UNIQUE NOT NULL,
@@ -342,7 +352,7 @@ INSERT INTO nguoi_dung (ma, ten, username, password, dia_chi, dien_thoai, email,
 ('NV001', N'Nguyễn Minh Đức', 'minhduc', '123456', N'Số 1 Đại Cồ Việt, Hai Bà Trưng, Hà Nội', '0912345671', 'minhduc@laptopstore.vn', 2),
 ('NV002', N'Nguyễn Thanh Liêm', 'thanhliem', '123456', N'Số 12 Chùa Bộc, Đống Đa, Hà Nội', '0912345672', 'thanhliem@laptopstore.vn', 2),
 ('NV003', N'Nguyễn Hà Duyên', 'haduyen', '123456', N'Số 250 Hoàng Quốc Việt, Cầu Giấy, Hà Nội', '0912345673', 'haduyen@laptopstore.vn', 2),
-('KH000', N'Khách lẻ tại quầy', 'khachle', '123456', N'Tại quầy Store', '0988888888', 'khachle@laptopstore.vn', 3),
+('KH000', N'Khách lẻ tại quầy', 'khachle', '123456', N'Tại quầy Store', NULL, 'khachle@laptopstore.vn', 3),
 ('KH001', N'Nguyễn Văn An', 'nguyenvanan', '123456', N'Số 88 Cầu Giấy, Hà Nội', '0987654321', 'vanan@gmail.com', 3),
 ('KH002', N'Trần Thị Bình', 'tranthibinh', '123456', N'Số 45 Giải Phóng, Hai Bà Trưng, Hà Nội', '0976543210', 'thibinh@gmail.com', 3),
 ('KH003', N'Lê Hoàng Nam', 'lehoangnam', '123456', N'Số 19 Nguyễn Trãi, Thanh Xuân, Hà Nội', '0965432109', 'hoangnam@gmail.com', 3);

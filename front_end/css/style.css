@@ -75,10 +75,7 @@ input, select {
    TOP BAR / ANNOUNCEMENT
    ========================================================================== */
 .top-notice-bar {
-  background: linear-gradient(90deg, #1e3a8a, #0f172a);
-  color: #e2e8f0;
-  font-size: 0.8rem;
-  padding: 6px 0;
+  display: none !important;
 }
 .top-notice-bar .container {
   display: flex;

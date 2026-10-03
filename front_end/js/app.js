@@ -587,11 +587,6 @@ function createProductCardHTML(item, index) {
           <div class="img-nav-arrow prev" onclick="event.stopPropagation(); changeCardImage(${item.id}, -1)">❮</div>
           <div class="img-nav-arrow next" onclick="event.stopPropagation(); changeCardImage(${item.id}, 1)">❯</div>
         ` : ''}
-
-        <!-- Promotional Strip (Matching Screenshot) -->
-        <div class="card-promo-strip">
-          🧧 ĐÓN ÁNH TRĂNG VÀNG - MUA LAPTOP RƯỚC QUÀ SANG
-        </div>
       </div>
 
       <!-- Title (2 lines clamp) -->

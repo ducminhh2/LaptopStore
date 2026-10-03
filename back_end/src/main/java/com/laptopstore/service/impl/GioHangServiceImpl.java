@@ -34,6 +34,7 @@ import com.laptopstore.repository.ThanhToanRepository;
 import com.laptopstore.repository.VoucherRepository;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -684,7 +685,8 @@ public class GioHangServiceImpl implements GioHangService {
         }
 
         // 8. Tạo ThanhToan (COD: trang_thai = 0, ngay_thanh_toan = null)
-        String maTt = "TT" + Math.floor(System.currentTimeMillis() / 1000) + "_" + (int)(Math.random() * 1000);
+        String timeStr = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyMMdd_HHmmss"));
+        String maTt = "TT" + timeStr + "_" + (int)(Math.random() * 900 + 100);
         ThanhToan tt = ThanhToan.builder()
                 .ma(maTt)
                 .phuongThuc("COD")
@@ -695,9 +697,9 @@ public class GioHangServiceImpl implements GioHangService {
         tt = thanhToanRepository.save(tt);
 
         // 9. Tạo HoaDon (Online: trang_thai = 0, nhanVien = null)
-        String maHd = "HD" + Math.floor(System.currentTimeMillis() / 1000);
+        String maHd = "HD" + timeStr;
         if (hoaDonRepository.findByMa(maHd).isPresent()) {
-            maHd = "HD" + System.currentTimeMillis();
+            maHd = "HD" + timeStr + "_" + (int)(Math.random() * 900 + 100);
         }
 
         String moTa = request.getGhiChu() != null && !request.getGhiChu().isBlank()

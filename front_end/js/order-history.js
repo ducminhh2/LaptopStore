@@ -25,6 +25,17 @@ function escapeHtml(str) {
     .replace(/'/g, '&#039;');
 }
 
+// Format phương thức thanh toán có dấu và rõ nghĩa
+function formatPayMethodClient(raw) {
+  if (!raw) return 'Thanh toán khi nhận hàng (COD)';
+  const s = String(raw).toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/đ/g, "d").replace(/Đ/g, "D");
+  if (s === 'TIEN_MAT' || s.includes('TIEN MAT') || s.includes('CASH')) return 'Tiền mặt tại quầy';
+  if (s === 'CHUYEN_KHOAN' || s.includes('CHUYEN KHOAN') || s.includes('BANK')) return 'Chuyển khoản ngân hàng';
+  if (s.includes('COD')) return 'Thanh toán khi nhận hàng (COD)';
+  if (s === 'QUET_THE' || s.includes('QUET THE') || s.includes('CARD')) return 'Quẹt thẻ tại quầy';
+  return raw;
+}
+
 // Lấy thông tin user hiện tại từ LocalStorage / SessionStorage
 function getCurrentUser() {
   const userStr = localStorage.getItem('laptop_store_user') || sessionStorage.getItem('laptop_store_user');
@@ -310,7 +321,7 @@ function renderOrderCard(order) {
   // Địa chỉ & Người nhận
   const recipientSummary = `
     <div class="order-shipping-bar">
-      <span>🚚 <strong>Người nhận:</strong> ${escapeHtml(order.tenNguoiNhan || 'Khách hàng')} (${escapeHtml(order.dienThoai || 'Chưa có SĐT')})</span>
+      <span><strong>Người nhận:</strong> ${escapeHtml(order.tenNguoiNhan || 'Khách hàng')}${order.dienThoai ? ` (${escapeHtml(order.dienThoai)})` : ''}</span>
       <span>•</span>
       <span><strong>Địa chỉ:</strong> ${escapeHtml(order.diaChi || 'Nhận tại cửa hàng')}</span>
       ${order.moTa ? `<span>•</span><span><strong>Ghi chú:</strong> ${escapeHtml(order.moTa)}</span>` : ''}
@@ -342,7 +353,7 @@ function renderOrderCard(order) {
 
         <div class="order-header-right">
           <span class="badge-status ${payStatusClass}">
-            💳 ${escapeHtml(payStatusText)}
+            ${escapeHtml(payStatusText)}
           </span>
           <span class="badge-status ${orderStatusClass}">
             ${escapeHtml(orderStatusText)}
@@ -363,7 +374,7 @@ function renderOrderCard(order) {
         <div class="order-footer-left">
           <div class="order-pay-method">
             <span>Phương thức thanh toán:</span>
-            <strong>${escapeHtml(order.phuongThucThanhToanHienThi || 'COD')}</strong>
+            <strong>${escapeHtml(formatPayMethodClient(order.phuongThucThanhToanHienThi || order.phuongThucThanhToan))}</strong>
           </div>
         </div>
 
@@ -378,7 +389,7 @@ function renderOrderCard(order) {
             </div>
           </div>
 
-          <button class="btn-view-order-detail" onclick="openDetailModal('${escapeHtml(order.maHoaDon)}')">
+          <button class="btn-view-order-detail" onclick="viewOrderDetail(${order.idHoaDon})">
             <svg style="width: 16px; height: 16px;" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
             Xem chi tiết
           </button>
@@ -389,15 +400,20 @@ function renderOrderCard(order) {
   `;
 }
 
-// Mở modal thông báo chi tiết đơn hàng (Chuẩn bị giao diện theo yêu cầu)
-function openDetailModal(orderCode) {
-  const modal = document.getElementById('detailPreviewModal');
-  const titleEl = document.getElementById('modalOrderCodeTitle');
-  if (titleEl) {
-    titleEl.textContent = `Chi tiết đơn hàng #${orderCode}`;
+// Chuyển hướng sang trang chi tiết đơn hàng
+function viewOrderDetail(orderId) {
+  if (orderId) {
+    window.location.href = `order-detail.html?id=${orderId}`;
   }
-  if (modal) {
-    modal.style.display = 'flex';
+}
+
+// Giữ lại hàm cũ để tương thích
+function openDetailModal(orderCode) {
+  const found = allOrders.find(o => o.maHoaDon === orderCode);
+  if (found && found.idHoaDon) {
+    viewOrderDetail(found.idHoaDon);
+  } else {
+    window.location.href = 'order-detail.html';
   }
 }
 

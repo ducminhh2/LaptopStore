@@ -84,7 +84,7 @@ INSERT INTO nguoi_dung (ma, ten, username, password, dia_chi, dien_thoai, email,
 ('NV001', N'Nguyễn Minh Đức', 'minhduc', '123456', N'Số 1 Đại Cồ Việt, Hai Bà Trưng, Hà Nội', '0912345671', 'minhduc@laptopstore.vn', 2),
 ('NV002', N'Nguyễn Thanh Liêm', 'thanhliem', '123456', N'Số 12 Chùa Bộc, Đống Đa, Hà Nội', '0912345672', 'thanhliem@laptopstore.vn', 2),
 ('NV003', N'Nguyễn Hà Duyên', 'haduyen', '123456', N'Số 250 Hoàng Quốc Việt, Cầu Giấy, Hà Nội', '0912345673', 'haduyen@laptopstore.vn', 2),
-('KH000', N'Khách lẻ tại quầy', 'khachle', '123456', N'Tại quầy Store', '0988888888', 'khachle@laptopstore.vn', 3),
+('KH000', N'Khách lẻ tại quầy', 'khachle', '123456', N'Tại quầy Store', NULL, 'khachle@laptopstore.vn', 3),
 ('KH001', N'Nguyễn Văn An', 'nguyenvanan', '123456', N'Số 88 Cầu Giấy, Hà Nội', '0987654321', 'vanan@gmail.com', 3),
 ('KH002', N'Trần Thị Bình', 'tranthibinh', '123456', N'Số 45 Giải Phóng, Hai Bà Trưng, Hà Nội', '0976543210', 'thibinh@gmail.com', 3),
 ('KH003', N'Lê Hoàng Nam', 'lehoangnam', '123456', N'Số 19 Nguyễn Trãi, Thanh Xuân, Hà Nội', '0965432109', 'hoangnam@gmail.com', 3);

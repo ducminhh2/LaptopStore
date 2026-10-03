@@ -1,5 +1,6 @@
 package com.laptopstore.controller;
 
+import com.laptopstore.dto.ImeiResponseDTO;
 import com.laptopstore.dto.ThemImeiRequest;
 import com.laptopstore.entity.Imei;
 import com.laptopstore.service.ImeiService;
@@ -19,8 +20,8 @@ public class ImeiController {
     private final ImeiService imeiService;
 
     @GetMapping
-    public ResponseEntity<List<Imei>> getAll() {
-        return ResponseEntity.ok(imeiService.getAll());
+    public ResponseEntity<List<ImeiResponseDTO>> getAll() {
+        return ResponseEntity.ok(imeiService.getAllImeiResponses());
     }
 
     @GetMapping("/{id}")

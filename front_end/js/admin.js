@@ -7,6 +7,17 @@
 
 const API_BASE_URL = 'http://localhost:8080/api';
 
+// Escape HTML utility function to prevent XSS and ReferenceErrors
+function escapeHtml(str) {
+  if (str === null || str === undefined) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
 // Status labels & badges map (0: Chờ xác nhận, 1: Đã xác nhận, 2: Đang giao, 3: Hoàn thành, 4: Đã hủy)
 const STATUS_CONFIG = {
   0: { label: 'Chờ xác nhận', class: 'pending', textClass: 'text-amber' },
@@ -140,7 +151,8 @@ const state = {
       items: [],
       customerId: 1,
       customerName: 'Khách lẻ tại quầy',
-      customerPhone: '0988888888',
+      receiverName: '',
+      customerPhone: '',
       customerAddress: 'Tại quầy Store',
       deliveryType: 'TAI_QUAY',
       cashierId: 4,
@@ -321,6 +333,7 @@ function initToastContainer() {
 }
 
 function showToast(message, type = 'success') {
+  initToastContainer();
   const container = document.getElementById('adminToastContainer');
   if (!container) return;
 
@@ -523,7 +536,7 @@ function populatePosCustomerAndCashierSelects() {
     sortedCustomers.forEach(c => {
       custSelect.innerHTML += `
         <option value="${c.id}" data-name="${c.ten || c.username}" data-phone="${c.dienThoai || ''}" data-address="${c.diaChi || 'Tại quầy'}">
-          ${c.ten || c.username} - ${c.dienThoai || 'Chưa có SĐT'}
+          ${c.ten || c.username} - ${c.dienThoai || ''}
         </option>
       `;
     });
@@ -543,6 +556,12 @@ function populatePosCustomerAndCashierSelects() {
       if (phoneInput) phoneInput.value = order.customerPhone || '';
       const addressInput = document.getElementById('posCustomerAddress');
       if (addressInput) addressInput.value = order.customerAddress || 'Tại quầy Store';
+      const receiverInput = document.getElementById('posReceiverName');
+      if (receiverInput && order.deliveryType === 'GIAO_HANG' && !receiverInput.value.trim()) {
+        const defaultName = (order.customerName && !order.customerName.includes('Khách lẻ')) ? order.customerName : '';
+        receiverInput.value = defaultName;
+        order.receiverName = defaultName;
+      }
     }
   }
 
@@ -624,7 +643,8 @@ window.posCreateNewOrderTab = function() {
     items: [],
     customerId: 1,
     customerName: 'Khách lẻ tại quầy',
-    customerPhone: '0988888888',
+    receiverName: '',
+    customerPhone: '',
     customerAddress: 'Tại quầy Store',
     deliveryType: 'TAI_QUAY',
     cashierId: currentCashierId,
@@ -738,6 +758,8 @@ function renderPosCart() {
 
   const phoneInput = document.getElementById('posCustomerPhone');
   const addressInput = document.getElementById('posCustomerAddress');
+  const receiverInput = document.getElementById('posReceiverName');
+  const receiverGroup = document.getElementById('posDeliveryReceiverGroup');
   const custSelect = document.getElementById('posCustomerSelect');
   const cashSelect = document.getElementById('posCashierSelect');
   const noteInput = document.getElementById('posOrderNote');
@@ -750,11 +772,30 @@ function renderPosCart() {
 
   // Synchronize Delivery Type
   order.deliveryType = order.deliveryType || 'TAI_QUAY';
+  const isGiaoHang = (order.deliveryType === 'GIAO_HANG');
   const delRadio = document.querySelector(`input[name="posDeliveryType"][value="${order.deliveryType}"]`);
   if (delRadio) delRadio.checked = true;
   const delAddrGroup = document.getElementById('posDeliveryAddressGroup');
   if (delAddrGroup) {
-    delAddrGroup.style.display = (order.deliveryType === 'GIAO_HANG') ? 'block' : 'none';
+    delAddrGroup.style.display = isGiaoHang ? 'block' : 'none';
+  }
+  if (receiverGroup) {
+    receiverGroup.style.display = isGiaoHang ? 'block' : 'none';
+  }
+  const btnHoldOrder = document.getElementById('btnPosHoldOrder');
+  if (btnHoldOrder) {
+    btnHoldOrder.style.display = isGiaoHang ? 'inline-flex' : 'none';
+  }
+  if (receiverInput) {
+    if (order.receiverName !== undefined && order.receiverName !== '') {
+      receiverInput.value = order.receiverName;
+    } else if (isGiaoHang) {
+      const defaultName = (order.customerName && !order.customerName.includes('Khách lẻ')) ? order.customerName : '';
+      receiverInput.value = defaultName;
+      order.receiverName = defaultName;
+    } else {
+      receiverInput.value = '';
+    }
   }
 
   if (!order.payMethod || order.payMethod === 'QUET_THE') {
@@ -835,8 +876,10 @@ window.onPosCustomerChange = function() {
   const phoneInput = document.getElementById('posCustomerPhone');
   const order = getActivePosOrder();
   const addressInput = document.getElementById('posCustomerAddress');
+  const receiverInput = document.getElementById('posReceiverName');
   if (!custSelect || !order) return;
 
+  const prevCustName = order.customerName;
   const opt = custSelect.options[custSelect.selectedIndex];
   if (opt) {
     order.customerId = parseInt(opt.value);
@@ -850,6 +893,16 @@ window.onPosCustomerChange = function() {
         addressInput.value = custAddr;
       }
     }
+
+    // Nếu đang chọn giao hàng tận nơi: cập nhật tên người nhận nếu chưa nhập hoặc đang theo tên khách hàng cũ
+    if (order.deliveryType === 'GIAO_HANG') {
+      const currentVal = receiverInput ? receiverInput.value.trim() : '';
+      if (!currentVal || currentVal === prevCustName || prevCustName === 'Khách lẻ tại quầy' || !order.receiverName) {
+        const defaultName = (order.customerName && !order.customerName.includes('Khách lẻ')) ? order.customerName : '';
+        order.receiverName = defaultName;
+        if (receiverInput) receiverInput.value = defaultName;
+      }
+    }
   }
 };
 
@@ -861,6 +914,14 @@ window.onPosAddressChange = function() {
   }
 };
 
+window.onPosReceiverNameChange = function() {
+  const order = getActivePosOrder();
+  const receiverInput = document.getElementById('posReceiverName');
+  if (order && receiverInput) {
+    order.receiverName = receiverInput.value.trim();
+  }
+};
+
 window.onPosDeliveryTypeChange = function() {
   const order = getActivePosOrder();
   if (!order) return;
@@ -869,19 +930,37 @@ window.onPosDeliveryTypeChange = function() {
 
   const addrGroup = document.getElementById('posDeliveryAddressGroup');
   const addrInput = document.getElementById('posCustomerAddress');
-  if (addrGroup) {
-    if (order.deliveryType === 'GIAO_HANG') {
-      addrGroup.style.display = 'block';
-      if (!addrInput.value.trim() || addrInput.value.trim() === 'Tại quầy Store') {
-        const custSelect = document.getElementById('posCustomerSelect');
-        const custAddr = custSelect?.options[custSelect.selectedIndex]?.getAttribute('data-address');
-        addrInput.value = (custAddr && custAddr !== 'Tại quầy') ? custAddr : '';
-        order.customerAddress = addrInput.value;
-      }
-    } else {
-      addrGroup.style.display = 'none';
-      order.customerAddress = 'Tại quầy Store';
+  const receiverGroup = document.getElementById('posDeliveryReceiverGroup');
+  const receiverInput = document.getElementById('posReceiverName');
+
+  const btnHoldOrder = document.getElementById('btnPosHoldOrder');
+
+  if (order.deliveryType === 'GIAO_HANG') {
+    if (addrGroup) addrGroup.style.display = 'block';
+    if (receiverGroup) receiverGroup.style.display = 'block';
+    if (btnHoldOrder) btnHoldOrder.style.display = 'inline-flex';
+
+    const custSelect = document.getElementById('posCustomerSelect');
+    const custOpt = custSelect?.options[custSelect.selectedIndex];
+    const custName = custOpt?.getAttribute('data-name') || order.customerName || '';
+    const custAddr = custOpt?.getAttribute('data-address');
+
+    // Tự động gán người nhận ban đầu theo tên khách hàng nếu ô người nhận đang trống
+    if (!order.receiverName || (receiverInput && !receiverInput.value.trim())) {
+      const defaultName = (custName && !custName.includes('Khách lẻ')) ? custName : (order.customerName || '');
+      order.receiverName = defaultName;
+      if (receiverInput) receiverInput.value = defaultName;
     }
+
+    if (!addrInput.value.trim() || addrInput.value.trim() === 'Tại quầy Store') {
+      addrInput.value = (custAddr && custAddr !== 'Tại quầy') ? custAddr : '';
+      order.customerAddress = addrInput.value;
+    }
+  } else {
+    if (addrGroup) addrGroup.style.display = 'none';
+    if (receiverGroup) receiverGroup.style.display = 'none';
+    if (btnHoldOrder) btnHoldOrder.style.display = 'none';
+    order.customerAddress = 'Tại quầy Store';
   }
 };
 
@@ -1250,78 +1329,99 @@ function posAddProductToActiveOrder(itemData) {
 
 // Submit POS Checkout & Create Invoice
 window.submitPosCheckout = async function(isCompleted = true) {
-  const order = getActivePosOrder();
-  if (!order || order.items.length === 0) {
-    showToast('Vui lòng chọn ít nhất 1 sản phẩm vào đơn hàng!', 'error');
-    return;
-  }
-
-  // Validate chọn đủ IMEI cho từng sản phẩm
-  for (const item of order.items) {
-    const selected = item.selectedImeis || [];
-    if (selected.length !== item.qty) {
-      showToast(`${item.name} cần chọn đủ ${item.qty} IMEI trước khi xác nhận hóa đơn (hiện chọn: ${selected.length})!`, 'error');
-      return;
-    }
-  }
-
-  const custSelect = document.getElementById('posCustomerSelect');
-  const phoneInput = document.getElementById('posCustomerPhone');
-  const cashierSelect = document.getElementById('posCashierSelect');
-  const noteInput = document.getElementById('posOrderNote');
-  const givenInput = document.getElementById('posCustomerGivenInput');
-
-  const currentUser = getLoggedInUser();
-  const customerId = parseInt(custSelect?.value) || 1;
-  const cashierId = (currentUser && currentUser.id) ? currentUser.id : (parseInt(cashierSelect?.value) || 4);
-  const phone = phoneInput?.value || '0988888888';
-  const note = noteInput?.value || '';
-  const customerName = custSelect?.options[custSelect.selectedIndex]?.getAttribute('data-name') || 'Khách lẻ tại quầy';
-  const isGiaoHang = (order.deliveryType === 'GIAO_HANG');
-  const addressInput = document.getElementById('posCustomerAddress');
-  const customerAddress = isGiaoHang ? (addressInput?.value?.trim() || order.customerAddress || 'Địa chỉ giao hàng') : 'Tại quầy Store';
-  order.customerAddress = customerAddress;
-
-  const orderCode = 'HD' + Math.floor(Date.now() / 1000);
-
-  // Validate tiền khách đưa nếu thanh toán tiền mặt và hoàn thành
-  const subtotal = order.items.reduce((s, i) => s + (i.price * i.qty), 0);
-  const discount = order.tienGiamVoucher || 0;
-  const total = Math.max(0, subtotal - discount);
-
-  let given = parseInt(givenInput?.value) || 0;
-  if (order.payMethod !== 'TIEN_MAT') {
-    given = total;
-  } else if (isCompleted && given < total) {
-    showToast(`Tiền khách đưa (${formatCurrency(given)}) không đủ để thanh toán đơn hàng (${formatCurrency(total)})!`, 'error');
-    return;
-  }
-
-  const checkoutPayload = {
-    ma: orderCode,
-    customerId: customerId,
-    cashierId: cashierId,
-    customerName: customerName,
-    phone: phone,
-    address: customerAddress,
-    deliveryType: order.deliveryType || 'TAI_QUAY',
-    payMethod: order.payMethod || 'TIEN_MAT',
-    customerGiven: given,
-    isCompleted: isCompleted,
-    note: note,
-    idVoucher: order.idVoucher || null,
-    items: order.items.map(i => ({
-      ctspId: i.ctspId,
-      qty: i.qty,
-      imeiIds: (i.selectedImeis || []).map(im => im.id)
-    }))
-  };
+  const btn = document.getElementById('btnPosCheckout');
+  const btnHold = document.getElementById('btnPosHoldOrder');
 
   try {
-    const btn = document.getElementById('btnPosCheckout');
+    const order = getActivePosOrder();
+    if (!order || order.items.length === 0) {
+      showToast('Vui lòng chọn ít nhất 1 sản phẩm vào đơn hàng!', 'error');
+      return;
+    }
+
+    // Validate chọn đủ IMEI cho từng sản phẩm
+    for (const item of order.items) {
+      const selected = item.selectedImeis || [];
+      if (selected.length !== item.qty) {
+        showToast(`${item.name} cần chọn đủ ${item.qty} IMEI trước khi xác nhận hóa đơn (hiện chọn: ${selected.length})!`, 'error');
+        return;
+      }
+    }
+
+    const custSelect = document.getElementById('posCustomerSelect');
+    const phoneInput = document.getElementById('posCustomerPhone');
+    const cashierSelect = document.getElementById('posCashierSelect');
+    const noteInput = document.getElementById('posOrderNote');
+    const givenInput = document.getElementById('posCustomerGivenInput');
+
+    const currentUser = getLoggedInUser();
+    const customerId = parseInt(custSelect?.value) || 1;
+    const cashierId = (currentUser && currentUser.id) ? currentUser.id : (parseInt(cashierSelect?.value) || 4);
+    const selectedOpt = custSelect?.options[custSelect?.selectedIndex];
+    const customerName = selectedOpt?.getAttribute('data-name') || 'Khách lẻ tại quầy';
+    const isRetail = (customerName === 'Khách lẻ tại quầy' || customerName.includes('Khách lẻ'));
+    const phone = phoneInput?.value?.trim() || '';
+    const note = noteInput?.value?.trim() || order.note || '';
+
+    const isGiaoHang = (order.deliveryType === 'GIAO_HANG');
+    if (!isCompleted && !isGiaoHang) {
+      showToast('Đơn nhận tại quầy bắt buộc phải thanh toán trực tiếp!', 'error');
+      return;
+    }
+    const addressInput = document.getElementById('posCustomerAddress');
+    const receiverInput = document.getElementById('posReceiverName');
+    const customerAddress = isGiaoHang ? (addressInput?.value?.trim() || order.customerAddress || 'Địa chỉ giao hàng') : 'Tại quầy Store';
+    order.customerAddress = customerAddress;
+
+    const receiverName = isGiaoHang
+      ? (receiverInput?.value?.trim() || order.receiverName || customerName)
+      : customerName;
+    order.receiverName = receiverName;
+
+    const now = new Date();
+    const pad = n => String(n).padStart(2, '0');
+    const orderCode = 'HD' + String(now.getFullYear()).slice(-2) + pad(now.getMonth() + 1) + pad(now.getDate()) + '_' + pad(now.getHours()) + pad(now.getMinutes()) + pad(now.getSeconds());
+
+    // Validate tiền khách đưa nếu thanh toán tiền mặt và hoàn thành
+    const subtotal = order.items.reduce((s, i) => s + (i.price * i.qty), 0);
+    const discount = order.tienGiamVoucher || 0;
+    const total = Math.max(0, subtotal - discount);
+
+    let given = parseInt(givenInput?.value) || 0;
+    if (order.payMethod !== 'TIEN_MAT') {
+      given = total;
+    } else if (isCompleted && given < total) {
+      showToast(`Tiền khách đưa (${formatCurrency(given)}) không đủ để thanh toán đơn hàng (${formatCurrency(total)})!`, 'error');
+      return;
+    }
+
+    const checkoutPayload = {
+      ma: orderCode,
+      customerId: customerId,
+      cashierId: cashierId,
+      customerName: (isGiaoHang && receiverName) ? receiverName : customerName,
+      receiverName: receiverName,
+      phone: phone,
+      address: customerAddress,
+      deliveryType: order.deliveryType || 'TAI_QUAY',
+      payMethod: order.payMethod || 'TIEN_MAT',
+      customerGiven: given,
+      isCompleted: isCompleted,
+      note: note,
+      idVoucher: order.idVoucher || null,
+      items: order.items.map(i => ({
+        ctspId: i.ctspId,
+        qty: i.qty,
+        imeiIds: (i.selectedImeis || []).map(im => im.id)
+      }))
+    };
+
     if (btn) {
       btn.disabled = true;
       btn.textContent = 'ĐANG XỬ LÝ...';
+    }
+    if (btnHold) {
+      btnHold.disabled = true;
     }
 
     const res = await fetch(`${API_BASE_URL}/hoa-don/pos-checkout`, {
@@ -1353,8 +1453,11 @@ window.submitPosCheckout = async function(isCompleted = true) {
       order.maVoucher = '';
       order.tienGiamVoucher = 0;
       order.note = '';
+      order.receiverName = '';
       order.customerAddress = 'Tại quầy Store';
       order.deliveryType = 'TAI_QUAY';
+      if (receiverInput) receiverInput.value = '';
+      if (noteInput) noteInput.value = '';
       renderPosOrderTabs();
       renderPosCart();
     }
@@ -1367,10 +1470,12 @@ window.submitPosCheckout = async function(isCompleted = true) {
     console.error('Error in POS checkout:', err);
     showToast('Lỗi khi lưu hóa đơn: ' + err.message, 'error');
   } finally {
-    const btn = document.getElementById('btnPosCheckout');
     if (btn) {
       btn.disabled = false;
       btn.textContent = 'THANH TOÁN & IN HÓA ĐƠN';
+    }
+    if (btnHold) {
+      btnHold.disabled = false;
     }
   }
 };
@@ -1577,6 +1682,65 @@ const ORDER_STATUS_MAP = {
   4: { label: 'Đã hủy', badgeClass: 'badge-order-4', stepTitle: 'Đã hủy' }
 };
 
+const PAYMENT_METHOD_MAP = {
+  'TIEN_MAT': {
+    code: 'TIEN_MAT',
+    label: 'Tiền mặt',
+    badgeClass: 'badge-paymethod-cash'
+  },
+  'CHUYEN_KHOAN': {
+    code: 'CHUYEN_KHOAN',
+    label: 'Chuyển khoản',
+    badgeClass: 'badge-paymethod-transfer'
+  },
+  'COD': {
+    code: 'COD',
+    label: 'COD',
+    badgeClass: 'badge-paymethod-cod'
+  },
+  'QUET_THE': {
+    code: 'QUET_THE',
+    label: 'Quẹt thẻ',
+    badgeClass: 'badge-paymethod-card'
+  }
+};
+
+function getPaymentMethodInfo(rawMethod) {
+  if (!rawMethod) {
+    return PAYMENT_METHOD_MAP['COD'];
+  }
+  const str = String(rawMethod).trim();
+  const normalized = str.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/đ/g, "d").replace(/Đ/g, "D");
+  
+  if (normalized === 'TIEN_MAT' || normalized.includes('TIEN MAT') || normalized.includes('CASH')) {
+    return PAYMENT_METHOD_MAP['TIEN_MAT'];
+  }
+  if (normalized === 'CHUYEN_KHOAN' || normalized.includes('CHUYEN KHOAN') || normalized.includes('BANK')) {
+    return PAYMENT_METHOD_MAP['CHUYEN_KHOAN'];
+  }
+  if (normalized.includes('COD')) {
+    return PAYMENT_METHOD_MAP['COD'];
+  }
+  if (normalized === 'QUET_THE' || normalized.includes('QUET THE') || normalized.includes('CARD')) {
+    return PAYMENT_METHOD_MAP['QUET_THE'];
+  }
+  return {
+    code: 'OTHER',
+    label: str,
+    badgeClass: 'badge-paymethod-default'
+  };
+}
+
+function renderPaymentMethodBadge(rawMethod) {
+  const pm = getPaymentMethodInfo(rawMethod);
+  return `<span class="badge-status badge-paymethod ${pm.badgeClass}">${pm.label}</span>`;
+}
+
+function formatPaymentMethodText(rawMethod) {
+  return getPaymentMethodInfo(rawMethod).label;
+}
+
+
 function formatInvoiceDate(dateStr) {
   if (!dateStr) return '---';
   const d = new Date(dateStr);
@@ -1720,10 +1884,11 @@ window.filterInvoices = function() {
 
     // 3. Phương thức thanh toán
     if (payMethodFilter !== 'ALL') {
-      const pm = (inv.thanhToan?.phuongThuc || '').toLowerCase();
-      if (!pm.includes(payMethodFilter.toLowerCase())) {
-        return false;
-      }
+      const pmInfo = getPaymentMethodInfo(inv.thanhToan?.phuongThuc);
+      if (payMethodFilter === 'COD' && pmInfo.code !== 'COD') return false;
+      if (payMethodFilter === 'CHUYEN_KHOAN' && pmInfo.code !== 'CHUYEN_KHOAN') return false;
+      if (payMethodFilter === 'TIEN_MAT' && pmInfo.code !== 'TIEN_MAT') return false;
+      if (payMethodFilter === 'QUET_THE' && pmInfo.code !== 'QUET_THE') return false;
     }
 
     // 4. Lọc theo nhân viên bán hàng
@@ -1746,7 +1911,7 @@ window.filterInvoices = function() {
     // 6. Tìm kiếm theo mã HĐ, tên KH, SĐT, tên nhân viên, mã nhân viên
     if (query) {
       const ma = (inv.ma || '').toLowerCase();
-      const tenKh = (inv.tenNguoiNhan || inv.khachHang?.ten || '').toLowerCase();
+      const tenKh = `${inv.tenNguoiNhan || ''} ${inv.khachHang?.ten || ''}`.toLowerCase();
       const phone = (inv.dienThoai || inv.khachHang?.dienThoai || '').toLowerCase();
       const staffName = (inv.nhanVien?.ten || '').toLowerCase();
       const staffCode = (inv.nhanVien?.ma || '').toLowerCase();
@@ -1779,8 +1944,14 @@ function renderInvoicesTable() {
     const stConfig = ORDER_STATUS_MAP[inv.trangThai] || { label: 'Không xác định', badgeClass: 'badge-order-0' };
     const isPaid = (inv.thanhToan?.trangThai === 1);
     const dateFormatted = formatInvoiceDate(inv.ngayTao);
-    const customerName = inv.tenNguoiNhan || inv.khachHang?.ten || 'Khách lẻ tại quầy';
-    const phone = inv.dienThoai || inv.khachHang?.dienThoai || '---';
+    const dateParts = dateFormatted.split(' ');
+    const datePart = dateParts[0] || dateFormatted;
+    const timePart = dateParts[1] || '';
+    const customerAccountName = inv.khachHang?.ten || '';
+    const recipientName = inv.tenNguoiNhan || customerAccountName || 'Khách lẻ tại quầy';
+    const isRetail = recipientName.toLowerCase().includes('khách lẻ') || customerAccountName.toLowerCase().includes('khách lẻ');
+    const phone = isRetail ? '' : (inv.dienThoai || inv.khachHang?.dienThoai || '');
+    const hasDifferentRecipient = (customerAccountName && recipientName && recipientName !== customerAccountName && !recipientName.includes('Khách lẻ'));
     const totalAmount = inv.thanhToan?.soTien || 0;
     const payMethod = inv.thanhToan?.phuongThuc || 'COD';
     const hasStaff = inv.nhanVien && (inv.nhanVien.ten || inv.nhanVien.ma);
@@ -1790,15 +1961,19 @@ function renderInvoicesTable() {
     const tr = document.createElement('tr');
     tr.innerHTML = `
       <td style="text-align:center; font-weight:700; color:var(--admin-text-muted);">${index + 1}</td>
-      <td style="text-align:center; font-weight:800; color:var(--admin-primary);">${inv.ma || 'HD' + inv.id}</td>
-      <td style="text-align:center; font-size:0.83rem; color:#334155;">${dateFormatted}</td>
+      <td style="text-align:center; font-weight:800; color:var(--admin-primary); white-space:nowrap; font-size:0.84rem; letter-spacing:0.2px;">${inv.ma || 'HD' + inv.id}</td>
+      <td style="text-align:center; white-space:nowrap;">
+        <div style="font-weight:600; color:#1e293b; font-size:0.82rem;">${datePart}</div>
+        ${timePart ? `<div style="font-size:0.74rem; color:#64748b; margin-top:2px;">${timePart}</div>` : ''}
+      </td>
       <td style="text-align:left;">
-        <div style="font-weight:700; color:#0f172a;">${customerName}</div>
-        <div style="font-size:0.75rem; color:var(--admin-text-muted);">${phone}</div>
+        <div style="font-weight:700; color:#0f172a; font-size:0.85rem;">${recipientName}</div>
+        ${hasDifferentRecipient ? `<div style="font-size:0.73rem; color:#64748b; font-weight:600;">(KH: ${customerAccountName})</div>` : ''}
+        ${phone ? `<div style="font-size:0.75rem; color:var(--admin-text-muted);">${phone}</div>` : ''}
       </td>
       <td style="text-align:left;">
         ${hasStaff ? `
-          <div style="font-weight:700; color:#0f172a; display:flex; align-items:center; gap:5px;">
+          <div style="font-weight:700; color:#0f172a; font-size:0.85rem; display:flex; align-items:center; gap:5px;">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:#64748b; flex-shrink:0;">
               <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
               <circle cx="12" cy="7" r="4"></circle>
@@ -1807,23 +1982,23 @@ function renderInvoicesTable() {
           </div>
           ${staffCode ? `<div style="font-size:0.75rem; color:var(--admin-text-muted); margin-left:18px; font-weight:600;">${staffCode}</div>` : ''}
         ` : `
-          <span style="color:#94a3b8; font-style:italic; font-size:0.86rem; font-weight:500;">Chưa có</span>
+          <span style="color:#94a3b8; font-style:italic; font-size:0.84rem; font-weight:500;">Chưa có</span>
         `}
       </td>
-      <td style="text-align:right; font-weight:800; color:#0f172a; padding-right:14px;">${formatCurrency(totalAmount)}</td>
-      <td style="text-align:center; font-weight:600; color:#475569;">${payMethod}</td>
-      <td style="text-align:center;">
+      <td style="text-align:right; font-weight:800; color:#0f172a; padding-right:12px; white-space:nowrap;">${formatCurrency(totalAmount)}</td>
+      <td style="text-align:center; white-space:nowrap;">${renderPaymentMethodBadge(payMethod)}</td>
+      <td style="text-align:center; white-space:nowrap;">
         <span class="badge-status ${stConfig.badgeClass}">● ${stConfig.label}</span>
       </td>
-      <td style="text-align:center;">
+      <td style="text-align:center; white-space:nowrap;">
         <span class="badge-status ${isPaid ? 'badge-pay-paid' : 'badge-pay-unpaid'}">
           ● ${isPaid ? 'Đã thanh toán' : 'Chưa thanh toán'}
         </span>
       </td>
-      <td style="text-align:center;">
+      <td style="text-align:center; white-space:nowrap;">
         <div style="display:flex; justify-content:center; align-items:center;">
-          <button class="btn-admin btn-outline btn-sm" onclick="openInvoiceDetail(${inv.id})" title="Xem chi tiết đơn hàng" style="display:inline-flex; align-items:center; gap:4px; font-weight:700; padding:5px 12px; font-size:0.82rem; border-color:#93c5fd; color:#1d4ed8;">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <button class="btn-admin btn-outline btn-sm" onclick="openInvoiceDetail(${inv.id})" title="Xem chi tiết đơn hàng" style="display:inline-flex; align-items:center; gap:4px; font-weight:700; padding:4px 10px; font-size:0.8rem; border-color:#93c5fd; color:#1d4ed8; white-space:nowrap;">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
               <circle cx="12" cy="12" r="3"></circle>
             </svg>
@@ -1862,9 +2037,24 @@ window.openInvoiceDetail = async function(invoiceId) {
   document.getElementById('dtlMa').textContent = inv.ma || 'HD' + inv.id;
   document.getElementById('dtlNgayDat').textContent = formatInvoiceDate(inv.ngayTao);
   
-  const customerName = inv.tenNguoiNhan || inv.khachHang?.ten || 'Khách lẻ tại quầy';
-  const phone = inv.dienThoai || inv.khachHang?.dienThoai || '---';
-  document.getElementById('dtlKhachHang').textContent = `${customerName} (${phone})`;
+  const customerAccountName = inv.khachHang?.ten || '';
+  const recipientName = inv.tenNguoiNhan || customerAccountName || 'Khách lẻ tại quầy';
+  const isRetail = (recipientName.toLowerCase().includes('khách lẻ') || customerAccountName.toLowerCase().includes('khách lẻ'));
+  const phone = isRetail ? '' : (inv.dienThoai || inv.khachHang?.dienThoai || '');
+
+  const khDisplayName = customerAccountName || recipientName;
+  document.getElementById('dtlKhachHang').textContent = phone ? `${khDisplayName} (${phone})` : khDisplayName;
+
+  const elNguoiNhanRow = document.getElementById('dtlNguoiNhanRow');
+  const elNguoiNhan = document.getElementById('dtlNguoiNhan');
+  if (elNguoiNhanRow && elNguoiNhan) {
+    if (recipientName && customerAccountName && recipientName !== customerAccountName && !recipientName.includes('Khách lẻ')) {
+      elNguoiNhanRow.style.display = 'flex';
+      elNguoiNhan.textContent = recipientName;
+    } else {
+      elNguoiNhanRow.style.display = 'none';
+    }
+  }
 
   const elStaff = document.getElementById('dtlNhanVien');
   if (elStaff) {
@@ -1892,7 +2082,11 @@ window.openInvoiceDetail = async function(invoiceId) {
   const stConfig = ORDER_STATUS_MAP[inv.trangThai] || { label: 'Không xác định', badgeClass: 'badge-order-0' };
 
   const pmBadge = document.getElementById('dtlPhuongThucBadge');
-  if (pmBadge) pmBadge.textContent = payMethod;
+  if (pmBadge) {
+    const pmInfo = getPaymentMethodInfo(payMethod);
+    pmBadge.className = `badge-status badge-paymethod ${pmInfo.badgeClass}`;
+    pmBadge.textContent = pmInfo.label;
+  }
 
   const stBadge = document.getElementById('dtlTrangThaiDonBadge');
   if (stBadge) {
@@ -1939,8 +2133,17 @@ window.openInvoiceDetail = async function(invoiceId) {
   const totalAmount = inv.thanhToan?.soTien || 45980000;
   document.getElementById('dtlTongTien').textContent = formatCurrency(totalAmount);
 
-  // Render Stepper (Lịch sử trạng thái)
-  renderInvoiceStepper(inv);
+  // Render Stepper (Lịch sử trạng thái có thời gian & nhân viên thực hiện)
+  let historyList = [];
+  try {
+    const resHist = await fetch(`${API_BASE_URL}/hoa-don/${invoiceId}/lich-su-trang-thai`);
+    if (resHist.ok) {
+      historyList = await resHist.json();
+    }
+  } catch(e) {
+    console.error('Lỗi khi tải lịch sử trạng thái hóa đơn:', e);
+  }
+  renderInvoiceStepper(inv, historyList);
 
   // Load items from API: /chi-tiet-hoa-don/hoa-don/{id}
   const tbody = document.getElementById('detailItemsTableBody');
@@ -1978,23 +2181,71 @@ window.openInvoiceDetail = async function(invoiceId) {
   renderInvoiceDetailItems();
 };
 
-function renderInvoiceStepper(inv) {
+function renderInvoiceStepper(inv, historyList = []) {
   const container = document.getElementById('orderStepperContainer');
   if (!container) return;
 
   const currentStatus = inv.trangThai !== undefined ? inv.trangThai : 0;
   const isCancelled = (currentStatus === 4);
 
+  // Helper to find history for a status
+  const findHistory = (st) => {
+    if (!Array.isArray(historyList) || historyList.length === 0) return null;
+    const matched = historyList.filter(h => h.trangThai === st);
+    return matched.length > 0 ? matched[matched.length - 1] : null;
+  };
+
+  const hist0 = findHistory(0);
+  const hist1 = findHistory(1);
+  const hist2 = findHistory(2);
+  const hist3 = findHistory(3);
+  const hist4 = findHistory(4);
+
   // Standard steps
   const steps = [
-    { id: 0, title: 'Chờ xác nhận', time: formatShortDate(inv.ngayTao) },
-    { id: 1, title: 'Đã xác nhận', time: currentStatus >= 1 ? formatShortDate(inv.ngayTao) : '' },
-    { id: 2, title: 'Đang giao hàng', time: currentStatus >= 2 ? formatShortDate(inv.ngayTao) : '' },
-    { id: 3, title: 'Hoàn thành', time: currentStatus === 3 ? (formatShortDate(inv.thanhToan?.ngayThanhToan) || formatShortDate(inv.ngayTao)) : '' }
+    {
+      id: 0,
+      title: 'Chờ xác nhận',
+      time: hist0 ? (hist0.thoiGianShort || hist0.thoiGianFormatted) : formatShortDate(inv.ngayTao),
+      fullTime: hist0 ? hist0.thoiGianFormatted : formatInvoiceDate(inv.ngayTao),
+      actor: hist0?.tenNguoiThucHien || '',
+      hasRecord: !!hist0 || currentStatus >= 0
+    },
+    {
+      id: 1,
+      title: 'Đã xác nhận',
+      time: hist1 ? (hist1.thoiGianShort || hist1.thoiGianFormatted) : (!isCancelled && currentStatus >= 1 ? formatShortDate(inv.ngayTao) : ''),
+      fullTime: hist1 ? hist1.thoiGianFormatted : '',
+      actor: hist1?.tenNguoiThucHien || (!isCancelled && currentStatus >= 1 && inv.nhanVien?.ten ? inv.nhanVien.ten : ''),
+      hasRecord: !!hist1 || (!isCancelled && currentStatus >= 1)
+    },
+    {
+      id: 2,
+      title: 'Đang giao hàng',
+      time: hist2 ? (hist2.thoiGianShort || hist2.thoiGianFormatted) : (!isCancelled && currentStatus >= 2 ? formatShortDate(inv.ngayTao) : ''),
+      fullTime: hist2 ? hist2.thoiGianFormatted : '',
+      actor: hist2?.tenNguoiThucHien || (!isCancelled && currentStatus >= 2 && inv.nhanVien?.ten ? inv.nhanVien.ten : ''),
+      hasRecord: !!hist2 || (!isCancelled && currentStatus >= 2)
+    },
+    {
+      id: 3,
+      title: 'Hoàn thành',
+      time: hist3 ? (hist3.thoiGianShort || hist3.thoiGianFormatted) : (!isCancelled && currentStatus === 3 && inv.thanhToan?.ngayThanhToan ? formatShortDate(inv.thanhToan.ngayThanhToan) : ''),
+      fullTime: hist3 ? hist3.thoiGianFormatted : (!isCancelled && currentStatus === 3 && inv.thanhToan?.ngayThanhToan ? formatInvoiceDate(inv.thanhToan.ngayThanhToan) : ''),
+      actor: hist3?.tenNguoiThucHien || (!isCancelled && currentStatus === 3 && inv.nhanVien?.ten ? inv.nhanVien.ten : ''),
+      hasRecord: !!hist3 || (!isCancelled && currentStatus === 3)
+    }
   ];
 
   if (isCancelled) {
-    steps.push({ id: 4, title: 'Đã hủy', time: formatShortDate(inv.ngayTao) });
+    steps.push({
+      id: 4,
+      title: 'Đã hủy',
+      time: hist4 ? (hist4.thoiGianShort || hist4.thoiGianFormatted) : formatShortDate(inv.ngayTao),
+      fullTime: hist4 ? hist4.thoiGianFormatted : formatInvoiceDate(inv.ngayTao),
+      actor: hist4?.tenNguoiThucHien || '',
+      hasRecord: true
+    });
   }
 
   let html = '';
@@ -2002,24 +2253,52 @@ function renderInvoiceStepper(inv) {
     let itemClass = '';
     let circleContent = `${idx + 1}`;
 
-    if (isCancelled && step.id === 4) {
-      itemClass = 'cancelled';
-      circleContent = '&times;';
-    } else if (!isCancelled && step.id < currentStatus) {
-      itemClass = 'completed';
-      circleContent = '&#10003;';
-    } else if (!isCancelled && step.id === currentStatus) {
-      itemClass = 'active';
-      circleContent = (currentStatus === 3) ? '&#10003;' : '&#9679;';
-    } else if (isCancelled && step.id < currentStatus) {
-      itemClass = 'completed';
-      circleContent = '&#10003;';
+    if (isCancelled) {
+      if (step.id === 4) {
+        itemClass = 'cancelled';
+        circleContent = '&times;';
+      } else if (step.hasRecord) {
+        itemClass = 'completed';
+        circleContent = '&#10003;';
+      } else {
+        itemClass = '';
+        circleContent = `${idx + 1}`;
+      }
+    } else {
+      if (step.id < currentStatus) {
+        itemClass = 'completed';
+        circleContent = '&#10003;';
+      } else if (step.id === currentStatus) {
+        itemClass = 'active';
+        circleContent = (currentStatus === 3) ? '&#10003;' : '&#9679;';
+      } else {
+        itemClass = '';
+        circleContent = `${idx + 1}`;
+      }
     }
 
     const hasLine = (idx < steps.length - 1);
     let lineClass = '';
-    if (!isCancelled && step.id < currentStatus) {
-      lineClass = (step.id + 1 <= currentStatus) ? 'completed' : '';
+    if (!isCancelled) {
+      if (step.id < currentStatus) {
+        lineClass = (step.id + 1 <= currentStatus) ? 'completed' : '';
+      }
+    } else {
+      const nextStep = steps[idx + 1];
+      if (step.hasRecord && nextStep && nextStep.hasRecord && nextStep.id !== 4) {
+        lineClass = 'completed';
+      }
+    }
+
+    // Actor line
+    let actorHtml = '';
+    const cleanActor = step.actor ? String(step.actor).replace(/[&<>"']/g, '').trim() : '';
+    if (cleanActor && step.hasRecord && (itemClass === 'completed' || itemClass === 'active' || itemClass === 'cancelled')) {
+      actorHtml = `
+        <div class="order-stepper-actor" title="Người thực hiện: ${cleanActor}">
+           <strong>${cleanActor}</strong>
+        </div>
+      `;
     }
 
     html += `
@@ -2027,7 +2306,8 @@ function renderInvoiceStepper(inv) {
         ${hasLine ? `<div class="order-stepper-line ${lineClass}"></div>` : ''}
         <div class="order-stepper-circle">${circleContent}</div>
         <div class="order-stepper-title">${step.title}</div>
-        <div class="order-stepper-time">${step.time || '&nbsp;'}</div>
+        <div class="order-stepper-time" title="${step.fullTime || ''}">${step.time || '&nbsp;'}</div>
+        ${actorHtml}
       </div>
     `;
   });
@@ -2167,7 +2447,7 @@ function renderInvoiceDetailActionButtons(inv) {
           Hủy Đơn
         </button>
         <button class="btn-admin btn-primary" onclick="openConfirmCodModalForCurrentInvoice()" type="button" style="background:#2563eb; border-color:#2563eb; font-weight:800; display:inline-flex; align-items:center; gap:6px; box-shadow:0 2px 6px rgba(37,99,235,0.3);">
-          <span>&#128176; Xác Nhận Đã Giao & Thu Tiền</span>
+          <span>Xác Nhận Đã Giao & Thu Tiền</span>
         </button>
       `;
     } else {
@@ -2216,13 +2496,19 @@ window.proceedOrderAction = async function(invoiceId, actionType) {
   const inv = state.invoicesList.find(i => i.id === invoiceId) || state.selectedInvoice;
   if (!inv) return;
 
+  const currentUser = getLoggedInUser();
+  const staffHeaders = {};
+  if (currentUser?.username) staffHeaders['X-Staff-Username'] = currentUser.username;
+  if (currentUser?.id) staffHeaders['X-Staff-Id'] = currentUser.id;
+
   if (actionType === 'huy') {
     const lyDo = prompt('Vui lòng nhập lý do hủy đơn hàng này:', 'Khách hàng yêu cầu hủy đơn');
     if (lyDo === null) return; // User cancelled prompt
     
     try {
       const res = await fetch(`${API_BASE_URL}/hoa-don/${invoiceId}/huy?lyDo=${encodeURIComponent(lyDo || 'Hủy đơn')}`, {
-        method: 'POST'
+        method: 'POST',
+        headers: staffHeaders
       });
       if (res.ok) {
         showToast('Đã hủy hóa đơn thành công!');
@@ -2243,7 +2529,10 @@ window.proceedOrderAction = async function(invoiceId, actionType) {
     return;
   } else if (actionType === 'giao-hang') {
     try {
-      const res = await fetch(`${API_BASE_URL}/hoa-don/${invoiceId}/giao-hang`, { method: 'POST' });
+      const res = await fetch(`${API_BASE_URL}/hoa-don/${invoiceId}/giao-hang`, {
+        method: 'POST',
+        headers: staffHeaders
+      });
       if (res.ok) {
         showToast('Đã chuyển đơn hàng sang trạng thái: Đang giao hàng!');
       } else {
@@ -2258,7 +2547,10 @@ window.proceedOrderAction = async function(invoiceId, actionType) {
   } else if (actionType === 'xac-nhan-giao-thanh-cong') {
     if (!confirm('Bạn có chắc chắn muốn xác nhận giao hàng thành công cho đơn hàng này?')) return;
     try {
-      const res = await fetch(`${API_BASE_URL}/hoa-don/${invoiceId}/xac-nhan-giao-thanh-cong`, { method: 'POST' });
+      const res = await fetch(`${API_BASE_URL}/hoa-don/${invoiceId}/xac-nhan-giao-thanh-cong`, {
+        method: 'POST',
+        headers: staffHeaders
+      });
       if (res.ok) {
         showToast('Đã xác nhận giao hàng thành công! Đơn hàng đã Hoàn thành.', 'success');
       } else {
@@ -2289,11 +2581,16 @@ window.openConfirmCodModalForCurrentInvoice = function() {
   document.getElementById('codModalMa').textContent = inv.ma || 'HD' + inv.id;
   
   const customerName = inv.tenNguoiNhan || inv.khachHang?.ten || 'Khách lẻ tại quầy';
-  const phone = inv.dienThoai || inv.khachHang?.dienThoai || '';
-  document.getElementById('codModalKhach').textContent = `${customerName} (${phone})`;
+  const isRetail = customerName.toLowerCase().includes('khách lẻ');
+  const phone = isRetail ? '' : (inv.dienThoai || inv.khachHang?.dienThoai || '');
+  document.getElementById('codModalKhach').textContent = phone ? `${customerName} (${phone})` : customerName;
 
   const pmEl = document.getElementById('codModalPhuongThuc');
-  if (pmEl) pmEl.textContent = inv.thanhToan?.phuongThuc || 'TIEN_MAT';
+  if (pmEl) {
+    const pmInfo = getPaymentMethodInfo(inv.thanhToan?.phuongThuc || 'COD');
+    pmEl.className = `badge-status badge-paymethod ${pmInfo.badgeClass}`;
+    pmEl.textContent = pmInfo.label;
+  }
   
   const totalAmount = inv.thanhToan?.soTien || 0;
   const formattedTotal = formatCurrency(totalAmount);
@@ -2345,8 +2642,14 @@ window.submitCodPaymentConfirmation = async function() {
   }
 
   try {
+    const currentUser = getLoggedInUser();
+    const staffHeaders = {};
+    if (currentUser?.username) staffHeaders['X-Staff-Username'] = currentUser.username;
+    if (currentUser?.id) staffHeaders['X-Staff-Id'] = currentUser.id;
+
     const res = await fetch(`${API_BASE_URL}/hoa-don/${inv.id}/xac-nhan-giao-va-thu-tien`, {
-      method: 'POST'
+      method: 'POST',
+      headers: staffHeaders
     });
 
     if (res.ok) {
@@ -2392,7 +2695,11 @@ window.openConfirmPrepaymentModal = function(invoiceId) {
   if (modalKhach) modalKhach.textContent = `${customerName} (${phone})`;
 
   const pmEl = document.getElementById('prepaymentModalPhuongThuc');
-  if (pmEl) pmEl.textContent = inv.thanhToan?.phuongThuc || 'TIEN_MAT';
+  if (pmEl) {
+    const pmInfo = getPaymentMethodInfo(inv.thanhToan?.phuongThuc || 'TIEN_MAT');
+    pmEl.className = `badge-status badge-paymethod ${pmInfo.badgeClass}`;
+    pmEl.textContent = pmInfo.label;
+  }
 
   const totalAmount = inv.thanhToan?.soTien || 0;
   const formattedTotal = formatCurrency(totalAmount);
@@ -2834,13 +3141,14 @@ window.executeConfirmAcceptOrder = async function() {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'X-Staff-Username': staffUsername
+        'X-Staff-Username': staffUsername,
+        'X-Staff-Id': staffId
       },
       body: JSON.stringify(payload)
     });
 
     if (res.ok) {
-      showToast('Đã xác nhận đơn hàng thành công! Đã phân bổ IMEI và cập nhật nhân viên xử lý.', 'success');
+      showToast('Đã xác nhận đơn hàng thành công! Đã phân bổ IMEI và cập nhật nhân viên tiếp nhận đơn.', 'success');
       closeConfirmAcceptOrderModal();
 
       // Refresh data
@@ -2975,7 +3283,7 @@ function renderAttributesTable() {
       <td style="text-align:center;">
         <div style="display:flex; justify-content:center; gap:6px;">
           <button class="btn-admin btn-outline btn-sm" onclick="openEditAttributeModal(${item.id})" title="Chỉnh sửa">
-            ✏️ Sửa
+             Sửa
           </button>
         </div>
       </td>
@@ -3271,9 +3579,10 @@ function printReceiptDirectly(hoaDon, order) {
       </div>
 
       <div style="font-size:0.8rem; margin-bottom:10px;">
-        <div>Khách hàng: <strong>${hoaDon.tenNguoiNhan || 'Khách lẻ'}</strong></div>
+        <div>Khách hàng: <strong>${hoaDon.khachHang?.ten || order?.customerName || hoaDon.tenNguoiNhan || 'Khách lẻ'}</strong></div>
+        ${(hoaDon.tenNguoiNhan && hoaDon.tenNguoiNhan !== (hoaDon.khachHang?.ten || order?.customerName)) ? `<div>Người nhận: <strong>${hoaDon.tenNguoiNhan}</strong></div>` : ''}
         <div>SĐT: ${hoaDon.dienThoai || '---'}</div>
-        <div>Địa chỉ nhận: ${hoaDon.diaChi || order.customerAddress || 'Tại quầy Store'}</div>
+        <div>Địa chỉ nhận: ${hoaDon.diaChi || order?.customerAddress || 'Tại quầy Store'}</div>
         <div>Thu ngân: ${hoaDon.nhanVien?.ten || 'NV'} - LaptopStore</div>
       </div>
 
@@ -3307,7 +3616,7 @@ function printReceiptDirectly(hoaDon, order) {
         </div>
         <div style="display:flex; justify-content:space-between; font-size:0.8rem;">
           <span>Hình thức TT:</span>
-          <span>${order.payMethod}</span>
+          <span style="font-weight:700;">${formatPaymentMethodText(order.payMethod)}</span>
         </div>
       </div>
 
@@ -4070,7 +4379,7 @@ function renderVariantsTable() {
       <td style="text-align:center;">
         <div style="display:flex; justify-content:center; gap:6px;">
           <button class="btn-admin btn-outline btn-sm" onclick="openEditVariantModal(${v.id})" title="Chỉnh sửa cấu hình">
-            ✏️ Sửa
+             Sửa
           </button>
         </div>
       </td>
@@ -5346,42 +5655,199 @@ function formatCompactSpec(ctsp) {
   return ctsp.moTa || 'Tiêu chuẩn';
 }
 
-function getImeiStatusBadge(status, id) {
-  const s = Number(status);
+function getImeiStatusBadge(item) {
+  const s = Number(item.trangThai);
   if (s === 0) {
-    return `<span class="badge-status badge-success" style="padding:4px 12px; font-weight:600; font-size:12px; cursor:pointer;" onclick="changeImeiStatusQuick(${id}, ${s})" title="Nhấn để đổi trạng thái">Còn hàng</span>`;
+    return `<span class="badge-status badge-success" style="padding:4px 10px; font-weight:700; font-size:12px;">Còn hàng</span>`;
   } else if (s === 1) {
-    return `<span class="badge-status badge-secondary" style="padding:4px 12px; font-weight:600; font-size:12px; background:#f1f5f9; color:#475569; border:1px solid #cbd5e1; cursor:pointer;" onclick="changeImeiStatusQuick(${id}, ${s})" title="Nhấn để đổi trạng thái">Đã bán</span>`;
-  } else if (s === 2 || s === 4) {
-    return `<span class="badge-status badge-warning" style="padding:4px 12px; font-weight:600; font-size:12px; background:#fef3c7; color:#b45309; border:1px solid #fde68a; cursor:pointer;" onclick="changeImeiStatusQuick(${id}, ${s})" title="Nhấn để đổi trạng thái">Bảo hành</span>`;
+    return `<span class="badge-status badge-secondary" style="padding:4px 10px; font-weight:700; font-size:12px; background:#e2e8f0; color:#334155; border:1px solid #cbd5e1;">Đã bán</span>`;
+  } else if (s === 2) {
+    return `<span class="badge-status badge-danger" style="padding:4px 10px; font-weight:700; font-size:12px; background:#fee2e2; color:#b91c1c; border:1px solid #fecaca;">Lỗi / Hỏng</span>`;
   } else if (s === 3) {
-    return `<span class="badge-status badge-danger" style="padding:4px 12px; font-weight:600; font-size:12px; cursor:pointer;" onclick="changeImeiStatusQuick(${id}, ${s})" title="Nhấn để đổi trạng thái">Lỗi / Đổi trả</span>`;
+    return `<span class="badge-status badge-warning" style="padding:4px 10px; font-weight:700; font-size:12px; background:#fef3c7; color:#b45309; border:1px solid #fde68a;">Bảo hành</span>`;
+  } else if (s === 4) {
+    return `<span class="badge-status badge-danger" style="padding:4px 10px; font-weight:700; font-size:12px; background:#ffe4e6; color:#9f1239; border:1px solid #fecdd3;">Xuất hủy</span>`;
   }
-  return `<span class="badge-status badge-info" style="padding:4px 12px; font-weight:600; font-size:12px; cursor:pointer;" onclick="changeImeiStatusQuick(${id}, ${s})">Khác</span>`;
+  return `<span class="badge-status badge-info" style="padding:4px 10px; font-weight:700; font-size:12px;">Khác</span>`;
 }
 
-window.changeImeiStatusQuick = async function(id, currentStatus) {
-  const statusNames = { 0: 'Còn hàng', 1: 'Đã bán', 2: 'Bảo hành' };
-  const nextStatus = currentStatus === 0 ? 1 : (currentStatus === 1 ? 2 : 0);
-  const nextName = statusNames[nextStatus] || 'Còn hàng';
-  const currName = statusNames[currentStatus] || 'Hiện tại';
-
-  if (!confirm(`Bạn có muốn đổi trạng thái IMEI này từ "${currName}" sang "${nextName}"?`)) {
+// ----------------------------------------------------------------------------
+// MODAL: XEM CHI TIẾT CTSP THEO IMEI
+// ----------------------------------------------------------------------------
+window.openImeiCtspModal = function(imeiId) {
+  const item = (state.allImeis || []).find(i => i.id === imeiId);
+  if (!item || !item.chiTietSanPham) {
+    showToast('Không tìm thấy thông tin cấu hình của IMEI này.', 'warning');
     return;
   }
 
+  const ctsp = item.chiTietSanPham;
+  const sp = ctsp.sanPham || {};
+
+  state.currentViewingCtspId = ctsp.id;
+
+  // Header & Badge
+  const badgeMa = document.getElementById('imeiCtspMaBadge');
+  if (badgeMa) badgeMa.textContent = ctsp.maCtsp || `CTSP#${ctsp.id}`;
+
+  // Thumbnail
+  const thumb = document.getElementById('imeiCtspThumb');
+  if (thumb) {
+    const imgUrl = (ctsp.danhSachHinhAnh && ctsp.danhSachHinhAnh[0]?.urlHinhAnh) ||
+                   (sp.danhSachHinhAnh && sp.danhSachHinhAnh[0]?.urlHinhAnh) ||
+                   '../images/default-laptop.png';
+    thumb.src = imgUrl;
+  }
+
+  // General info
+  const tenEl = document.getElementById('imeiCtspTenSp');
+  if (tenEl) tenEl.textContent = sp.tenSp || 'Laptop';
+
+  const brandEl = document.getElementById('imeiCtspThuongHieu');
+  if (brandEl) brandEl.textContent = sp.thuongHieu?.tenThuongHieu || 'Chính hãng';
+
+  const catEl = document.getElementById('imeiCtspDanhMuc');
+  if (catEl) catEl.textContent = sp.danhMuc?.tenDanhMuc || 'Laptop';
+
+  const colorEl = document.getElementById('imeiCtspMauSac');
+  if (colorEl) colorEl.textContent = ctsp.mauSac?.tenMau ? `Màu ${ctsp.mauSac.tenMau}` : 'Tiêu chuẩn';
+
+  const priceEl = document.getElementById('imeiCtspGia');
+  if (priceEl) priceEl.textContent = formatCurrency(ctsp.gia || 0);
+
+  const tonKhoEl = document.getElementById('imeiCtspTonKho');
+  if (tonKhoEl) tonKhoEl.textContent = `Tồn kho khả dụng: ${ctsp.soLuong !== undefined ? ctsp.soLuong : 0} máy`;
+
+  // Specification details
+  const cpuEl = document.getElementById('imeiCtspCpu');
+  if (cpuEl) cpuEl.textContent = ctsp.cpu?.tenCpu || 'Tiêu chuẩn';
+
+  const ramEl = document.getElementById('imeiCtspRam');
+  if (ramEl) ramEl.textContent = ctsp.ram ? `${ctsp.ram.dungLuong || ''} ${ctsp.ram.loaiRam || ''}`.trim() : 'Tiêu chuẩn';
+
+  const ocungEl = document.getElementById('imeiCtspOCung');
+  const ocung = ctsp.ocung || ctsp.oCung;
+  if (ocungEl) ocungEl.textContent = ocung ? `${ocung.dungLuong || ''} (${ocung.loaiOCung || ''})`.trim() : 'SSD';
+
+  const vgaEl = document.getElementById('imeiCtspVga');
+  if (vgaEl) vgaEl.textContent = ctsp.cardDoHoa?.tenCard || 'Đồ họa tích hợp';
+
+  const mhEl = document.getElementById('imeiCtspManHinh');
+  if (mhEl) {
+    const mh = ctsp.manHinh;
+    if (mh) {
+      mhEl.textContent = `${mh.kichThuoc || ''} ${mh.doPhanGiai || ''} ${mh.tanSoQuet || ''}`.trim();
+    } else {
+      mhEl.textContent = 'Tiêu chuẩn';
+    }
+  }
+
+  const mauValEl = document.getElementById('imeiCtspMauSacVal');
+  if (mauValEl) mauValEl.textContent = ctsp.mauSac?.tenMau || 'Tiêu chuẩn';
+
+  // Count total IMEIs for this CTSP
+  const totalImeisForCtsp = (state.allImeis || []).filter(i => i.chiTietSanPham?.id === ctsp.id).length;
+  const totalBadge = document.getElementById('imeiCtspTotalImeiBadge');
+  if (totalBadge) totalBadge.textContent = `${totalImeisForCtsp} máy`;
+
+  const modal = document.getElementById('imeiCtspDetailModal');
+  if (modal) modal.classList.add('active');
+};
+
+window.closeImeiCtspModal = function() {
+  const modal = document.getElementById('imeiCtspDetailModal');
+  if (modal) modal.classList.remove('active');
+};
+
+window.goToVariantFromImeiModal = function() {
+  const ctspId = state.currentViewingCtspId;
+  closeImeiCtspModal();
+  if (ctspId) {
+    switchTab('variants');
+    setTimeout(() => {
+      openEditVariantModal(ctspId);
+    }, 150);
+  }
+};
+
+// ----------------------------------------------------------------------------
+// MODAL: ĐỔI TRẠNG THÁI IMEI (ĐỒNG BỘ TRỪ / CỘNG TỒN KHO)
+// ----------------------------------------------------------------------------
+window.openChangeImeiStatusModal = function(imeiId) {
+  const item = (state.allImeis || []).find(i => i.id === imeiId);
+  if (!item) return;
+
+  document.getElementById('changeImeiId').value = item.id;
+  document.getElementById('changeImeiCodeDisplay').textContent = item.soImei;
+
+  const ctsp = item.chiTietSanPham || {};
+  const sp = ctsp.sanPham || {};
+  document.getElementById('changeImeiProductName').textContent = `${sp.tenSp || 'Laptop'} (${ctsp.maCtsp || 'CTSP'}) - Màu: ${ctsp.mauSac?.tenMau || 'Tiêu chuẩn'}`;
+
+  // Current status badge
+  document.getElementById('changeImeiCurrentStatusBadge').innerHTML = getImeiStatusBadge(item);
+
+  // New status selector
+  const sel = document.getElementById('changeImeiNewStatusSelect');
+  if (sel) {
+    const curr = Number(item.trangThai || 0);
+    // Suggest a different status
+    if (curr === 0) sel.value = '2'; // Default to Lỗi/Hỏng
+    else if (curr === 2) sel.value = '0';
+    else if (curr === 3) sel.value = '0';
+    else if (curr === 4) sel.value = '0';
+    else sel.value = '0';
+  }
+
+  const modal = document.getElementById('imeiChangeStatusModal');
+  if (modal) modal.classList.add('active');
+};
+
+window.closeChangeImeiStatusModal = function() {
+  const modal = document.getElementById('imeiChangeStatusModal');
+  if (modal) modal.classList.remove('active');
+};
+
+window.submitChangeImeiStatus = async function() {
+  const id = document.getElementById('changeImeiId')?.value;
+  const newStatus = Number(document.getElementById('changeImeiNewStatusSelect')?.value);
+
+  if (!id) return;
+
+  const item = (state.allImeis || []).find(i => i.id === Number(id));
+  if (!item) return;
+
+  const statusNames = {
+    0: 'Còn hàng (Trong kho / Khả dụng)',
+    1: 'Đã bán',
+    2: 'Lỗi / Hỏng',
+    3: 'Bảo hành',
+    4: 'Xuất hủy / Trả NCC'
+  };
+
+  const newStatusName = statusNames[newStatus] || 'Mới';
+
   try {
-    const res = await fetch(`${API_BASE_URL}/imei/${id}/trang-thai/${nextStatus}`, {
+    const res = await fetch(`${API_BASE_URL}/imei/${id}/trang-thai/${newStatus}`, {
       method: 'PATCH'
     });
+
     if (res.ok) {
-      showToast(`Đã chuyển trạng thái IMEI sang "${nextName}"!`);
-      loadImeisTable();
+      closeChangeImeiStatusModal();
+      if (newStatus === 0) {
+        showToast(`Đã chuyển IMEI "${item.soImei}" sang "Còn hàng". Số lượng tồn kho cấu hình đã được cộng lại 1!`, 'success');
+      } else {
+        showToast(`Đã chuyển IMEI "${item.soImei}" sang "${newStatusName}". Số lượng tồn kho khả dụng đã được tự động trừ 1!`, 'success');
+      }
+      await loadImeisTable();
+      if (typeof loadVariantsTable === 'function') {
+        loadVariantsTable();
+      }
     } else {
       showToast('Không thể cập nhật trạng thái IMEI.', 'error');
     }
   } catch(e) {
-    showToast('Lỗi: ' + e.message, 'error');
+    showToast('Lỗi khi cập nhật trạng thái: ' + e.message, 'error');
   }
 };
 
@@ -5395,9 +5861,18 @@ window.filterImeisTable = function() {
   if (search) {
     list = list.filter(item => {
       const soImei = (item.soImei || '').toLowerCase();
-      const tenSp = (item.chiTietSanPham?.sanPham?.tenSp || '').toLowerCase();
-      const spec = formatCompactSpec(item.chiTietSanPham).toLowerCase();
-      return soImei.includes(search) || tenSp.includes(search) || spec.includes(search);
+      const ctsp = item.chiTietSanPham || {};
+      const maCtsp = (ctsp.maCtsp || '').toLowerCase();
+      const tenSp = (ctsp.sanPham?.tenSp || '').toLowerCase();
+      const spec = formatCompactSpec(ctsp).toLowerCase();
+      const maHd = (item.maHoaDon || '').toLowerCase();
+      const khach = (item.tenKhachHang || '').toLowerCase();
+      return soImei.includes(search) ||
+             maCtsp.includes(search) ||
+             tenSp.includes(search) ||
+             spec.includes(search) ||
+             maHd.includes(search) ||
+             khach.includes(search);
     });
   }
 
@@ -5428,7 +5903,7 @@ function renderImeisTable() {
   if (!state.filteredImeis || state.filteredImeis.length === 0) {
     if (loadingEl) {
       loadingEl.style.display = 'block';
-      loadingEl.innerHTML = '<div style="padding:10px;"><i class="fa fa-info-circle"></i> Không tìm thấy bản ghi IMEI nào phù hợp.</div>';
+      loadingEl.innerHTML = '<div style="padding:16px; color:#64748b;"><i class="fa fa-info-circle"></i> Không tìm thấy bản ghi IMEI nào phù hợp.</div>';
     }
     tbody.innerHTML = '';
     return;
@@ -5441,21 +5916,154 @@ function renderImeisTable() {
     const sp = ctsp.sanPham || {};
     const tenSp = sp.tenSp || 'Chưa liên kết';
     const compactSpec = formatCompactSpec(ctsp);
-    const statusBadge = getImeiStatusBadge(item.trangThai, item.id);
+    const statusBadge = getImeiStatusBadge(item);
+    const isSold = (Number(item.trangThai) === 1);
+
+    // Hóa đơn HTML
+    let invoiceHtml = '';
+    if (item.idHoaDon) {
+      invoiceHtml = `
+        <div style="display:flex; flex-direction:column; gap:4px;">
+          <div style="display:flex; align-items:center; gap:6px;">
+            <button type="button" class="btn-admin btn-outline btn-sm"
+              style="padding:2px 8px; font-size:11.5px; font-weight:800; color:#2563eb; border-color:#93c5fd; background:#eff6ff;"
+              onclick="openInvoiceDetail(${item.idHoaDon})"
+              title="Nhấn để mở chi tiết hóa đơn #${escapeHtml(item.maHoaDon || '')}">
+              #${escapeHtml(item.maHoaDon || ('HD' + item.idHoaDon))}
+            </button>
+            <span class="badge-status badge-order-${item.trangThaiHoaDon !== undefined ? item.trangThaiHoaDon : 3}" style="font-size:10px; padding:1px 6px;">
+              ${escapeHtml(item.tenTrangThaiHoaDon || 'Hoàn thành')}
+            </span>
+          </div>
+          <div style="font-size:12px; color:#1e293b; font-weight:600;">
+            ${escapeHtml(item.tenKhachHang || 'Khách lẻ')}
+          </div>
+          <div style="font-size:11px; color:#64748b;">
+            ${item.ngayBanFormatted || ''}
+          </div>
+        </div>
+      `;
+    } else if (Number(item.trangThai) === 0) {
+      invoiceHtml = `
+        <span class="badge-status" style="background:#f1f5f9; color:#64748b; border:1px solid #cbd5e1; font-size:11.5px; padding:3px 10px;">
+          Trong kho (Chưa bán)
+        </span>
+      `;
+    } else if (Number(item.trangThai) === 2) {
+      invoiceHtml = `
+        <span class="badge-status badge-danger" style="font-size:11px; padding:3px 8px;">
+          Hàng lỗi kỹ thuật
+        </span>
+      `;
+    } else if (Number(item.trangThai) === 3) {
+      invoiceHtml = `
+        <span class="badge-status badge-warning" style="font-size:11px; padding:3px 8px;">
+          Đang gửi bảo hành
+        </span>
+      `;
+    } else if (Number(item.trangThai) === 4) {
+      invoiceHtml = `
+        <span class="badge-status badge-danger" style="font-size:11px; padding:3px 8px;">
+          Xuất hủy / Trả NCC
+        </span>
+      `;
+    } else {
+      invoiceHtml = `<span style="color:#94a3b8; font-size:12px;">---</span>`;
+    }
+
+    // Nút hành động
+    let actionHtml = '';
+    if (isSold && item.idHoaDon) {
+      actionHtml = `
+        <div style="display:flex; justify-content:center; gap:6px;">
+          <button type="button" class="btn-admin btn-outline btn-sm"
+            onclick="openInvoiceDetail(${item.idHoaDon})"
+            style="padding:4px 8px; font-size:11.5px; font-weight:600; display:inline-flex; align-items:center; gap:4px;"
+            title="Xem chi tiết hóa đơn của IMEI này">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+            <span>Hóa đơn</span>
+          </button>
+          <button type="button" class="btn-admin btn-outline btn-sm"
+            onclick="openImeiCtspModal(${item.id})"
+            style="padding:4px 8px; font-size:11.5px; font-weight:600; display:inline-flex; align-items:center; gap:4px;"
+            title="Xem chi tiết phiên bản cấu hình">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+            <span>CTSP</span>
+          </button>
+        </div>
+      `;
+    } else {
+      actionHtml = `
+        <div style="display:flex; justify-content:center; gap:6px;">
+          <button type="button" class="btn-admin btn-outline btn-sm"
+            onclick="openChangeImeiStatusModal(${item.id})"
+            style="padding:4px 8px; font-size:11.5px; font-weight:600; display:inline-flex; align-items:center; gap:4px; color:#2563eb; border-color:#93c5fd; background:#eff6ff;"
+            title="Đổi trạng thái IMEI và tự động trừ/cộng tồn kho CTSP">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
+            <span>Đổi trạng thái</span>
+          </button>
+          <button type="button" class="btn-admin btn-outline btn-sm"
+            onclick="openImeiCtspModal(${item.id})"
+            style="padding:4px 8px; font-size:11.5px; font-weight:600; display:inline-flex; align-items:center; gap:4px;"
+            title="Xem chi tiết phiên bản cấu hình">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+            <span>CTSP</span>
+          </button>
+        </div>
+      `;
+    }
 
     return `
       <tr style="transition:background 0.15s ease;" onmouseover="this.style.background='#f8fafc';" onmouseout="this.style.background='transparent';">
-        <td style="font-family:monospace; font-weight:700; font-size:13.5px; color:#1e293b; letter-spacing:0.5px;">
-          ${item.soImei}
+        <!-- 1. Số IMEI -->
+        <td style="font-family:monospace; font-weight:800; font-size:13.5px; color:#1e293b; letter-spacing:0.5px;">
+          <div>${escapeHtml(item.soImei)}</div>
+          <div style="font-family:sans-serif; font-size:11px; color:#64748b; font-weight:500; margin-top:2px;">
+            Nhập: ${item.ngayNhapFormatted || '---'}
+          </div>
         </td>
-        <td style="font-weight:600; color:#0f172a;">
-          ${tenSp}
+
+        <!-- 2. Sản phẩm & CTSP -->
+        <td>
+          <div style="display:flex; align-items:center; gap:6px; margin-bottom:4px;">
+            <button type="button" class="badge-status badge-primary"
+              style="font-weight:700; font-size:11px; cursor:pointer; border:none; padding:2px 7px;"
+              onclick="openImeiCtspModal(${item.id})"
+              title="Nhấn xem chi tiết phiên bản cấu hình">
+              ${escapeHtml(ctsp.maCtsp || ('CTSP' + (ctsp.id || '')))}
+            </button>
+            <span style="font-weight:700; color:#0f172a; font-size:13.5px;">${escapeHtml(tenSp)}</span>
+          </div>
+          <div style="font-size:12px; color:#475569; display:flex; gap:8px; align-items:center;">
+            <span>Màu: <strong>${escapeHtml(ctsp.mauSac?.tenMau || 'Tiêu chuẩn')}</strong></span>
+            <span style="color:#cbd5e1;">|</span>
+            <span style="color:#b91c1c; font-weight:700;">${formatCurrency(ctsp.gia || 0)}</span>
+          </div>
         </td>
-        <td style="color:#475569; font-weight:500;">
-          ${compactSpec}
+
+        <!-- 3. Cấu hình -->
+        <td style="color:#334155; font-weight:600; font-size:13px;">
+          <div>${compactSpec}</div>
+          <button type="button" class="btn-admin btn-link"
+            style="padding:0; font-size:11.5px; color:#2563eb; text-decoration:underline; cursor:pointer; background:none; border:none; margin-top:3px;"
+            onclick="openImeiCtspModal(${item.id})">
+            Xem thông số ↗
+          </button>
         </td>
+
+        <!-- 4. Đơn hàng / Hóa đơn -->
+        <td>
+          ${invoiceHtml}
+        </td>
+
+        <!-- 5. Trạng thái -->
         <td style="text-align:center;">
           ${statusBadge}
+        </td>
+
+        <!-- 6. Hành động -->
+        <td style="text-align:center;">
+          ${actionHtml}
         </td>
       </tr>
     `;

@@ -23,4 +23,18 @@ public interface HoaDonRepository extends JpaRepository<HoaDon, Integer> {
            "WHERE h.khachHang.id = :khachHangId " +
            "ORDER BY h.ngayTao DESC")
     List<HoaDon> findLichSuByKhachHangId(@Param("khachHangId") Integer khachHangId);
+
+    @Query("SELECT h FROM HoaDon h " +
+           "LEFT JOIN FETCH h.thanhToan " +
+           "LEFT JOIN FETCH h.voucher " +
+           "LEFT JOIN FETCH h.nhanVien " +
+           "WHERE h.id = :id AND h.khachHang.id = :khachHangId")
+    Optional<HoaDon> findByIdAndKhachHangId(@Param("id") Integer id, @Param("khachHangId") Integer khachHangId);
+
+    @Query("SELECT h FROM HoaDon h " +
+           "LEFT JOIN FETCH h.thanhToan " +
+           "LEFT JOIN FETCH h.voucher " +
+           "LEFT JOIN FETCH h.nhanVien " +
+           "WHERE h.ma = :ma AND h.khachHang.id = :khachHangId")
+    Optional<HoaDon> findByMaAndKhachHangId(@Param("ma") String ma, @Param("khachHangId") Integer khachHangId);
 }

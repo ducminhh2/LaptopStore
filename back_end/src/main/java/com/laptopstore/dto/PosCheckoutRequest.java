@@ -17,6 +17,7 @@ public class PosCheckoutRequest {
     private Integer customerId;
     private Integer cashierId;
     private String customerName;
+    private String receiverName;
     private String phone;
     private String address;
     private String payMethod; // TIEN_MAT, CHUYEN_KHOAN, QUET_THE

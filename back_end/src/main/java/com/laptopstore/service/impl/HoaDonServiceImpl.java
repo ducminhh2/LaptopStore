@@ -37,6 +37,57 @@ public class HoaDonServiceImpl implements HoaDonService {
     private final VoucherService voucherService;
     private final KhuyenMaiService khuyenMaiService;
     private final HinhAnhRepository hinhAnhRepository;
+    private final LichSuHoaDonRepository lichSuHoaDonRepository;
+
+    private NguoiDung resolveNhanVien(String username, Integer nhanVienId, NguoiDung fallbackNv) {
+        NguoiDung nv = null;
+        if (username != null && !username.isBlank()) {
+            nv = nguoiDungRepository.findByUsername(username.trim()).orElse(null);
+            if (nv == null) {
+                nv = nguoiDungRepository.findByEmail(username.trim()).orElse(null);
+            }
+        }
+        if (nv == null && nhanVienId != null) {
+            nv = nguoiDungRepository.findById(nhanVienId).orElse(null);
+        }
+        if (nv == null && fallbackNv != null) {
+            nv = fallbackNv;
+        }
+        if (nv == null) {
+            nv = nguoiDungRepository.findById(4).orElse(null);
+        }
+        return nv;
+    }
+
+    private void logLichSuHoaDon(HoaDon hoaDon, Integer trangThai, NguoiDung nhanVien, String tenNguoiThucHien, String ghiChu) {
+        if (hoaDon == null || trangThai == null) return;
+        try {
+            String actorName = tenNguoiThucHien;
+            if ((actorName == null || actorName.isBlank()) && nhanVien != null) {
+                actorName = nhanVien.getTen();
+            }
+            if (actorName == null || actorName.isBlank()) {
+                if (trangThai == 0) {
+                    actorName = (hoaDon.getKhachHang() != null && hoaDon.getKhachHang().getTen() != null)
+                            ? hoaDon.getKhachHang().getTen()
+                            : (hoaDon.getTenNguoiNhan() != null ? hoaDon.getTenNguoiNhan() : "Khách hàng");
+                } else {
+                    actorName = "Hệ thống";
+                }
+            }
+            LichSuHoaDon ls = LichSuHoaDon.builder()
+                    .hoaDon(hoaDon)
+                    .trangThai(trangThai)
+                    .thoiGian(LocalDateTime.now())
+                    .nhanVien(nhanVien)
+                    .tenNguoiThucHien(actorName)
+                    .ghiChu(ghiChu)
+                    .build();
+            lichSuHoaDonRepository.save(ls);
+        } catch (Exception ex) {
+            System.err.println("Lỗi khi ghi lịch sử hóa đơn: " + ex.getMessage());
+        }
+    }
 
     @Override
     public List<HoaDon> getAll() {
@@ -73,7 +124,12 @@ public class HoaDonServiceImpl implements HoaDonService {
     @Override
     @Transactional
     public HoaDon create(HoaDon hoaDon) {
-        return hoaDonRepository.save(hoaDon);
+        HoaDon saved = hoaDonRepository.save(hoaDon);
+        String actorName = (saved.getKhachHang() != null && saved.getKhachHang().getTen() != null)
+                ? saved.getKhachHang().getTen()
+                : (saved.getTenNguoiNhan() != null ? saved.getTenNguoiNhan() : "Khách hàng");
+        logLichSuHoaDon(saved, 0, null, actorName, "Đặt hàng thành công (Chờ xác nhận)");
+        return saved;
     }
 
     @Override
@@ -101,6 +157,12 @@ public class HoaDonServiceImpl implements HoaDonService {
     @Override
     @Transactional
     public HoaDon updateTrangThai(Integer id, Integer targetStatus) {
+        return updateTrangThai(id, targetStatus, null, null);
+    }
+
+    @Override
+    @Transactional
+    public HoaDon updateTrangThai(Integer id, Integer targetStatus, String username, Integer nhanVienId) {
         HoaDon existing = getById(id);
         int currentStatus = existing.getTrangThai() != null ? existing.getTrangThai() : 0;
 
@@ -110,24 +172,24 @@ public class HoaDonServiceImpl implements HoaDonService {
 
         // Validate state transitions
         if (targetStatus == 4) {
-            return huyHoaDon(id, "Hủy hóa đơn từ giao diện quản lý");
+            return huyHoaDon(id, "Hủy hóa đơn từ giao diện quản lý", username, nhanVienId);
         }
 
         if (targetStatus == 1) {
-            return xacNhanDonHang(id);
+            return xacNhanDonHang(id, nhanVienId);
         }
 
         if (targetStatus == 2) {
-            return giaoHang(id);
+            return giaoHang(id, username, nhanVienId);
         }
 
         if (targetStatus == 3) {
             ThanhToan tt = existing.getThanhToan();
             boolean isChuaThanhToan = (tt == null || tt.getTrangThai() == null || tt.getTrangThai() == 0);
             if (isChuaThanhToan) {
-                return xacNhanGiaoHangVaThuTien(id);
+                return xacNhanGiaoHangVaThuTien(id, username, nhanVienId);
             } else {
-                return xacNhanGiaoHangThanhCong(id);
+                return xacNhanGiaoHangThanhCong(id, username, nhanVienId);
             }
         }
 
@@ -151,15 +213,16 @@ public class HoaDonServiceImpl implements HoaDonService {
         if (currentStatus != 0) {
             throw new IllegalStateException("Chỉ có thể xác nhận đơn hàng khi đơn ở trạng thái 'Chờ xác nhận' (0). Trạng thái hiện tại: " + currentStatus);
         }
-        if (nhanVienId == null) {
+        NguoiDung nv = resolveNhanVien(null, nhanVienId, null);
+        if (nv == null) {
             throw new IllegalArgumentException("Vui lòng cung cấp thông tin nhân viên xử lý đơn hàng.");
         }
-        NguoiDung nv = nguoiDungRepository.findById(nhanVienId)
-                .orElseThrow(() -> new ResourceNotFoundException("Người dùng", "id", nhanVienId));
 
         existing.setNhanVien(nv);
         existing.setTrangThai(1); // 1 = Đã xác nhận
-        return hoaDonRepository.save(existing);
+        HoaDon saved = hoaDonRepository.save(existing);
+        logLichSuHoaDon(saved, 1, nv, nv.getTen(), "Xác nhận đơn hàng");
+        return saved;
     }
 
     @Override
@@ -178,20 +241,7 @@ public class HoaDonServiceImpl implements HoaDonService {
         }
 
         // 3. Lấy nhân viên đang đăng nhập (ưu tiên username đăng nhập -> NguoiDung -> nhân viên hiện tại)
-        NguoiDung nv = null;
-        if (username != null && !username.isBlank()) {
-            nv = nguoiDungRepository.findByUsername(username.trim()).orElse(null);
-            if (nv == null) {
-                nv = nguoiDungRepository.findByEmail(username.trim()).orElse(null);
-            }
-        }
-        if (nv == null && nhanVienId != null) {
-            nv = nguoiDungRepository.findById(nhanVienId).orElse(null);
-        }
-        if (nv == null) {
-            // Thử lấy nhân viên mặc định nếu không truyền
-            nv = nguoiDungRepository.findById(4).orElse(null); // NV001
-        }
+        NguoiDung nv = resolveNhanVien(username, nhanVienId, null);
         if (nv == null) {
             throw new IllegalArgumentException("Không tìm thấy thông tin nhân viên xử lý hợp lệ.");
         }
@@ -297,24 +347,44 @@ public class HoaDonServiceImpl implements HoaDonService {
         existing.setNhanVien(nv);
         existing.setTrangThai(1);
 
-        return hoaDonRepository.save(existing);
+        HoaDon saved = hoaDonRepository.save(existing);
+        logLichSuHoaDon(saved, 1, nv, nv.getTen(), "Xác nhận đơn hàng và phân bổ IMEI");
+        return saved;
     }
 
     @Override
     @Transactional
     public HoaDon giaoHang(Integer id) {
+        return giaoHang(id, null, null);
+    }
+
+    @Override
+    @Transactional
+    public HoaDon giaoHang(Integer id, String username, Integer nhanVienId) {
         HoaDon existing = getById(id);
         int currentStatus = existing.getTrangThai() != null ? existing.getTrangThai() : 0;
         if (currentStatus != 1) {
             throw new IllegalStateException("Chỉ có thể bắt đầu giao hàng khi đơn ở trạng thái 'Đã xác nhận' (1). Trạng thái hiện tại: " + currentStatus);
         }
+        NguoiDung nv = resolveNhanVien(username, nhanVienId, existing.getNhanVien());
+        if (existing.getNhanVien() == null && nv != null) {
+            existing.setNhanVien(nv);
+        }
         existing.setTrangThai(2); // 2 = Đang giao hàng
-        return hoaDonRepository.save(existing);
+        HoaDon saved = hoaDonRepository.save(existing);
+        logLichSuHoaDon(saved, 2, nv, nv != null ? nv.getTen() : null, "Bắt đầu giao hàng");
+        return saved;
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public HoaDon xacNhanGiaoHangVaThuTien(Integer id) {
+        return xacNhanGiaoHangVaThuTien(id, null, null);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public HoaDon xacNhanGiaoHangVaThuTien(Integer id, String username, Integer nhanVienId) {
         HoaDon existing = getById(id);
         int currentStatus = existing.getTrangThai() != null ? existing.getTrangThai() : 0;
         if (currentStatus != 2) {
@@ -340,12 +410,25 @@ public class HoaDonServiceImpl implements HoaDonService {
         // 3. Cập nhật toàn bộ IMEI thuộc hóa đơn sang 1 = Đã bán
         updateInvoiceImeisStatus(id, 1);
 
-        return hoaDonRepository.save(existing);
+        NguoiDung nv = resolveNhanVien(username, nhanVienId, existing.getNhanVien());
+        if (existing.getNhanVien() == null && nv != null) {
+            existing.setNhanVien(nv);
+        }
+
+        HoaDon saved = hoaDonRepository.save(existing);
+        logLichSuHoaDon(saved, 3, nv, nv != null ? nv.getTen() : null, "Giao hàng & thu tiền thành công");
+        return saved;
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public HoaDon xacNhanGiaoHangThanhCong(Integer id) {
+        return xacNhanGiaoHangThanhCong(id, null, null);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public HoaDon xacNhanGiaoHangThanhCong(Integer id, String username, Integer nhanVienId) {
         HoaDon existing = getById(id);
         int currentStatus = existing.getTrangThai() != null ? existing.getTrangThai() : 0;
         if (currentStatus != 2) {
@@ -365,12 +448,25 @@ public class HoaDonServiceImpl implements HoaDonService {
         // 3. Cập nhật toàn bộ IMEI thuộc hóa đơn sang 1 = Đã bán
         updateInvoiceImeisStatus(id, 1);
 
-        return hoaDonRepository.save(existing);
+        NguoiDung nv = resolveNhanVien(username, nhanVienId, existing.getNhanVien());
+        if (existing.getNhanVien() == null && nv != null) {
+            existing.setNhanVien(nv);
+        }
+
+        HoaDon saved = hoaDonRepository.save(existing);
+        logLichSuHoaDon(saved, 3, nv, nv != null ? nv.getTen() : null, "Giao hàng thành công (Đã thanh toán trước)");
+        return saved;
     }
 
     @Override
     @Transactional
     public HoaDon huyHoaDon(Integer id, String lyDo) {
+        return huyHoaDon(id, lyDo, null, null);
+    }
+
+    @Override
+    @Transactional
+    public HoaDon huyHoaDon(Integer id, String lyDo, String username, Integer nhanVienId) {
         HoaDon existing = getById(id);
         int currentStatus = existing.getTrangThai() != null ? existing.getTrangThai() : 0;
         if (currentStatus == 3) {
@@ -407,7 +503,87 @@ public class HoaDonServiceImpl implements HoaDonService {
             }
         }
 
-        return hoaDonRepository.save(existing);
+        NguoiDung nv = resolveNhanVien(username, nhanVienId, existing.getNhanVien());
+        HoaDon saved = hoaDonRepository.save(existing);
+        logLichSuHoaDon(saved, 4, nv, nv != null ? nv.getTen() : "Nhân viên", "Hủy hóa đơn. " + (lyDo != null && !lyDo.isBlank() ? "Lý do: " + lyDo : ""));
+        return saved;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public HoaDon huyDonHangKhachHang(Integer id, Integer khachHangId) {
+        if (id == null) {
+            throw new IllegalArgumentException("Mã đơn hàng không hợp lệ.");
+        }
+        if (khachHangId == null) {
+            throw new IllegalArgumentException("Vui lòng đăng nhập để thực hiện hủy đơn hàng.");
+        }
+
+        // 1. Kiểm tra đơn hàng & quyền sở hữu của khách hàng hiện tại (Chống IDOR)
+        HoaDon existing = hoaDonRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Đơn hàng", "id", id));
+
+        if (existing.getKhachHang() == null || !existing.getKhachHang().getId().equals(khachHangId)) {
+            throw new IllegalStateException("Đơn hàng này không thuộc quyền sở hữu của bạn.");
+        }
+
+        // 2. Kiểm tra trạng thái thanh toán: Đã thanh toán (1) => Tuyệt đối không cho khách tự hủy
+        if (existing.getThanhToan() != null && existing.getThanhToan().getTrangThai() != null && existing.getThanhToan().getTrangThai() == 1) {
+            throw new IllegalStateException("Đơn hàng đã thanh toán nên không thể hủy trực tiếp.");
+        }
+
+        // 3. Kiểm tra trạng thái đơn hàng (int: 0..4)
+        int currentStatus = existing.getTrangThai() != null ? existing.getTrangThai() : 0;
+        if (currentStatus == 4) {
+            throw new IllegalStateException("Đơn hàng đã được hủy trước đó.");
+        }
+        if (currentStatus == 2) {
+            throw new IllegalStateException("Đơn hàng đang được giao và không thể hủy.");
+        }
+        if (currentStatus == 3) {
+            throw new IllegalStateException("Không thể hủy đơn hàng đã hoàn thành.");
+        }
+        if (currentStatus != 0 && currentStatus != 1) {
+            throw new IllegalStateException("Trạng thái đơn hàng không hợp lệ để hủy (trạng thái: " + currentStatus + ").");
+        }
+
+        // 4. Giải phóng mapping IMEI nếu có (đặc biệt cho status = 1)
+        // Chỉ xóa mapping chi_tiet_hoa_don_imei thuộc về các ChiTietHoaDon của đơn hàng đang hủy
+        List<ChiTietHoaDonImei> cthdImeis = chiTietHoaDonImeiRepository.findByChiTietHoaDonHoaDonId(id);
+        if (cthdImeis != null && !cthdImeis.isEmpty()) {
+            Set<Integer> affectedCtspIds = new HashSet<>();
+            for (ChiTietHoaDonImei cti : cthdImeis) {
+                Imei imei = cti.getImei();
+                if (imei != null) {
+                    // IMEI vật lý vẫn tồn tại và giữ trạng thái 0 (Trong kho), không DELETE imei
+                    if (imei.getChiTietSanPham() != null && imei.getChiTietSanPham().getId() != null) {
+                        affectedCtspIds.add(imei.getChiTietSanPham().getId());
+                    }
+                }
+            }
+
+            // Xóa mapping chi_tiet_hoa_don_imei của đơn hàng này
+            chiTietHoaDonImeiRepository.deleteAll(cthdImeis);
+
+            // Cập nhật lại tồn khả dụng trong chi_tiet_san_pham
+            for (Integer ctspId : affectedCtspIds) {
+                chiTietSanPhamRepository.updateSoLuong(ctspId, imeiRepository.countAvailableByChiTietSanPhamId(ctspId));
+            }
+        }
+
+        // 5. Cập nhật trạng thái đơn hàng sang 4 = Đã hủy
+        // KHÔNG xóa HoaDon, KHÔNG xóa ChiTietHoaDon, KHÔNG xóa Imei
+        // KHÔNG ghi đè trường moTa (bảo tồn ghi chú gốc của khách hàng)
+        // KHÔNG thay đổi ThanhToan (giữ nguyên trang_thai = 0, không set ngayThanhToan)
+        // KHÔNG thay đổi Voucher (giữ nguyên id_voucher và tienGiamVoucher)
+        // KHÔNG thêm lại sản phẩm vào giỏ hàng
+        existing.setTrangThai(4);
+
+        HoaDon saved = hoaDonRepository.save(existing);
+        String tenKh = (existing.getKhachHang() != null && existing.getKhachHang().getTen() != null)
+                ? existing.getKhachHang().getTen() : "Khách hàng";
+        logLichSuHoaDon(saved, 4, null, tenKh, "Khách hàng tự hủy đơn hàng");
+        return saved;
     }
 
     private void updateInvoiceImeisStatus(Integer hoaDonId, Integer imeiStatus) {
@@ -591,8 +767,9 @@ public class HoaDonServiceImpl implements HoaDonService {
         }
 
         // 6. Tạo ThanhToan
+        String timeStr = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyMMdd_HHmmss"));
         ThanhToan tt = ThanhToan.builder()
-                .ma("TT" + Math.floor(System.currentTimeMillis() / 1000) + "_" + (int)(Math.random() * 1000))
+                .ma("TT" + timeStr + "_" + (int)(Math.random() * 900 + 100))
                 .phuongThuc(payMethod)
                 .soTien(khachPhaiTra)
                 .trangThai(targetThanhToanStatus)
@@ -601,17 +778,32 @@ public class HoaDonServiceImpl implements HoaDonService {
         tt = thanhToanRepository.save(tt);
 
         // 7. Tạo HoaDon
-        String maHd = (request.getMa() != null && !request.getMa().isBlank()) ? request.getMa().trim() : "HD" + Math.floor(System.currentTimeMillis() / 1000);
+        String maHd = (request.getMa() != null && !request.getMa().isBlank()) ? request.getMa().trim() : "HD" + timeStr;
         if (hoaDonRepository.findByMa(maHd).isPresent()) {
-            maHd = "HD" + System.currentTimeMillis();
+            maHd = "HD" + timeStr + "_" + (int)(Math.random() * 900 + 100);
         }
+
+        String tenNguoiNhan;
+        if (request.getReceiverName() != null && !request.getReceiverName().isBlank()) {
+            tenNguoiNhan = request.getReceiverName().trim();
+        } else if (request.getCustomerName() != null && !request.getCustomerName().isBlank()) {
+            tenNguoiNhan = request.getCustomerName().trim();
+        } else {
+            tenNguoiNhan = (khachHang != null && khachHang.getTen() != null) ? khachHang.getTen() : "Khách lẻ tại quầy";
+        }
+
+        String sdt = (request.getPhone() != null && !request.getPhone().isBlank())
+                ? request.getPhone().trim()
+                : (khachHang != null && khachHang.getDienThoai() != null && !khachHang.getDienThoai().isBlank()
+                        ? khachHang.getDienThoai().trim()
+                        : "");
 
         HoaDon hoaDon = HoaDon.builder()
                 .ma(maHd)
                 .khachHang(khachHang)
                 .nhanVien(nhanVien)
-                .tenNguoiNhan(request.getCustomerName() != null ? request.getCustomerName() : khachHang.getTen())
-                .dienThoai(request.getPhone() != null ? request.getPhone() : khachHang.getDienThoai())
+                .tenNguoiNhan(tenNguoiNhan)
+                .dienThoai(sdt)
                 .diaChi(diaChi)
                 .trangThai(targetHoaDonStatus)
                 .thanhToan(tt)
@@ -660,6 +852,15 @@ public class HoaDonServiceImpl implements HoaDonService {
             }
         }
 
+        // 11. Ghi nhận lịch sử trạng thái hóa đơn
+        logLichSuHoaDon(savedHoaDon, 0, nhanVien, nhanVien != null ? nhanVien.getTen() : null, "Tạo đơn hàng tại quầy");
+        if (targetHoaDonStatus == 1) {
+            logLichSuHoaDon(savedHoaDon, 1, nhanVien, nhanVien != null ? nhanVien.getTen() : null, "Xác nhận đơn hàng tại quầy");
+        } else if (targetHoaDonStatus == 3) {
+            logLichSuHoaDon(savedHoaDon, 1, nhanVien, nhanVien != null ? nhanVien.getTen() : null, "Xác nhận đơn hàng tại quầy");
+            logLichSuHoaDon(savedHoaDon, 3, nhanVien, nhanVien != null ? nhanVien.getTen() : null, "Hoàn thành thanh toán và giao máy tại quầy");
+        }
+
         return savedHoaDon;
     }
 
@@ -691,9 +892,18 @@ public class HoaDonServiceImpl implements HoaDonService {
         boolean isGiaoHang = (existing.getMoTa() != null && existing.getMoTa().contains("Giao hàng tận nơi"))
                 || (!"Tại quầy Store".equalsIgnoreCase(existing.getDiaChi()) 
                     && (existing.getMoTa() == null || !existing.getMoTa().contains("Nhận tại quầy")));
+
+        NguoiDung nv = resolveNhanVien(username, null, existing.getNhanVien());
+        if (existing.getNhanVien() == null && nv != null) {
+            existing.setNhanVien(nv);
+        }
+
         if (!isGiaoHang) {
             existing.setTrangThai(3); // 3 = Hoàn thành
             updateInvoiceImeisStatus(id, 1); // 1 = Đã bán
+            HoaDon saved = hoaDonRepository.save(existing);
+            logLichSuHoaDon(saved, 3, nv, nv != null ? nv.getTen() : null, "Thanh toán & nhận hàng tại quầy thành công");
+            return saved;
         }
 
         return hoaDonRepository.save(existing);
@@ -884,6 +1094,199 @@ public class HoaDonServiceImpl implements HoaDonService {
         return result;
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public LichSuDonHangDTO getChiTietDonHangKhachHang(Integer hoaDonId, Integer khachHangId) {
+        if (hoaDonId == null || khachHangId == null) {
+            return null;
+        }
+
+        // 1. Kiểm tra quyền sở hữu đơn hàng (Chống IDOR tuyệt đối)
+        Optional<HoaDon> hoaDonOpt = hoaDonRepository.findByIdAndKhachHangId(hoaDonId, khachHangId);
+        if (hoaDonOpt.isEmpty()) {
+            return null; // Không tìm thấy hoặc không thuộc quyền sở hữu của user
+        }
+        HoaDon h = hoaDonOpt.get();
+
+        // 2. Lấy chi tiết đơn hàng (kèm CTSP, SP, CPU, RAM...) trong 1 query tránh N+1
+        List<ChiTietHoaDon> itemsOfOrder = chiTietHoaDonRepository.findChiTietByHoaDonId(h.getId());
+
+        // 3. Bulk fetch toàn bộ IMEI đã phân bổ cho đơn hàng này (1 query duy nhất)
+        List<ChiTietHoaDonImei> cthdImeis = chiTietHoaDonImeiRepository.findByChiTietHoaDonHoaDonId(h.getId());
+        Map<Integer, List<String>> imeisByCthdId = new HashMap<>();
+        for (ChiTietHoaDonImei link : cthdImeis) {
+            if (link.getChiTietHoaDon() != null && link.getImei() != null && link.getImei().getSoImei() != null) {
+                imeisByCthdId.computeIfAbsent(link.getChiTietHoaDon().getId(), k -> new ArrayList<>())
+                        .add(link.getImei().getSoImei());
+            }
+        }
+
+        // 4. Lấy ảnh đại diện sản phẩm trong 1 query
+        List<Integer> sanPhamIds = itemsOfOrder.stream()
+                .map(c -> c.getChiTietSanPham() != null && c.getChiTietSanPham().getSanPham() != null 
+                        ? c.getChiTietSanPham().getSanPham().getId() : null)
+                .filter(Objects::nonNull)
+                .distinct()
+                .toList();
+
+        Map<Integer, String> hinhAnhBySanPhamId = new HashMap<>();
+        if (!sanPhamIds.isEmpty()) {
+            List<HinhAnh> hinhAnhs = hinhAnhRepository.findBySanPhamIdIn(sanPhamIds);
+            for (HinhAnh ha : hinhAnhs) {
+                if (ha.getSanPham() != null && !hinhAnhBySanPhamId.containsKey(ha.getSanPham().getId())) {
+                    hinhAnhBySanPhamId.put(ha.getSanPham().getId(), ha.getUrlHinhAnh());
+                }
+            }
+        }
+
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+
+        // 5. Đóng gói danh sách item (100% snapshot đơn giá)
+        int tongSoLuong = 0;
+        BigDecimal tongTienHang = BigDecimal.ZERO;
+        List<LichSuDonHangItemDTO> itemDTOs = new ArrayList<>();
+
+        for (ChiTietHoaDon c : itemsOfOrder) {
+            int qty = c.getSoLuong() != null ? c.getSoLuong() : 0;
+            tongSoLuong += qty;
+
+            // Đơn giá SNAPSHOT từ chi_tiet_hoa_don.gia_tung_san_pham (không lấy chi_tiet_san_pham.gia)
+            BigDecimal giaMua = c.getGiaTungSanPham() != null ? c.getGiaTungSanPham() : BigDecimal.ZERO;
+            BigDecimal thanhTien = giaMua.multiply(BigDecimal.valueOf(qty));
+            tongTienHang = tongTienHang.add(thanhTien);
+
+            ChiTietSanPham ctsp = c.getChiTietSanPham();
+            String tenSanPham = (ctsp != null && ctsp.getSanPham() != null) ? ctsp.getSanPham().getTenSp() : "Sản phẩm";
+            String maCtsp = ctsp != null ? ctsp.getMaCtsp() : "";
+            Integer idCtsp = ctsp != null ? ctsp.getId() : null;
+
+            String cauHinh = buildCauHinhSummary(ctsp);
+
+            Integer spId = (ctsp != null && ctsp.getSanPham() != null) ? ctsp.getSanPham().getId() : null;
+            String urlAnh = (spId != null) ? hinhAnhBySanPhamId.get(spId) : null;
+            if (urlAnh == null || urlAnh.isBlank()) {
+                urlAnh = "https://images.unsplash.com/photo-1603302576837-37561b2e2302?auto=format&fit=crop&w=800&q=80";
+            }
+
+            // Danh sách IMEI gắn riêng cho chi tiết hóa đơn này
+            List<String> imeis = imeisByCthdId.getOrDefault(c.getId(), Collections.emptyList());
+
+            itemDTOs.add(LichSuDonHangItemDTO.builder()
+                    .idChiTietHoaDon(c.getId())
+                    .idChiTietSanPham(idCtsp)
+                    .maCtsp(maCtsp)
+                    .tenSanPham(tenSanPham)
+                    .hinhAnh(urlAnh)
+                    .cauHinh(cauHinh)
+                    .soLuong(qty)
+                    .giaMua(giaMua)
+                    .thanhTien(thanhTien)
+                    .imeis(imeis)
+                    .build());
+        }
+
+        // 6. Snapshot Voucher từ hoa_don.tien_giam_voucher
+        BigDecimal tienGiamVoucher = h.getTienGiamVoucher() != null ? h.getTienGiamVoucher() : BigDecimal.ZERO;
+        String maVoucher = h.getVoucher() != null ? h.getVoucher().getMa() : null;
+
+        // 7. Snapshot Tổng thanh toán từ thanh_toan.so_tien
+        BigDecimal tongThanhToan;
+        if (h.getThanhToan() != null && h.getThanhToan().getSoTien() != null) {
+            tongThanhToan = h.getThanhToan().getSoTien();
+        } else {
+            tongThanhToan = tongTienHang.subtract(tienGiamVoucher).max(BigDecimal.ZERO);
+        }
+
+        // 8. Trạng thái đơn hàng (int: 0..4)
+        int orderStatus = h.getTrangThai() != null ? h.getTrangThai() : 0;
+        String orderStatusText;
+        String orderBadgeClass;
+        switch (orderStatus) {
+            case 0:
+                orderStatusText = "Chờ xác nhận";
+                orderBadgeClass = "badge-pending";
+                break;
+            case 1:
+                orderStatusText = "Đã xác nhận";
+                orderBadgeClass = "badge-confirmed";
+                break;
+            case 2:
+                orderStatusText = "Đang giao hàng";
+                orderBadgeClass = "badge-shipping";
+                break;
+            case 3:
+                orderStatusText = "Hoàn thành";
+                orderBadgeClass = "badge-completed";
+                break;
+            case 4:
+                orderStatusText = "Đã hủy";
+                orderBadgeClass = "badge-cancelled";
+                break;
+            default:
+                orderStatusText = "Không xác định";
+                orderBadgeClass = "badge-unknown";
+        }
+
+        // 9. Trạng thái thanh toán (int: 0, 1) từ thanh_toan.trang_thai
+        int payStatus = (h.getThanhToan() != null && h.getThanhToan().getTrangThai() != null) 
+                ? h.getThanhToan().getTrangThai() : 0;
+        String payStatusText = (payStatus == 1) ? "Đã thanh toán" : "Chưa thanh toán";
+        String payBadgeClass = (payStatus == 1) ? "badge-paid" : "badge-unpaid";
+
+        // 10. Phương thức thanh toán
+        String rawPayMethod = (h.getThanhToan() != null && h.getThanhToan().getPhuongThuc() != null)
+                ? h.getThanhToan().getPhuongThuc() : "COD";
+        String payMethodText;
+        if ("COD".equalsIgnoreCase(rawPayMethod)) {
+            payMethodText = "Thanh toán khi nhận hàng (COD)";
+        } else if ("CHUYEN_KHOAN".equalsIgnoreCase(rawPayMethod)) {
+            payMethodText = "Chuyển khoản ngân hàng";
+        } else if ("TIEN_MAT".equalsIgnoreCase(rawPayMethod)) {
+            payMethodText = "Tiền mặt tại quầy";
+        } else {
+            payMethodText = rawPayMethod;
+        }
+
+        // Ngày thanh toán
+        LocalDateTime ngayTT = (h.getThanhToan() != null) ? h.getThanhToan().getNgayThanhToan() : null;
+        String ngayTTStr = (payStatus == 1 && ngayTT != null) ? ngayTT.format(dtf) : null;
+
+        // Tên nhân viên phụ trách (nếu có)
+        String tenNhanVien = (h.getNhanVien() != null) ? h.getNhanVien().getTen() : null;
+
+        String ngayTaoStr = h.getNgayTao() != null ? h.getNgayTao().format(dtf) : "";
+
+        return LichSuDonHangDTO.builder()
+                .idHoaDon(h.getId())
+                .maHoaDon(h.getMa())
+                .ngayTao(h.getNgayTao())
+                .ngayTaoFormatted(ngayTaoStr)
+                .trangThai(orderStatus)
+                .trangThaiHienThi(orderStatusText)
+                .trangThaiBadgeClass(orderBadgeClass)
+                .trangThaiThanhToan(payStatus)
+                .trangThaiThanhToanHienThi(payStatusText)
+                .trangThaiThanhToanBadgeClass(payBadgeClass)
+                .ngayThanhToan(ngayTT)
+                .ngayThanhToanFormatted(ngayTTStr)
+                .phuongThucThanhToan(rawPayMethod)
+                .phuongThucThanhToanHienThi(payMethodText)
+                .tenNhanVien(tenNhanVien)
+                // SNAPSHOT thông tin nhận hàng từ bảng hoa_don
+                .tenNguoiNhan(h.getTenNguoiNhan())
+                .dienThoai(h.getDienThoai())
+                .diaChi(h.getDiaChi())
+                .moTa(h.getMoTa())
+                // Tiền SNAPSHOT
+                .tongSoLuong(tongSoLuong)
+                .tongTienHang(tongTienHang)
+                .tienGiamVoucher(tienGiamVoucher)
+                .maVoucher(maVoucher)
+                .tongThanhToan(tongThanhToan)
+                .items(itemDTOs)
+                .build();
+    }
+
     private String buildCauHinhSummary(ChiTietSanPham ctsp) {
         if (ctsp == null) return "";
         List<String> parts = new ArrayList<>();
@@ -893,6 +1296,122 @@ public class HoaDonServiceImpl implements HoaDonService {
         if (ctsp.getCardDoHoa() != null && ctsp.getCardDoHoa().getTenCard() != null) parts.add(ctsp.getCardDoHoa().getTenCard());
         if (ctsp.getMauSac() != null && ctsp.getMauSac().getTenMau() != null) parts.add(ctsp.getMauSac().getTenMau());
         return String.join(" / ", parts);
+    }
+
+    @Override
+    @Transactional
+    public List<com.laptopstore.dto.LichSuHoaDonDTO> getLichSuTrangThaiHoaDon(Integer hoaDonId) {
+        if (hoaDonId == null) {
+            return Collections.emptyList();
+        }
+        List<LichSuHoaDon> list = lichSuHoaDonRepository.findByHoaDonIdOrderByThoiGianAsc(hoaDonId);
+
+        // Fallback cho đơn hàng tạo từ trước hoặc chưa có bản ghi lịch sử
+        if (list.isEmpty()) {
+            HoaDon hd = hoaDonRepository.findById(hoaDonId).orElse(null);
+            if (hd != null) {
+                LocalDateTime t0 = hd.getNgayTao() != null ? hd.getNgayTao() : LocalDateTime.now();
+                String khName = (hd.getKhachHang() != null && hd.getKhachHang().getTen() != null)
+                        ? hd.getKhachHang().getTen()
+                        : (hd.getTenNguoiNhan() != null ? hd.getTenNguoiNhan() : "Khách hàng");
+                LichSuHoaDon ls0 = LichSuHoaDon.builder()
+                        .hoaDon(hd)
+                        .trangThai(0)
+                        .thoiGian(t0)
+                        .tenNguoiThucHien(khName)
+                        .ghiChu("Tạo đơn hàng")
+                        .build();
+                lichSuHoaDonRepository.save(ls0);
+
+                int st = hd.getTrangThai() != null ? hd.getTrangThai() : 0;
+                NguoiDung nv = hd.getNhanVien();
+                String nvName = (nv != null && nv.getTen() != null) ? nv.getTen() : "Nhân viên";
+
+                if (st >= 1 && st <= 3) {
+                    LichSuHoaDon ls1 = LichSuHoaDon.builder()
+                            .hoaDon(hd)
+                            .trangThai(1)
+                            .thoiGian(t0.plusMinutes(5))
+                            .nhanVien(nv)
+                            .tenNguoiThucHien(nvName)
+                            .ghiChu("Xác nhận đơn hàng")
+                            .build();
+                    lichSuHoaDonRepository.save(ls1);
+                }
+                if (st >= 2 && st <= 3) {
+                    LichSuHoaDon ls2 = LichSuHoaDon.builder()
+                            .hoaDon(hd)
+                            .trangThai(2)
+                            .thoiGian(t0.plusMinutes(15))
+                            .nhanVien(nv)
+                            .tenNguoiThucHien(nvName)
+                            .ghiChu("Bắt đầu giao hàng")
+                            .build();
+                    lichSuHoaDonRepository.save(ls2);
+                }
+                if (st == 3) {
+                    LocalDateTime t3 = (hd.getThanhToan() != null && hd.getThanhToan().getNgayThanhToan() != null)
+                            ? hd.getThanhToan().getNgayThanhToan() : t0.plusMinutes(45);
+                    LichSuHoaDon ls3 = LichSuHoaDon.builder()
+                            .hoaDon(hd)
+                            .trangThai(3)
+                            .thoiGian(t3)
+                            .nhanVien(nv)
+                            .tenNguoiThucHien(nvName)
+                            .ghiChu("Giao hàng thành công")
+                            .build();
+                    lichSuHoaDonRepository.save(ls3);
+                }
+                if (st == 4) {
+                    LichSuHoaDon ls4 = LichSuHoaDon.builder()
+                            .hoaDon(hd)
+                            .trangThai(4)
+                            .thoiGian(t0.plusMinutes(10))
+                            .nhanVien(nv)
+                            .tenNguoiThucHien(nv != null ? nvName : khName)
+                            .ghiChu("Đã hủy đơn")
+                            .build();
+                    lichSuHoaDonRepository.save(ls4);
+                }
+                list = lichSuHoaDonRepository.findByHoaDonIdOrderByThoiGianAsc(hoaDonId);
+            }
+        }
+
+        DateTimeFormatter fullDtf = DateTimeFormatter.ofPattern("HH:mm:ss dd/MM/yyyy");
+        DateTimeFormatter shortDtf = DateTimeFormatter.ofPattern("HH:mm dd/MM");
+
+        return list.stream().map(ls -> {
+            String tenTrangThai;
+            switch (ls.getTrangThai()) {
+                case 0: tenTrangThai = "Chờ xác nhận"; break;
+                case 1: tenTrangThai = "Đã xác nhận"; break;
+                case 2: tenTrangThai = "Đang giao hàng"; break;
+                case 3: tenTrangThai = "Hoàn thành"; break;
+                case 4: tenTrangThai = "Đã hủy"; break;
+                default: tenTrangThai = "Không xác định"; break;
+            }
+
+            String fullTime = ls.getThoiGian() != null ? ls.getThoiGian().format(fullDtf) : "";
+            String shortTime = ls.getThoiGian() != null ? ls.getThoiGian().format(shortDtf) : "";
+
+            Integer nvId = (ls.getNhanVien() != null) ? ls.getNhanVien().getId() : null;
+            String actor = (ls.getTenNguoiThucHien() != null && !ls.getTenNguoiThucHien().isBlank())
+                    ? ls.getTenNguoiThucHien()
+                    : ((ls.getNhanVien() != null) ? ls.getNhanVien().getTen() : "Hệ thống");
+
+            return com.laptopstore.dto.LichSuHoaDonDTO.builder()
+                    .id(ls.getId())
+                    .idHoaDon(ls.getHoaDon() != null ? ls.getHoaDon().getId() : hoaDonId)
+                    .trangThai(ls.getTrangThai())
+                    .tenTrangThai(tenTrangThai)
+                    .thoiGian(ls.getThoiGian())
+                    .thoiGianFormatted(fullTime)
+                    .thoiGianShort(shortTime)
+                    .idNhanVien(nvId)
+                    .tenNguoiThucHien(actor)
+                    .ghiChu(ls.getGhiChu())
+                    .build();
+        }).collect(Collectors.toList());
     }
 
     @Override

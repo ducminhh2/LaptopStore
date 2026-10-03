@@ -25,10 +25,15 @@ public class LichSuDonHangDTO {
     private Integer trangThaiThanhToan;
     private String trangThaiThanhToanHienThi;
     private String trangThaiThanhToanBadgeClass;
+    private LocalDateTime ngayThanhToan;
+    private String ngayThanhToanFormatted;
 
     // Phương thức thanh toán
     private String phuongThucThanhToan;
     private String phuongThucThanhToanHienThi;
+
+    // Nhân viên phụ trách
+    private String tenNhanVien;
 
     // Thông tin giao hàng
     private String tenNguoiNhan;

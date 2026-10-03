@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chi Tiết Đơn Hàng - Laptop Store</title>
+  <meta name="description" content="Chi tiết đơn hàng dành cho khách hàng tại Laptop Store.">
+
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <!-- Main Stylesheet -->
+  <link rel="stylesheet" href="../css/style.css?v=20261002_1845">
+
+  <style>
+    /* ==========================================================================
+       ORDER DETAIL PAGE SPECIFIC STYLES
+       ========================================================================== */
+    .detail-page-wrapper {
+      padding: 30px 0 70px 0;
+      background-color: var(--bg-body, #f4f6f9);
+      min-height: 80vh;
+    }
+
+    .detail-breadcrumb {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.85rem;
+      color: var(--text-muted, #64748b);
+      margin-bottom: 22px;
+    }
+
+    .detail-breadcrumb a {
+      color: var(--text-muted, #64748b);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .detail-breadcrumb a:hover {
+      color: var(--primary-red, #ea2828);
+    }
+
+    /* Top Action & Navigation */
+    .detail-nav-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .btn-back-history {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 18px;
+      background: #ffffff;
+      border: 1px solid var(--border-color, #cbd5e1);
+      border-radius: 8px;
+      color: #334155;
+      font-weight: 700;
+      font-size: 0.88rem;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+
+    .btn-back-history:hover {
+      background: #f8fafc;
+      color: var(--primary-red, #ea2828);
+      border-color: #94a3b8;
+    }
+
+    /* Main Container Cards */
+    .detail-content-layout {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .detail-card {
+      background: #ffffff;
+      border: 1px solid var(--border-color, #e2e8f0);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    }
+
+    .detail-card-header {
+      padding: 16px 22px;
+      background: #f8fafc;
+      border-bottom: 1px solid var(--border-color, #e2e8f0);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .detail-card-title {
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: var(--text-main, #0f172a);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .detail-card-title svg {
+      width: 20px;
+      height: 20px;
+      color: var(--primary-red, #ea2828);
+    }
+
+    .detail-card-body {
+      padding: 22px;
+    }
+
+    /* Master Order Header */
+    .order-master-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+      padding: 22px;
+      background: #ffffff;
+      border-radius: 12px;
+      border: 1px solid var(--border-color, #e2e8f0);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    }
+
+    .order-master-title {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: var(--text-main, #0f172a);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .order-master-date {
+      font-size: 0.88rem;
+      color: var(--text-muted, #64748b);
+      margin-top: 4px;
+    }
+
+    .order-master-badges {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    /* Status Badges */
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      letter-spacing: 0.2px;
+    }
+
+    .badge-pending {
+      background: #fef3c7;
+      color: #92400e;
+      border: 1px solid #fde68a;
+    }
+
+    .badge-confirmed {
+      background: #dbeafe;
+      color: #1e40af;
+      border: 1px solid #bfdbfe;
+    }
+
+    .badge-shipping {
+      background: #e0e7ff;
+      color: #3730a3;
+      border: 1px solid #c7d2fe;
+    }
+
+    .badge-completed {
+      background: #d1fae5;
+      color: #065f46;
+      border: 1px solid #a7f3d0;
+    }
+
+    .badge-cancelled {
+      background: #fee2e2;
+      color: #991b1b;
+      border: 1px solid #fecaca;
+    }
+
+    .badge-unknown {
+      background: #f1f5f9;
+      color: #475569;
+      border: 1px solid #cbd5e1;
+    }
+
+    .badge-paid {
+      background: #ecfdf5;
+      color: #047857;
+      border: 1px solid #a7f3d0;
+    }
+
+    .badge-unpaid {
+      background: #fffbeb;
+      color: #b45309;
+      border: 1px solid #fde68a;
+    }
+
+    /* Info Grid (Recipient Details) */
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 18px;
+    }
+
+    .info-item {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .info-label {
+      font-size: 0.82rem;
+      color: var(--text-muted, #64748b);
+      text-transform: uppercase;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+
+    .info-value {
+      font-size: 0.98rem;
+      color: var(--text-main, #0f172a);
+      font-weight: 600;
+      line-height: 1.5;
+    }
+
+    .info-value-highlight {
+      font-weight: 700;
+      color: #1e293b;
+    }
+
+    /* Product Item Table / Rows */
+    .order-items-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .order-product-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 18px;
+      padding: 18px 0;
+      border-bottom: 1px solid var(--border-color, #f1f5f9);
+    }
+
+    .order-product-row:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+
+    .order-product-row:first-child {
+      padding-top: 0;
+    }
+
+    .order-product-thumb {
+      width: 90px;
+      height: 90px;
+      border-radius: 8px;
+      object-fit: cover;
+      background: #f8fafc;
+      border: 1px solid var(--border-color, #e2e8f0);
+      flex-shrink: 0;
+    }
+
+    .order-product-info {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .order-product-name {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--text-main, #0f172a);
+    }
+
+    .order-product-spec {
+      font-size: 0.84rem;
+      color: var(--text-muted, #64748b);
+      background: #f8fafc;
+      padding: 4px 10px;
+      border-radius: 4px;
+      display: inline-block;
+      width: fit-content;
+      border: 1px solid #e2e8f0;
+      line-height: 1.4;
+    }
+
+    .order-product-pricing {
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+      margin-top: 4px;
+      font-size: 0.92rem;
+    }
+
+    .order-product-price {
+      color: #0f172a;
+      font-weight: 600;
+    }
+
+    .order-product-qty {
+      color: var(--text-muted, #64748b);
+      font-weight: 500;
+    }
+
+    .order-product-subtotal {
+      margin-left: auto;
+      text-align: right;
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: var(--primary-red, #ea2828);
+    }
+
+    /* IMEI / Serial Block */
+    .product-imei-box {
+      margin-top: 10px;
+      padding: 10px 14px;
+      background: #f8fafc;
+      border-radius: 8px;
+      border-left: 3px solid #2563eb;
+      font-size: 0.85rem;
+    }
+
+    .product-imei-box.unallocated {
+      border-left-color: #94a3b8;
+      background: #f8fafc;
+    }
+
+    .imei-box-title {
+      font-weight: 700;
+      color: #334155;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 6px;
+    }
+
+    .imei-chips-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .imei-chip {
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      padding: 3px 10px;
+      border-radius: 4px;
+      font-family: 'Consolas', 'Courier New', monospace;
+      font-weight: 700;
+      color: #1e293b;
+      font-size: 0.84rem;
+      letter-spacing: 0.5px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .imei-unallocated-text {
+      color: #64748b;
+      font-style: italic;
+      font-weight: 500;
+    }
+
+    /* Payment & Calculation Breakdown */
+    .payment-summary-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .payment-summary-table tr td {
+      padding: 10px 0;
+      font-size: 0.95rem;
+    }
+
+    .payment-summary-table tr td:last-child {
+      text-align: right;
+      font-weight: 700;
+      color: #0f172a;
+    }
+
+    .payment-summary-table .row-discount td {
+      color: #16a34a;
+    }
+
+    .payment-summary-table .row-discount td:last-child {
+      color: #16a34a;
+    }
+
+    .payment-summary-table .row-grand-total {
+      border-top: 2px dashed #cbd5e1;
+    }
+
+    .payment-summary-table .row-grand-total td {
+      padding-top: 16px;
+      font-size: 1.25rem;
+      font-weight: 800;
+    }
+
+    .payment-summary-table .row-grand-total td:last-child {
+      font-size: 1.45rem;
+      color: var(--primary-red, #ea2828);
+    }
+
+    /* Action bottom */
+    .detail-bottom-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-top: 10px;
+    }
+
+    /* Button Cancel Order */
+    .btn-cancel-order {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 20px;
+      background: #ffffff;
+      border: 1.5px solid #ef4444;
+      border-radius: 8px;
+      color: #dc2626;
+      font-weight: 700;
+      font-size: 0.88rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 1px 3px rgba(239, 68, 68, 0.1);
+    }
+
+    .btn-cancel-order:hover {
+      background: #fee2e2;
+      color: #b91c1c;
+      border-color: #dc2626;
+      transform: translateY(-1px);
+    }
+
+    /* Cancel Modal */
+    .cancel-modal-overlay {
+      position: fixed;
+      inset: 0;
+      background-color: rgba(15, 23, 42, 0.65);
+      backdrop-filter: blur(4px);
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    .cancel-modal-container {
+      background: #ffffff;
+      border-radius: 14px;
+      width: 100%;
+      max-width: 480px;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15), 0 10px 10px -5px rgba(0, 0, 0, 0.05);
+      overflow: hidden;
+      animation: modalFadeIn 0.2s ease-out;
+    }
+
+    @keyframes modalFadeIn {
+      from { opacity: 0; transform: scale(0.95); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    .cancel-modal-header {
+      padding: 20px 24px;
+      background: #fff1f2;
+      border-bottom: 1px solid #ffe4e6;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .cancel-modal-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: #fee2e2;
+      color: #dc2626;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .cancel-modal-title {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: #991b1b;
+      margin: 0;
+    }
+
+    .cancel-modal-subtitle {
+      font-size: 0.8rem;
+      color: #b91c1c;
+      margin: 2px 0 0 0;
+    }
+
+    .cancel-modal-body {
+      padding: 22px 24px;
+    }
+
+    .cancel-modal-footer {
+      padding: 14px 24px;
+      background: #f8fafc;
+      border-top: 1px solid #e2e8f0;
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+    }
+
+    .btn-modal-back {
+      padding: 9px 18px;
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      color: #475569;
+      font-weight: 700;
+      font-size: 0.88rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-modal-back:hover {
+      background: #f1f5f9;
+      color: #1e293b;
+    }
+
+    .btn-modal-confirm {
+      padding: 9px 20px;
+      background: #dc2626;
+      border: 1px solid #dc2626;
+      border-radius: 8px;
+      color: #ffffff;
+      font-weight: 700;
+      font-size: 0.88rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 1px 3px rgba(220, 38, 38, 0.3);
+    }
+
+    .btn-modal-confirm:hover {
+      background: #b91c1c;
+      border-color: #b91c1c;
+    }
+
+    .btn-modal-confirm:disabled, .btn-modal-back:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    /* Responsive */
+    @media (max-width: 640px) {
+      .order-master-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .order-product-row {
+        flex-direction: column;
+      }
+      .order-product-subtotal {
+        margin-left: 0;
+        text-align: left;
+        margin-top: 8px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+
+  <!-- Main Header -->
+  <header class="main-header">
+    <div class="container">
+      <div class="header-inner">
+        
+        <div class="category-btn-wrapper">
+          <a href="index.html" class="category-dropdown-btn">
+            <svg style="width: 18px; height: 18px;" fill="currentColor" viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+            <span>TRANG CHỦ</span>
+          </a>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <a href="index.html" style="text-decoration: none; color: #ffffff; font-size: 1.45rem; font-weight: 900; letter-spacing: -0.5px; display: flex; align-items: center; gap: 8px;">
+            <span style="color: var(--primary-red);">LAPTOP</span>STORE
+          </a>
+        </div>
+
+        <div class="header-actions">
+          <div class="action-item" onclick="window.location.href='index.html'">
+            <div class="action-icon-circle">
+              <svg fill="currentColor" viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>
+            </div>
+            <div class="action-text">
+              <span class="action-label">Giỏ hàng</span>
+              <span class="action-value">Mua sắm</span>
+            </div>
+          </div>
+
+          <div class="action-item" id="headerAuthAction" style="cursor: pointer;">
+            <!-- Rendered by order-detail.js -->
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Wrapper -->
+  <main class="detail-page-wrapper">
+    <div class="container">
+      
+      <!-- Breadcrumb -->
+      <nav class="detail-breadcrumb">
+        <a href="index.html">Trang chủ</a>
+        <span>›</span>
+        <a href="order-history.html">Lịch sử đơn hàng</a>
+        <span>›</span>
+        <span style="color: #0f172a; font-weight: 600;" id="breadcrumbOrderCode">Chi tiết đơn hàng</span>
+      </nav>
+
+      <!-- Navigation & Action Bar -->
+      <div class="detail-nav-bar">
+        <a href="order-history.html" class="btn-back-history">
+          <svg style="width: 18px; height: 18px;" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+          Quay lại Lịch sử đơn hàng
+        </a>
+      </div>
+
+      <!-- Loading State -->
+      <div id="detailLoading" style="text-align: center; padding: 70px 0; color: #64748b;">
+        <div style="font-size: 1.15rem; font-weight: 700; margin-bottom: 8px;">Đang tải chi tiết đơn hàng...</div>
+        <div style="font-size: 0.88rem;">Vui lòng đợi trong giây lát</div>
+      </div>
+
+      <!-- Error State (401, 404, or not owner) -->
+      <div id="detailErrorState" style="display: none; background: #ffffff; border-radius: 12px; padding: 50px 20px; text-align: center; border: 1px solid #e2e8f0; max-width: 600px; margin: 0 auto;">
+        <div style="width: 60px; height: 60px; background: #fee2e2; color: #ef4444; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px;">
+          <svg style="width: 32px; height: 32px;" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+        </div>
+        <h2 style="font-size: 1.3rem; font-weight: 800; color: #0f172a; margin-bottom: 8px;" id="errorTitle">Không tìm thấy đơn hàng</h2>
+        <p style="color: #64748b; font-size: 0.92rem; margin-bottom: 24px; line-height: 1.5;" id="errorMessage">Đơn hàng không tồn tại hoặc bạn không có quyền xem thông tin đơn hàng này.</p>
+        <a href="order-history.html" class="btn-back-history" style="background: var(--primary-red); color: #fff; border-color: var(--primary-red); display: inline-flex;">
+          Quay lại Lịch sử đơn hàng
+        </a>
+      </div>
+
+      <!-- Detail Main Content -->
+      <div id="detailMainContent" style="display: none;" class="detail-content-layout">
+        
+        <!-- Header Card: Mã đơn, Ngày đặt, Badges -->
+        <div class="order-master-header">
+          <div>
+            <div class="order-master-title">
+              <span id="orderTitleMa">#HD000000</span>
+            </div>
+            <div class="order-master-date">
+              Ngày đặt: <strong id="orderNgayDat">--/--/---- --:--</strong>
+            </div>
+          </div>
+          <div class="order-master-badges">
+            <span class="status-badge" id="orderStatusBadge">Chờ xác nhận</span>
+            <span class="status-badge" id="orderPayStatusBadge">Chưa thanh toán</span>
+          </div>
+        </div>
+
+        <!-- Section 1: Thông tin nhận hàng (SNAPSHOT) -->
+        <div class="detail-card">
+          <div class="detail-card-header">
+            <div class="detail-card-title">
+              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+              <span>THÔNG TIN NHẬN HÀNG (LÚC ĐẶT)</span>
+            </div>
+          </div>
+          <div class="detail-card-body">
+            <div class="info-grid">
+              <div class="info-item">
+                <span class="info-label">Người nhận hàng</span>
+                <span class="info-value info-value-highlight" id="recipientName">---</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Số điện thoại</span>
+                <span class="info-value" id="recipientPhone">---</span>
+              </div>
+              <div class="info-item" style="grid-column: 1 / -1;">
+                <span class="info-label">Địa chỉ giao nhận</span>
+                <span class="info-value" id="recipientAddress">---</span>
+              </div>
+              <div class="info-item" style="grid-column: 1 / -1;">
+                <span class="info-label">Ghi chú đơn hàng</span>
+                <span class="info-value" style="font-style: italic; color: #475569;" id="recipientNote">Không có ghi chú</span>
+              </div>
+              <div class="info-item" id="staffRow" style="display: none;">
+                <span class="info-label">Nhân viên phụ trách</span>
+                <span class="info-value" id="staffName">Chưa có</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 2: Danh sách sản phẩm & IMEI (SNAPSHOT) -->
+        <div class="detail-card">
+          <div class="detail-card-header">
+            <div class="detail-card-title">
+              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+              <span>DANH SÁCH SẢN PHẨM &amp; IMEI / SERIAL</span>
+            </div>
+            <div style="font-size: 0.85rem; color: #64748b; font-weight: 600;">
+              Tổng: <span id="itemCountDisplay">0</span> sản phẩm
+            </div>
+          </div>
+          <div class="detail-card-body">
+            <div class="order-items-list" id="detailProductItems">
+              <!-- Rendered dynamically -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 3: Thông tin thanh toán & Voucher (SNAPSHOT) -->
+        <div class="detail-card">
+          <div class="detail-card-header">
+            <div class="detail-card-title">
+              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+              <span>CHI TIẾT THANH TOÁN</span>
+            </div>
+          </div>
+          <div class="detail-card-body">
+            <table class="payment-summary-table">
+              <tr>
+                <td>Phương thức thanh toán:</td>
+                <td id="payMethodVal">Thanh toán khi nhận hàng (COD)</td>
+              </tr>
+              <tr id="payDateRow" style="display: none;">
+                <td>Ngày thanh toán:</td>
+                <td id="payDateVal">--/--/---- --:--</td>
+              </tr>
+              <tr>
+                <td>Tạm tính tiền hàng:</td>
+                <td id="subtotalVal">0 đ</td>
+              </tr>
+              <tr id="voucherRow" class="row-discount" style="display: none;">
+                <td>
+                  Giảm giá Voucher (<span id="voucherCodeVal">MÃ</span>):
+                </td>
+                <td id="voucherDiscountVal">-0 đ</td>
+              </tr>
+              <tr class="row-grand-total">
+                <td>TỔNG THANH TOÁN:</td>
+                <td id="grandTotalVal">0 đ</td>
+              </tr>
+            </table>
+          </div>
+        </div>
+
+        <!-- Section 4: Bottom Navigation & Actions -->
+        <div class="detail-bottom-actions">
+          <a href="order-history.html" class="btn-back-history">
+            <svg style="width: 18px; height: 18px;" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+            ← Quay lại Lịch sử đơn hàng
+          </a>
+
+          <!-- Nút Hủy đơn hàng (Chỉ hiển thị khi status 0/1 và thanhToan 0) -->
+          <div id="cancelOrderActionContainer" style="display: none;">
+            <button type="button" id="btnOpenCancelModal" class="btn-cancel-order" onclick="openCancelModal()">
+              <svg style="width: 18px; height: 18px;" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+              </svg>
+              HỦY ĐƠN HÀNG
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Modal Xác Nhận Hủy Đơn Hàng -->
+  <div id="cancelConfirmModal" class="cancel-modal-overlay" style="display: none;">
+    <div class="cancel-modal-container">
+      <div class="cancel-modal-header">
+        <div class="cancel-modal-icon">
+          <svg style="width: 26px; height: 26px;" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+          </svg>
+        </div>
+        <div>
+          <h3 class="cancel-modal-title">HỦY ĐƠN HÀNG</h3>
+          <p class="cancel-modal-subtitle">Xác nhận yêu cầu hủy đơn hàng</p>
+        </div>
+      </div>
+      <div class="cancel-modal-body">
+        <p style="margin-bottom: 10px; font-weight: 600; color: #1e293b;">
+          Bạn có chắc chắn muốn hủy đơn hàng <span id="modalCancelOrderMa" style="color: #dc2626; font-weight: 800;">#HD...</span>?
+        </p>
+        <p style="color: #64748b; font-size: 0.9rem; line-height: 1.5; margin-bottom: 12px;">
+          Thao tác này không thể hoàn tác sau khi đã thực hiện.
+        </p>
+        <div id="cancelModalAlert" style="display: none; padding: 10px 14px; border-radius: 6px; font-size: 0.88rem; margin-bottom: 12px; background: #fee2e2; color: #991b1b; border: 1px solid #fecaca;"></div>
+      </div>
+      <div class="cancel-modal-footer">
+        <button type="button" class="btn-modal-back" id="btnCancelModalBack" onclick="closeCancelModal()">
+          QUAY LẠI
+        </button>
+        <button type="button" class="btn-modal-confirm" id="btnConfirmCancelSubmit" onclick="submitCancelOrder()">
+          XÁC NHẬN HỦY
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer style="background: #0f172a; color: #94a3b8; text-align: center; padding: 24px; font-size: 0.85rem; border-top: 1px solid rgba(255,255,255,0.1);">
+    © 2026 LaptopStore. All rights reserved. Hệ thống bán lẻ Laptop uy tín chất lượng.
+  </footer>
+
+  <!-- Scripts -->
+  <script src="../js/order-detail.js?v=20261003_1500"></script>
+</body>
+</html>

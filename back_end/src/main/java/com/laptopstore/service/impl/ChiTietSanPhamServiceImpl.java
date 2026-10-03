@@ -16,6 +16,7 @@ import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(rollbackFor = Exception.class)
 public class ChiTietSanPhamServiceImpl implements ChiTietSanPhamService {
 
     private final ChiTietSanPhamRepository chiTietSanPhamRepository;
@@ -203,6 +204,7 @@ public class ChiTietSanPhamServiceImpl implements ChiTietSanPhamService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public ChiTietSanPham update(Integer id, ChiTietSanPham chiTietSanPham) {
         ChiTietSanPham existing = getById(id);
         existing.setMaCtsp(chiTietSanPham.getMaCtsp());
@@ -219,18 +221,33 @@ public class ChiTietSanPhamServiceImpl implements ChiTietSanPhamService {
         existing.setMoTa(chiTietSanPham.getMoTa());
         existing.setTrangThai(chiTietSanPham.getTrangThai());
 
-        if (chiTietSanPham.getSanPham() != null) existing.setSanPham(chiTietSanPham.getSanPham());
-        if (chiTietSanPham.getMauSac() != null) existing.setMauSac(chiTietSanPham.getMauSac());
-        if (chiTietSanPham.getCpu() != null) existing.setCpu(chiTietSanPham.getCpu());
-        if (chiTietSanPham.getRam() != null) existing.setRam(chiTietSanPham.getRam());
-        if (chiTietSanPham.getOCung() != null) existing.setOCung(chiTietSanPham.getOCung());
-        if (chiTietSanPham.getCardDoHoa() != null) existing.setCardDoHoa(chiTietSanPham.getCardDoHoa());
-        if (chiTietSanPham.getManHinh() != null) existing.setManHinh(chiTietSanPham.getManHinh());
+        if (chiTietSanPham.getSanPham() != null && chiTietSanPham.getSanPham().getId() != null) {
+            existing.setSanPham(sanPhamRepository.findById(chiTietSanPham.getSanPham().getId()).orElse(existing.getSanPham()));
+        }
+        if (chiTietSanPham.getMauSac() != null && chiTietSanPham.getMauSac().getId() != null) {
+            existing.setMauSac(mauSacRepository.findById(chiTietSanPham.getMauSac().getId()).orElse(existing.getMauSac()));
+        }
+        if (chiTietSanPham.getCpu() != null && chiTietSanPham.getCpu().getId() != null) {
+            existing.setCpu(cpuRepository.findById(chiTietSanPham.getCpu().getId()).orElse(existing.getCpu()));
+        }
+        if (chiTietSanPham.getRam() != null && chiTietSanPham.getRam().getId() != null) {
+            existing.setRam(ramRepository.findById(chiTietSanPham.getRam().getId()).orElse(existing.getRam()));
+        }
+        if (chiTietSanPham.getOCung() != null && chiTietSanPham.getOCung().getId() != null) {
+            existing.setOCung(oCungRepository.findById(chiTietSanPham.getOCung().getId()).orElse(existing.getOCung()));
+        }
+        if (chiTietSanPham.getCardDoHoa() != null && chiTietSanPham.getCardDoHoa().getId() != null) {
+            existing.setCardDoHoa(cardDoHoaRepository.findById(chiTietSanPham.getCardDoHoa().getId()).orElse(existing.getCardDoHoa()));
+        }
+        if (chiTietSanPham.getManHinh() != null && chiTietSanPham.getManHinh().getId() != null) {
+            existing.setManHinh(manHinhRepository.findById(chiTietSanPham.getManHinh().getId()).orElse(existing.getManHinh()));
+        }
 
         return chiTietSanPhamRepository.save(existing);
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void delete(Integer id) {
         ChiTietSanPham existing = getById(id);
         chiTietSanPhamRepository.delete(existing);
