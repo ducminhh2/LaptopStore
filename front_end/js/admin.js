@@ -963,6 +963,9 @@ window.posClearCustomer = function(clearInput = true) {
 
   const phoneInput = document.getElementById('posCustomerPhone');
   const nameDisplay = document.getElementById('posCustomerNameDisplay');
+  const custSelect = document.getElementById('posCustomerSelect');
+  const addressInput = document.getElementById('posCustomerAddress');
+
   if (clearInput && phoneInput) phoneInput.value = '';
   if (nameDisplay) nameDisplay.value = '';
 
@@ -982,7 +985,6 @@ window.onPosCustomerNameInput = function(val) {
   const name = (val || '').trim();
   order.customerName = name || 'Khách lẻ tại quầy';
 
-
   if (order.deliveryType === 'GIAO_HANG') {
     const receiverInput = document.getElementById('posReceiverName');
     if (receiverInput && (!order.receiverName || order.receiverName === 'Khách lẻ tại quầy')) {
@@ -992,7 +994,7 @@ window.onPosCustomerNameInput = function(val) {
   }
 };
 
-window.onPosPhoneInput = function(val) {
+window.onPosPhoneInput = async function(val) {
   const phone = (val || '').trim();
   const order = getActivePosOrder();
   if (!order) return;
@@ -1011,6 +1013,10 @@ window.onPosPhoneInput = function(val) {
     order.registeredName = '';
     if (nameDisplay) nameDisplay.value = '';
     return;
+  }
+
+  if (!state.customersList || state.customersList.length === 0) {
+    await loadUsersList();
   }
 
   const cleanDigits = phone.replace(/\D/g, '');
@@ -1037,12 +1043,11 @@ window.onPosPhoneInput = function(val) {
     return cPhone && cPhone.includes(cleanDigits);
   });
 
-  // Số chưa có trong hệ thống
+  // Số chưa có trong hệ thống hoặc chưa chọn từ gợi ý
   order.customerId = null;
   order.customerName = '';
   order.registeredName = '';
   if (nameDisplay) nameDisplay.value = '';
-  if (foundBadge) foundBadge.style.display = 'none';
 
   if (cleanDigits.length >= 2 && matches.length > 0) {
     window.renderPhoneSuggestions(matches);
@@ -1061,15 +1066,21 @@ window.onPosPhoneInput = function(val) {
   }
 };
 
+window.posSelectCustomerById = function(id) {
+  const foundCust = (state.customersList || []).find(c => c.id === id);
+  if (foundCust) {
+    posApplySelectedCustomer(foundCust);
+  }
+};
+
 window.renderPhoneSuggestions = function(matches) {
   const suggBox = document.getElementById('posCustomerPhoneSuggestions');
   if (!suggBox) return;
 
   let html = '<div style="padding: 4px 0;">';
   matches.slice(0, 5).forEach(c => {
-    const custJson = JSON.stringify({ id: c.id, ten: c.ten || c.username, dienThoai: c.dienThoai || '', diaChi: c.diaChi || '' }).replace(/"/g, '&quot;');
     html += `
-      <div class="pos-phone-suggest-item" onclick="posApplySelectedCustomer(${custJson})"
+      <div class="pos-phone-suggest-item" onclick="posSelectCustomerById(${c.id})"
         style="padding: 9px 14px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f1f5f9; transition: background 0.15s ease;"
         onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='#fff'">
         <div>
@@ -1085,6 +1096,25 @@ window.renderPhoneSuggestions = function(matches) {
   html += '</div>';
   suggBox.innerHTML = html;
   suggBox.style.display = 'block';
+};
+
+window.onPosPhoneKeyDown = function(e) {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    const phone = (e.target.value || '').trim();
+    const cleanDigits = phone.replace(/\D/g, '');
+    const matches = (state.customersList || []).filter(c => {
+      const isRetail = (c.username === 'khachle' || c.ten?.toLowerCase().includes('khách lẻ'));
+      if (isRetail) return false;
+      const cPhone = (c.dienThoai || '').replace(/\D/g, '');
+      return cPhone && cPhone.includes(cleanDigits);
+    });
+    if (matches.length > 0) {
+      posApplySelectedCustomer(matches[0]);
+      const suggBox = document.getElementById('posCustomerPhoneSuggestions');
+      if (suggBox) suggBox.style.display = 'none';
+    }
+  }
 };
 
 window.onPosPhoneFocus = function() {
