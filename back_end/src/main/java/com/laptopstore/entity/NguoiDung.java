@@ -21,10 +21,10 @@ public class NguoiDung {
     @Column(name = "ten", nullable = false, length = 100)
     private String ten;
 
-    @Column(name = "username", unique = true, nullable = false, length = 50)
+    @Column(name = "username", length = 50)
     private String username;
 
-    @Column(name = "password", nullable = false, length = 255)
+    @Column(name = "password", length = 255)
     private String password;
 
     @Column(name = "dia_chi", length = 255)

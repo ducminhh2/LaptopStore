@@ -334,24 +334,44 @@
             <div class="pos-checkout-panel">
               <div class="pos-checkout-section-title">Thông Tin Thanh Toán Tại Quầy</div>
 
-              <!-- Customer info -->
+              <!-- Nhập Số Điện Thoại để chọn Khách Hàng -->
               <div class="pos-form-group">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
-                  <label class="pos-form-label" style="margin-bottom:0;" for="posCustomerSelect">Khách Hàng</label>
+                  <label class="pos-form-label" style="margin-bottom:0;" for="posCustomerPhone">Số Điện Thoại Khách Hàng</label>
                   <a href="javascript:void(0)" onclick="openQuickCustomerModal()"
-                    style="font-size:0.75rem; color:var(--admin-primary); font-weight:700; text-decoration:none;">+ Thêm
-                    khách mới</a>
+                    style="font-size:0.75rem; color:var(--admin-primary); font-weight:700; text-decoration:none;">+ Thêm mới</a>
                 </div>
-                <select class="pos-form-input" id="posCustomerSelect" onchange="onPosCustomerChange()">
-                  <!-- Dynamically populated -->
+                <div style="position:relative;">
+                  <div style="position:relative; display:flex; align-items:center;">
+                    <input type="text" class="pos-form-input" id="posCustomerPhone"
+                      placeholder="Nhập SĐT để tìm khách"
+                      autocomplete="off"
+                      oninput="onPosPhoneInput(this.value)"
+                      onfocus="onPosPhoneFocus()"
+                      style="padding-right: 32px;">
+                    <span id="posPhoneStatusIcon" style="position:absolute; right:10px; color:#94a3b8; pointer-events:none; display:flex; align-items:center;">
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                      </svg>
+                    </span>
+                  </div>
+                  <!-- Dropdown gợi ý tìm khách theo SĐT -->
+                  <div id="posCustomerPhoneSuggestions" style="display:none; position:absolute; top:calc(100% + 4px); left:0; right:0; z-index:150; background:#fff; border:1px solid var(--admin-border); border-radius:6px; box-shadow:0 10px 25px rgba(0,0,0,0.12); max-height:220px; overflow-y:auto;">
+                  </div>
+                </div>
+                <!-- Hidden select for full backward compatibility -->
+                <select class="pos-form-input" id="posCustomerSelect" style="display:none;" onchange="onPosCustomerChange()">
                 </select>
               </div>
 
-              <!-- Phone & Delivery / Store Pickup -->
+              <!-- Customer Name & Cashier -->
               <div class="pos-form-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
                 <div>
-                  <label class="pos-form-label" for="posCustomerPhone">Số Điện Thoại</label>
-                  <input type="text" class="pos-form-input" id="posCustomerPhone" value="" >
+                  <label class="pos-form-label" for="posCustomerNameDisplay">Khách Hàng</label>
+                  <input type="text" class="pos-form-input" id="posCustomerNameDisplay" value=""
+                    placeholder="Chưa chọn khách hàng"
+                    readonly
+                    style="font-weight:700; color:#1e293b; background-color:#f8fafc; cursor:default;">
                 </div>
                 <div>
                   <label class="pos-form-label" for="posCashierSelect">Nhân Viên Bán</label>
@@ -1776,21 +1796,6 @@
       </div>
 
       <div style="padding: 18px 20px;">
-        <!-- Yellow alert box -->
-        <div class="alert-warning-cod">
-          <div class="icon">!</div>
-          <div>
-            <div style="font-weight: 700; margin-bottom: 4px;">Bạn đang xác nhận đơn hàng đã được giao thành công và đã
-              thu tiền từ khách hàng.</div>
-            <div style="font-size: 0.8rem; line-height: 1.5;">
-              Sau khi xác nhận:<br>
-              &bull; Trạng thái đơn hàng sẽ chuyển thành <strong>"Hoàn thành"</strong><br>
-              &bull; Trạng thái thanh toán sẽ chuyển thành <strong>"Đã thanh toán"</strong><br>
-              &bull; Các IMEI trong đơn sẽ được cập nhật thành <strong>"Đã bán"</strong>
-            </div>
-          </div>
-        </div>
-
         <!-- Order info box -->
         <div
           style="background: #f8fafc; border: 1px solid var(--admin-border); border-radius: 8px; padding: 14px 16px; margin-bottom: 16px;">
@@ -1943,15 +1948,6 @@
             </div>
             <span id="acceptOrderStaffName">Nguyễn Thị Mai (NV001)</span>
           </div>
-        </div>
-
-        <!-- Hướng dẫn & Lưu ý -->
-        <div
-          style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 12px 14px; margin-top: 12px; font-size: 0.83rem; color: #1e40af; line-height: 1.6;">
-          <div style="font-weight: 700; margin-bottom: 4px;">Sau khi xác nhận:</div>
-          <div>&bull; IMEI được phân bổ cho đơn hàng.</div>
-          <div>&bull; Bạn trở thành nhân viên tiếp nhận đơn.</div>
-          <div>&bull; Đơn hàng chuyển sang <strong>"Đã xác nhận"</strong>.</div>
         </div>
       </div>
 
@@ -3674,7 +3670,7 @@
         </div>
 
         <!-- Action Buttons -->
-        <div style="display: flex; justify-content: flex-end; align-items: center; gap: 10px; flex-wrap: wrap; pt-2;">
+        <div style="display: flex; justify-content: flex-end; align-items: center; gap: 10px; flex-wrap: wrap; padding-top: 8px;">
           <button type="button" class="btn-admin btn-outline btn-sm" onclick="openEditUserFromDetail()" style="display: inline-flex; align-items: center; gap: 6px;">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>

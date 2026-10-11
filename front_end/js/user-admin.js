@@ -215,7 +215,7 @@
               <div>
                 <div style="font-weight: 700; color: #0f172a; font-size: 0.92rem;">${user.ten || 'Chưa đặt tên'}</div>
                 <div style="font-size: 0.78rem; color: #64748b; margin-top: 2px;">
-                  <span style="font-family: monospace; color: #3b82f6;">@${user.username || '---'}</span>
+                  ${user.username ? `<span style="font-family: monospace; color: #3b82f6;">@${user.username}</span>` : `<span style="font-size: 0.72rem; color: #64748b; background: #f1f5f9; border: 1px solid #e2e8f0; padding: 1px 6px; border-radius: 4px; font-weight: 600;">Khách tại quầy (Không có tài khoản)</span>`}
                   ${user.ma ? `<span style="margin-left: 6px; color: #94a3b8;">(${user.ma})</span>` : ''}
                 </div>
               </div>

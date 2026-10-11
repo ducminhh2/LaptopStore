@@ -39,8 +39,13 @@ public class NguoiDungServiceImpl implements NguoiDungService {
 
     @Override
     public NguoiDung create(NguoiDung nguoiDung) {
-        if (nguoiDung.getPassword() != null && !nguoiDung.getPassword().isEmpty()) {
+        if (nguoiDung.getUsername() != null && nguoiDung.getUsername().trim().isEmpty()) {
+            nguoiDung.setUsername(null);
+        }
+        if (nguoiDung.getPassword() != null && !nguoiDung.getPassword().trim().isEmpty()) {
             nguoiDung.setPassword(com.laptopstore.util.PasswordUtil.hashPassword(nguoiDung.getPassword()));
+        } else {
+            nguoiDung.setPassword(null);
         }
         return nguoiDungRepository.save(nguoiDung);
     }

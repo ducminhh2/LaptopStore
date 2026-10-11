@@ -149,8 +149,8 @@ const state = {
       id: 1,
       name: 'Hóa đơn 1',
       items: [],
-      customerId: 1,
-      customerName: 'Khách lẻ tại quầy',
+      customerId: null,
+      customerName: '',
       receiverName: '',
       customerPhone: '',
       customerAddress: 'Tại quầy Store',
@@ -303,6 +303,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.addEventListener('click', (e) => {
     if (e.target.classList && e.target.classList.contains('admin-modal-overlay')) {
       e.target.classList.remove('active');
+    }
+    const suggBox = document.getElementById('posCustomerPhoneSuggestions');
+    const phoneInput = document.getElementById('posCustomerPhone');
+    if (suggBox && suggBox.style.display !== 'none') {
+      if (!suggBox.contains(e.target) && e.target !== phoneInput) {
+        suggBox.style.display = 'none';
+      }
     }
   });
 
@@ -556,24 +563,21 @@ function populatePosCustomerAndCashierSelects() {
       `;
     });
 
-    // Sync active order with the top default customer if currently unset or default
+    // Sync active order customer selection
     const order = getActivePosOrder();
-    if (order && sortedCustomers.length > 0) {
-      const currentExists = sortedCustomers.some(c => c.id === order.customerId);
-      if (!currentExists) {
-        order.customerId = sortedCustomers[0].id;
-        order.customerName = sortedCustomers[0].ten || sortedCustomers[0].username;
-        order.customerPhone = sortedCustomers[0].dienThoai || '';
-        order.customerAddress = sortedCustomers[0].diaChi || 'Tại quầy';
+    if (order) {
+      if (order.customerId) {
+        custSelect.value = order.customerId;
       }
-      custSelect.value = order.customerId;
       const phoneInput = document.getElementById('posCustomerPhone');
       if (phoneInput) phoneInput.value = order.customerPhone || '';
+      const nameDisplay = document.getElementById('posCustomerNameDisplay');
+      if (nameDisplay) nameDisplay.value = order.customerName || '';
       const addressInput = document.getElementById('posCustomerAddress');
       if (addressInput) addressInput.value = order.customerAddress || 'Tại quầy Store';
       const receiverInput = document.getElementById('posReceiverName');
       if (receiverInput && order.deliveryType === 'GIAO_HANG' && !receiverInput.value.trim()) {
-        const defaultName = (order.customerName && !order.customerName.includes('Khách lẻ')) ? order.customerName : '';
+        const defaultName = order.customerName || '';
         receiverInput.value = defaultName;
         order.receiverName = defaultName;
       }
@@ -656,8 +660,8 @@ window.posCreateNewOrderTab = function() {
     id: newId,
     name: `Hóa đơn ${orderNumber}`,
     items: [],
-    customerId: 1,
-    customerName: 'Khách lẻ tại quầy',
+    customerId: null,
+    customerName: '',
     receiverName: '',
     customerPhone: '',
     customerAddress: 'Tại quầy Store',
@@ -683,11 +687,11 @@ window.posSelectOrderTab = function(orderId) {
   renderPosCart();
 };
 
-window.posCloseOrderTab = function(orderId) {
+window.posCloseOrderTab = function(orderId, force = false) {
   const order = state.posOrders.find(o => o.id === orderId);
   if (!order) return;
 
-  if (order.items.length > 0) {
+  if (!force && order.items.length > 0) {
     if (!confirm(`Hóa đơn "${order.name}" đang có sản phẩm. Bạn có chắc muốn hủy đơn này?`)) {
       return;
     }
@@ -695,11 +699,18 @@ window.posCloseOrderTab = function(orderId) {
 
   state.posOrders = state.posOrders.filter(o => o.id !== orderId);
   if (state.activeOrderId === orderId) {
-    state.activeOrderId = state.posOrders[0].id;
+    state.activeOrderId = state.posOrders[0]?.id;
+  }
+  if (state.posOrders.length === 0) {
+    state.nextOrderSequence = 1;
+    posCreateNewOrderTab();
+    return;
   }
   renderPosOrderTabs();
   renderPosCart();
-  showToast(`Đã xóa ${order.name}`);
+  if (!force) {
+    showToast(`Đã xóa ${order.name}`);
+  }
 };
 
 // Render Cart Table for active order
@@ -778,12 +789,18 @@ function renderPosCart() {
   const custSelect = document.getElementById('posCustomerSelect');
   const cashSelect = document.getElementById('posCashierSelect');
   const noteInput = document.getElementById('posOrderNote');
-  const currentUser = getLoggedInUser();
-
+  const nameDisplay = document.getElementById('posCustomerNameDisplay');
   if (phoneInput) phoneInput.value = order.customerPhone || '';
+  if (nameDisplay) nameDisplay.value = order.customerName || '';
+
+  const suggBox = document.getElementById('posCustomerPhoneSuggestions');
+  if (suggBox) suggBox.style.display = 'none';
+
   if (addressInput) addressInput.value = order.customerAddress || 'Tại quầy Store';
   if (custSelect) custSelect.value = order.customerId || 1;
   if (noteInput) noteInput.value = order.note || '';
+  const givenInput = document.getElementById('posCustomerGivenInput');
+  if (givenInput) givenInput.value = order.customerGiven || 0;
 
   // Synchronize Delivery Type
   order.deliveryType = order.deliveryType || 'TAI_QUAY';
@@ -820,7 +837,9 @@ function renderPosCart() {
   if (payRadio) payRadio.checked = true;
 
   if (cashSelect) {
+    const currentUser = getLoggedInUser();
     if (currentUser && currentUser.id) {
+      cashSelect.innerHTML = `<option value="${currentUser.id}" selected>${currentUser.ma || 'NV'} - ${currentUser.ten || currentUser.username}</option>`;
       cashSelect.value = currentUser.id;
       cashSelect.disabled = true;
       cashSelect.style.backgroundColor = '#f1f5f9';
@@ -829,6 +848,11 @@ function renderPosCart() {
       cashSelect.style.color = '#1e293b';
       order.cashierId = currentUser.id;
     } else if (order.cashierId) {
+      if (state.cashiersList && state.cashiersList.length > 0) {
+        cashSelect.innerHTML = state.cashiersList.map(c => `<option value="${c.id}" ${c.id === order.cashierId ? 'selected' : ''}>${c.ma || 'NV'} - ${c.ten || c.username}</option>`).join('');
+      } else {
+        cashSelect.innerHTML = `<option value="${order.cashierId}" selected>NV001 - Nguyễn Minh Đức</option>`;
+      }
       cashSelect.value = order.cashierId;
     }
   }
@@ -886,37 +910,211 @@ window.posClearActiveCart = function() {
   }
 };
 
-window.onPosCustomerChange = function() {
-  const custSelect = document.getElementById('posCustomerSelect');
-  const phoneInput = document.getElementById('posCustomerPhone');
+window.posApplySelectedCustomer = function(cust) {
   const order = getActivePosOrder();
-  const addressInput = document.getElementById('posCustomerAddress');
-  const receiverInput = document.getElementById('posReceiverName');
-  if (!custSelect || !order) return;
+  if (!order || !cust) return;
 
   const prevCustName = order.customerName;
+  order.customerId = cust.id;
+  order.customerName = cust.ten || cust.username;
+  order.registeredName = cust.ten || cust.username;
+  order.customerPhone = cust.dienThoai || '';
+  if (cust.diaChi && cust.diaChi !== 'Tại quầy') {
+    order.customerAddress = cust.diaChi;
+  }
+
+  const phoneInput = document.getElementById('posCustomerPhone');
+  const nameDisplay = document.getElementById('posCustomerNameDisplay');
+  const addressInput = document.getElementById('posCustomerAddress');
+  const receiverInput = document.getElementById('posReceiverName');
+  const custSelect = document.getElementById('posCustomerSelect');
+
+  if (phoneInput) phoneInput.value = order.customerPhone;
+  if (nameDisplay) nameDisplay.value = order.customerName;
+  if (custSelect) custSelect.value = cust.id;
+
+  if (addressInput && order.deliveryType === 'GIAO_HANG' && cust.diaChi && cust.diaChi !== 'Tại quầy') {
+    addressInput.value = cust.diaChi;
+  }
+  if (order.deliveryType === 'GIAO_HANG') {
+    const currentVal = receiverInput ? receiverInput.value.trim() : '';
+    if (!currentVal || currentVal === prevCustName || !order.receiverName) {
+      const defaultName = order.customerName || '';
+      order.receiverName = defaultName;
+      if (receiverInput) receiverInput.value = defaultName;
+    }
+  }
+
+  const suggBox = document.getElementById('posCustomerPhoneSuggestions');
+  if (suggBox) suggBox.style.display = 'none';
+};
+
+window.posClearCustomer = function(clearInput = true) {
+  const order = getActivePosOrder();
+  if (order) {
+    order.customerId = null;
+    order.customerName = '';
+    order.registeredName = '';
+    if (clearInput) {
+      order.customerPhone = '';
+    }
+    order.customerAddress = 'Tại quầy Store';
+  }
+
+  const phoneInput = document.getElementById('posCustomerPhone');
+  const nameDisplay = document.getElementById('posCustomerNameDisplay');
+  if (clearInput && phoneInput) phoneInput.value = '';
+  if (nameDisplay) nameDisplay.value = '';
+
+  if (custSelect) custSelect.value = '';
+  if (addressInput && order && order.deliveryType !== 'GIAO_HANG') {
+    addressInput.value = 'Tại quầy Store';
+  }
+
+  const suggBox = document.getElementById('posCustomerPhoneSuggestions');
+  if (suggBox) suggBox.style.display = 'none';
+};
+window.posSetRetailCustomer = window.posClearCustomer;
+
+window.onPosCustomerNameInput = function(val) {
+  const order = getActivePosOrder();
+  if (!order) return;
+  const name = (val || '').trim();
+  order.customerName = name || 'Khách lẻ tại quầy';
+
+
+  if (order.deliveryType === 'GIAO_HANG') {
+    const receiverInput = document.getElementById('posReceiverName');
+    if (receiverInput && (!order.receiverName || order.receiverName === 'Khách lẻ tại quầy')) {
+      receiverInput.value = name || 'Khách lẻ tại quầy';
+      order.receiverName = name || 'Khách lẻ tại quầy';
+    }
+  }
+};
+
+window.onPosPhoneInput = function(val) {
+  const phone = (val || '').trim();
+  const order = getActivePosOrder();
+  if (!order) return;
+
+  const suggBox = document.getElementById('posCustomerPhoneSuggestions');
+  const nameDisplay = document.getElementById('posCustomerNameDisplay');
+
+  // Always keep phone stored on current order
+  order.customerPhone = phone;
+
+  if (!phone) {
+    if (suggBox) suggBox.style.display = 'none';
+
+    order.customerId = null;
+    order.customerName = '';
+    order.registeredName = '';
+    if (nameDisplay) nameDisplay.value = '';
+    return;
+  }
+
+  const cleanDigits = phone.replace(/\D/g, '');
+
+  // Exact match search
+  const exactMatch = (state.customersList || []).find(c => {
+    const isRetail = (c.username === 'khachle' || c.ten?.toLowerCase().includes('khách lẻ'));
+    if (isRetail) return false;
+    const cPhone = (c.dienThoai || '').replace(/\D/g, '');
+    return cleanDigits.length >= 9 && cPhone === cleanDigits;
+  });
+
+  if (exactMatch) {
+    posApplySelectedCustomer(exactMatch);
+    if (suggBox) suggBox.style.display = 'none';
+    return;
+  }
+
+  // Partial match search
+  const matches = (state.customersList || []).filter(c => {
+    const isRetail = (c.username === 'khachle' || c.ten?.toLowerCase().includes('khách lẻ'));
+    if (isRetail) return false;
+    const cPhone = (c.dienThoai || '').replace(/\D/g, '');
+    return cPhone && cPhone.includes(cleanDigits);
+  });
+
+  // Số chưa có trong hệ thống
+  order.customerId = null;
+  order.customerName = '';
+  order.registeredName = '';
+  if (nameDisplay) nameDisplay.value = '';
+  if (foundBadge) foundBadge.style.display = 'none';
+
+  if (cleanDigits.length >= 2 && matches.length > 0) {
+    window.renderPhoneSuggestions(matches);
+  } else if (cleanDigits.length >= 4 && matches.length === 0) {
+    if (suggBox) {
+      suggBox.innerHTML = `
+        <div style="padding: 10px 12px; font-size: 0.83rem; color: #64748b; display: flex; justify-content: space-between; align-items: center;">
+          <span>SĐT chưa có trong danh bạ khách hàng</span>
+          <button type="button" onclick="openQuickCustomerModalWithPhone('${phone}')" style="background:#eff6ff; color:#2563eb; border:1px solid #bfdbfe; border-radius:4px; padding:3px 8px; font-size:0.75rem; font-weight:700; cursor:pointer;">+ Thêm khách hàng</button>
+        </div>
+      `;
+      suggBox.style.display = 'block';
+    }
+  } else {
+    if (suggBox) suggBox.style.display = 'none';
+  }
+};
+
+window.renderPhoneSuggestions = function(matches) {
+  const suggBox = document.getElementById('posCustomerPhoneSuggestions');
+  if (!suggBox) return;
+
+  let html = '<div style="padding: 4px 0;">';
+  matches.slice(0, 5).forEach(c => {
+    const custJson = JSON.stringify({ id: c.id, ten: c.ten || c.username, dienThoai: c.dienThoai || '', diaChi: c.diaChi || '' }).replace(/"/g, '&quot;');
+    html += `
+      <div class="pos-phone-suggest-item" onclick="posApplySelectedCustomer(${custJson})"
+        style="padding: 9px 14px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f1f5f9; transition: background 0.15s ease;"
+        onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='#fff'">
+        <div>
+          <div style="font-weight: 700; color: #1e293b; font-size: 0.86rem;">${c.ten || c.username}</div>
+          <div style="font-size: 0.76rem; color: #64748b;">${c.diaChi || 'Chưa cập nhật địa chỉ'}</div>
+        </div>
+        <div style="font-weight: 700; color: #2563eb; font-size: 0.84rem; background: #eff6ff; padding: 2px 8px; border-radius: 4px;">
+          ${c.dienThoai || ''}
+        </div>
+      </div>
+    `;
+  });
+  html += '</div>';
+  suggBox.innerHTML = html;
+  suggBox.style.display = 'block';
+};
+
+window.onPosPhoneFocus = function() {
+  const phoneInput = document.getElementById('posCustomerPhone');
+  if (phoneInput && phoneInput.value.trim().length >= 2) {
+    window.onPosPhoneInput(phoneInput.value);
+  }
+};
+
+window.openQuickCustomerModalWithPhone = function(phone) {
+  openQuickCustomerModal();
+  const qcPhone = document.getElementById('qcDienThoai');
+  if (qcPhone && phone) {
+    qcPhone.value = phone;
+  }
+  const suggBox = document.getElementById('posCustomerPhoneSuggestions');
+  if (suggBox) suggBox.style.display = 'none';
+};
+
+window.onPosCustomerChange = function() {
+  const custSelect = document.getElementById('posCustomerSelect');
+  const order = getActivePosOrder();
+  if (!custSelect || !order) return;
+
   const opt = custSelect.options[custSelect.selectedIndex];
   if (opt) {
-    order.customerId = parseInt(opt.value);
-    order.customerName = opt.getAttribute('data-name');
-    order.customerPhone = opt.getAttribute('data-phone');
-    const custAddr = opt.getAttribute('data-address');
-    if (phoneInput) phoneInput.value = order.customerPhone || '';
-    if (custAddr && custAddr !== 'Tại quầy') {
-      order.customerAddress = custAddr;
-      if (addressInput && order.deliveryType === 'GIAO_HANG') {
-        addressInput.value = custAddr;
-      }
-    }
-
-    // Nếu đang chọn giao hàng tận nơi: cập nhật tên người nhận nếu chưa nhập hoặc đang theo tên khách hàng cũ
-    if (order.deliveryType === 'GIAO_HANG') {
-      const currentVal = receiverInput ? receiverInput.value.trim() : '';
-      if (!currentVal || currentVal === prevCustName || prevCustName === 'Khách lẻ tại quầy' || !order.receiverName) {
-        const defaultName = (order.customerName && !order.customerName.includes('Khách lẻ')) ? order.customerName : '';
-        order.receiverName = defaultName;
-        if (receiverInput) receiverInput.value = defaultName;
-      }
+    const custId = parseInt(opt.value);
+    const foundCust = (state.customersList || []).find(c => c.id === custId);
+    if (foundCust) {
+      posApplySelectedCustomer(foundCust);
     }
   }
 };
@@ -999,7 +1197,9 @@ async function syncPosVouchersAndCalculations() {
     order.idVoucher = null;
     order.maVoucher = '';
     order.tienGiamVoucher = 0;
+    order.customerGiven = 0;
 
+    if (givenInput) givenInput.value = 0;
     if (voucherSelect) {
       voucherSelect.innerHTML = '<option value="">[ Chưa có sản phẩm ]</option>';
       voucherSelect.disabled = true;
@@ -1176,6 +1376,7 @@ window.updatePosCalculations = function() {
     if (givenInput) givenInput.value = total;
     given = total;
   }
+  order.customerGiven = given;
 
   const change = Math.max(0, given - total);
 
@@ -1342,6 +1543,74 @@ function posAddProductToActiveOrder(itemData) {
   renderPosCart();
 }
 
+// Reset POS form and active order tab after successful checkout / hold confirmation
+function posResetFormAfterCheckout(order) {
+  if (state.posOrders.length > 1) {
+    // If there are other open tabs, close this completed tab cleanly
+    posCloseOrderTab(order.id, true);
+  } else {
+    // If this is the only tab, completely reset all state on this tab
+    const retailCust = (state.customersList || []).find(c => c.username === 'khachle' || c.ten?.toLowerCase().includes('khách lẻ')) || { id: 1, ten: 'Khách lẻ tại quầy', dienThoai: '', diaChi: 'Tại quầy Store' };
+
+    order.items = [];
+    order.idVoucher = null;
+    order.maVoucher = '';
+    order.tienGiamVoucher = 0;
+    order.note = '';
+    order.receiverName = '';
+    order.customerAddress = 'Tại quầy Store';
+    order.deliveryType = 'TAI_QUAY';
+    order.payMethod = 'TIEN_MAT';
+    order.customerGiven = 0;
+    order.customerId = null;
+    order.customerName = '';
+    order.customerPhone = '';
+
+    // Reset customer display
+    posClearCustomer(true);
+
+    // Reset all form inputs
+    const givenInput = document.getElementById('posCustomerGivenInput');
+    if (givenInput) givenInput.value = '0';
+
+    const noteInput = document.getElementById('posOrderNote');
+    if (noteInput) noteInput.value = '';
+
+    const receiverInput = document.getElementById('posReceiverName');
+    if (receiverInput) receiverInput.value = '';
+
+    const addressInput = document.getElementById('posCustomerAddress');
+    if (addressInput) addressInput.value = 'Tại quầy Store';
+
+    // Reset Delivery radio & groups
+    const delRadio = document.querySelector('input[name="posDeliveryType"][value="TAI_QUAY"]');
+    if (delRadio) delRadio.checked = true;
+
+    const delAddrGroup = document.getElementById('posDeliveryAddressGroup');
+    if (delAddrGroup) delAddrGroup.style.display = 'none';
+
+    const receiverGroup = document.getElementById('posDeliveryReceiverGroup');
+    if (receiverGroup) receiverGroup.style.display = 'none';
+
+    const btnHoldOrder = document.getElementById('btnPosHoldOrder');
+    if (btnHoldOrder) btnHoldOrder.style.display = 'none';
+
+    // Reset Pay Method radio
+    const payRadio = document.querySelector('input[name="posPayMethod"][value="TIEN_MAT"]');
+    if (payRadio) payRadio.checked = true;
+
+    const voucherSelect = document.getElementById('posVoucherSelect');
+    if (voucherSelect) {
+      voucherSelect.innerHTML = '<option value="">[ Chưa có sản phẩm ]</option>';
+      voucherSelect.disabled = true;
+      voucherSelect.value = '';
+    }
+
+    renderPosOrderTabs();
+    renderPosCart();
+  }
+}
+
 // Submit POS Checkout & Create Invoice
 window.submitPosCheckout = async function(isCompleted = true) {
   const btn = document.getElementById('btnPosCheckout');
@@ -1365,18 +1634,26 @@ window.submitPosCheckout = async function(isCompleted = true) {
 
     const custSelect = document.getElementById('posCustomerSelect');
     const phoneInput = document.getElementById('posCustomerPhone');
+    const nameDisplay = document.getElementById('posCustomerNameDisplay');
     const cashierSelect = document.getElementById('posCashierSelect');
     const noteInput = document.getElementById('posOrderNote');
     const givenInput = document.getElementById('posCustomerGivenInput');
 
     const currentUser = getLoggedInUser();
-    const customerId = parseInt(custSelect?.value) || 1;
+    const customerId = order.customerId || parseInt(custSelect?.value);
     const cashierId = (currentUser && currentUser.id) ? currentUser.id : (parseInt(cashierSelect?.value) || 4);
-    const selectedOpt = custSelect?.options[custSelect?.selectedIndex];
-    const customerName = selectedOpt?.getAttribute('data-name') || 'Khách lẻ tại quầy';
-    const isRetail = (customerName === 'Khách lẻ tại quầy' || customerName.includes('Khách lẻ'));
-    const phone = phoneInput?.value?.trim() || '';
+    const customerName = nameDisplay?.value?.trim() || order.customerName;
+    const phone = phoneInput?.value?.trim() || order.customerPhone || '';
     const note = noteInput?.value?.trim() || order.note || '';
+
+    if (!customerName || !customerId) {
+      showToast('Vui lòng tìm kiếm hoặc thêm mới khách hàng trước khi thanh toán!', 'error');
+      if (phoneInput) phoneInput.focus();
+      return;
+    }
+
+    order.customerName = customerName;
+    order.customerPhone = phone;
 
     const isGiaoHang = (order.deliveryType === 'GIAO_HANG');
     if (!isCompleted && !isGiaoHang) {
@@ -1459,23 +1736,8 @@ window.submitPosCheckout = async function(isCompleted = true) {
       printReceiptDirectly(createdHoaDon, order);
     }
 
-    // Đóng tab hoặc làm mới hóa đơn
-    if (state.posOrders.length > 1) {
-      posCloseOrderTab(order.id);
-    } else {
-      order.items = [];
-      order.idVoucher = null;
-      order.maVoucher = '';
-      order.tienGiamVoucher = 0;
-      order.note = '';
-      order.receiverName = '';
-      order.customerAddress = 'Tại quầy Store';
-      order.deliveryType = 'TAI_QUAY';
-      if (receiverInput) receiverInput.value = '';
-      if (noteInput) noteInput.value = '';
-      renderPosOrderTabs();
-      renderPosCart();
-    }
+    // Làm mới form và đóng tab hóa đơn
+    posResetFormAfterCheckout(order);
 
     // Refresh danh sách hóa đơn trong tab Quản lý Hóa Đơn và cập nhật số lượng tồn kho
     loadInvoicesList();
@@ -2438,15 +2700,6 @@ function renderInvoiceDetailActionButtons(inv) {
         <button class="btn-admin btn-danger btn-outline" onclick="proceedOrderAction(${inv.id}, 'huy')" type="button">
           Hủy Đơn
         </button>
-      `;
-      if (!isPaid) {
-        actionBtnsHtml += `
-          <button class="btn-admin btn-primary" onclick="openConfirmPrepaymentModal(${inv.id})" type="button" style="background:#16a34a; border-color:#16a34a; font-weight:700; margin-right:4px;">
-            <span>&#128179; Thu Tiền Trước</span>
-          </button>
-        `;
-      }
-      actionBtnsHtml += `
         <button class="btn-admin btn-primary" onclick="proceedOrderAction(${inv.id}, 'giao-hang')" type="button" style="font-weight:700;">
           Bắt Đầu Giao Hàng
         </button>
@@ -3497,7 +3750,14 @@ window.deleteAttributeItem = async function(id, name) {
 // ============================================================================
 window.openQuickCustomerModal = function() {
   const modal = document.getElementById('quickCustomerModal');
-  if (modal) modal.classList.add('active');
+  if (modal) {
+    modal.classList.add('active');
+    const phoneInput = document.getElementById('posCustomerPhone');
+    const qcPhone = document.getElementById('qcDienThoai');
+    if (phoneInput && qcPhone && phoneInput.value.trim() && !qcPhone.value.trim()) {
+      qcPhone.value = phoneInput.value.trim();
+    }
+  }
 };
 
 window.closeQuickCustomerModal = function() {
@@ -3519,8 +3779,8 @@ window.handleQuickCustomerSubmit = async function(e) {
   const newCustPayload = {
     ma: 'KH' + Math.floor(Date.now() / 1000),
     ten: ten,
-    username: 'kh_' + sdt,
-    password: 'password123',
+    username: null,
+    password: null,
     dienThoai: sdt,
     diaChi: diaChi,
     vaiTro: { id: 3, tenVaiTro: 'Khách hàng' }
@@ -3544,11 +3804,7 @@ window.handleQuickCustomerSubmit = async function(e) {
     populatePosCustomerAndCashierSelects();
 
     // Select this newly added customer in POS
-    const custSelect = document.getElementById('posCustomerSelect');
-    if (custSelect) {
-      custSelect.value = created.id;
-      onPosCustomerChange();
-    }
+    posApplySelectedCustomer(created);
 
     showToast(`Đã thêm khách hàng: ${ten}`);
     closeQuickCustomerModal();
