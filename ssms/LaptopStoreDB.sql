@@ -10,6 +10,8 @@ GO
 SET NOCOUNT ON;
 
 
+IF OBJECT_ID('dbo.yeu_cau_bao_hanh', 'U') IS NOT NULL DROP TABLE dbo.yeu_cau_bao_hanh;
+IF OBJECT_ID('dbo.lich_su_hoa_don', 'U') IS NOT NULL DROP TABLE dbo.lich_su_hoa_don;
 IF OBJECT_ID('dbo.bao_hanh', 'U') IS NOT NULL DROP TABLE dbo.bao_hanh;
 IF OBJECT_ID('dbo.chi_tiet_hoa_don_imei', 'U') IS NOT NULL DROP TABLE dbo.chi_tiet_hoa_don_imei;
 IF OBJECT_ID('dbo.chi_tiet_hoa_don', 'U') IS NOT NULL DROP TABLE dbo.chi_tiet_hoa_don;
@@ -310,7 +312,38 @@ CREATE TABLE bao_hanh (
 );
 GO
 
--- 24. Khuyến mãi sản phẩm
+-- 25. Yêu cầu bảo hành
+CREATE TABLE yeu_cau_bao_hanh (
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    ma_yeu_cau VARCHAR(50) NOT NULL UNIQUE,
+    id_bao_hanh INT NOT NULL,
+    id_khach_hang INT NOT NULL,
+    id_nhan_vien INT NULL,
+    mo_ta_loi NVARCHAR(1000) NOT NULL,
+    dien_thoai_lien_he VARCHAR(20) NOT NULL,
+    ghi_chu_khach_hang NVARCHAR(500) NULL,
+    ngay_yeu_cau DATETIME NOT NULL DEFAULT GETDATE(),
+    ngay_tiep_nhan DATETIME NULL,
+    ngay_bat_dau_xu_ly DATETIME NULL,
+    ngay_hoan_thanh DATETIME NULL,
+    trang_thai INT NOT NULL DEFAULT 0,
+    ghi_chu_xu_ly NVARCHAR(1000) NULL,
+    ly_do_tu_choi NVARCHAR(1000) NULL,
+    CONSTRAINT FK_YCBH_BaoHanh FOREIGN KEY (id_bao_hanh) REFERENCES bao_hanh(id),
+    CONSTRAINT FK_YCBH_KhachHang FOREIGN KEY (id_khach_hang) REFERENCES nguoi_dung(id),
+    CONSTRAINT FK_YCBH_NhanVien FOREIGN KEY (id_nhan_vien) REFERENCES nguoi_dung(id),
+    CONSTRAINT CK_YCBH_TrangThai CHECK (trang_thai IN (0, 1, 2, 3, 4))
+);
+GO
+
+CREATE INDEX IX_YCBH_BaoHanh ON yeu_cau_bao_hanh(id_bao_hanh);
+CREATE INDEX IX_YCBH_KhachHang ON yeu_cau_bao_hanh(id_khach_hang);
+CREATE INDEX IX_YCBH_NhanVien ON yeu_cau_bao_hanh(id_nhan_vien);
+CREATE INDEX IX_YCBH_TrangThai ON yeu_cau_bao_hanh(trang_thai);
+CREATE INDEX IX_YCBH_NgayYeuCau ON yeu_cau_bao_hanh(ngay_yeu_cau);
+GO
+
+-- 26. Khuyến mãi sản phẩm
 CREATE TABLE khuyen_mai (
     id INT IDENTITY(1,1) PRIMARY KEY,
     ma VARCHAR(50) UNIQUE NOT NULL,
@@ -323,7 +356,7 @@ CREATE TABLE khuyen_mai (
 );
 GO
 
--- 25. Chi tiết khuyến mãi
+-- 27. Chi tiết khuyến mãi
 CREATE TABLE chi_tiet_khuyen_mai (
     id INT IDENTITY(1,1) PRIMARY KEY,
     ma_ctkm VARCHAR(50),

@@ -145,6 +145,42 @@
           </a>
         </li>
 
+        <li class="sidebar-menu-category">Bảo Hành &amp; Hỗ Trợ</li>
+        <li>
+          <a href="javascript:void(0)" class="sidebar-menu-item" id="navWarranties" onclick="switchAdminTab('warranties')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+              <polyline points="9 12 11 14 15 10"/>
+            </svg>
+            <span>Quản Lý Bảo Hành</span>
+          </a>
+        </li>
+        <li>
+          <a href="javascript:void(0)" class="sidebar-menu-item" id="navWarrantyRequests" onclick="switchAdminTab('warranty-requests')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="16" y1="13" x2="8" y2="13"></line>
+              <line x1="16" y1="17" x2="8" y2="17"></line>
+              <polyline points="10 9 9 9 8 9"></polyline>
+            </svg>
+            <span>Yêu Cầu Bảo Hành</span>
+          </a>
+        </li>
+
+        <li class="sidebar-menu-category">Hệ Thống &amp; Người Dùng</li>
+        <li>
+          <a href="javascript:void(0)" class="sidebar-menu-item" id="navUsers" onclick="switchAdminTab('users')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+              <circle cx="9" cy="7" r="4"></circle>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+            </svg>
+            <span>Quản Lý Người Dùng</span>
+          </a>
+        </li>
+
         <li class="sidebar-menu-category">Cửa Hàng</li>
         <li>
           <a href="index.html" class="sidebar-menu-item" target="_blank">
@@ -1105,6 +1141,465 @@
 
               <div id="imeisLoadingIndicator" style="padding: 40px; text-align:center; color: var(--admin-text-muted);">
                 Đang tải danh sách IMEI...
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================================================================
+             SECTION: QUẢN LÝ PHIẾU BẢO HÀNH (DÙNG CHUNG ADMIN & NHÂN VIÊN)
+             ================================================================== -->
+        <section id="tabPaneWarranties" class="admin-tab-pane">
+          <!-- Stats Grid -->
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-icon-box stat-icon-blue">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                  <polyline points="9 12 11 14 15 10"/>
+                </svg>
+              </div>
+              <div>
+                <div class="stat-value" id="statAdminWarrantyTotal">0</div>
+                <div class="stat-label">Tổng Phiếu Bảo Hành</div>
+              </div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-icon-box stat-icon-green">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                  <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                </svg>
+              </div>
+              <div>
+                <div class="stat-value" id="statAdminWarrantyActive" style="color: #16a34a;">0</div>
+                <div class="stat-label">Bảo Hành Còn Hạn</div>
+              </div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-icon-box" style="background: linear-gradient(135deg, #64748b, #94a3b8);">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>
+              </div>
+              <div>
+                <div class="stat-value" id="statAdminWarrantyExpired" style="color: #64748b;">0</div>
+                <div class="stat-label">Bảo Hành Hết Hạn</div>
+              </div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-icon-box stat-icon-red">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line>
+                </svg>
+              </div>
+              <div>
+                <div class="stat-value" id="statAdminWarrantyRevoked" style="color: #dc2626;">0</div>
+                <div class="stat-label">Ngừng Hiệu Lực</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Main Table Card -->
+          <div class="admin-card">
+            <div class="admin-card-header" style="flex-direction: column; align-items: stretch; gap: 14px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                <div class="admin-card-title">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                    <polyline points="9 12 11 14 15 10"/>
+                  </svg>
+                  <span>Danh Sách Phiếu Bảo Hành Theo IMEI</span>
+                  <span id="adminWarrantyCountBadge" style="font-size:0.75rem; background:#f1f5f9; color:var(--admin-text-muted); padding:2px 8px; border-radius:999px; margin-left:6px; font-weight:700;">5 phiếu</span>
+                </div>
+                <button class="btn-admin btn-outline btn-sm" onclick="initAdminWarrantiesTab()" type="button" title="Làm mới">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M23 4v6h-6"></path><path d="M1 20v-6h6"></path>
+                    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                  </svg>
+                  <span>Làm mới</span>
+                </button>
+              </div>
+
+              <!-- Filter Bar Row -->
+              <div style="display: flex; flex-wrap: wrap; gap: 12px; align-items: center; width: 100%;">
+                <div style="flex: 2; min-width: 220px;">
+                  <input type="text" class="search-admin-input" id="searchAdminWarrantyInput"
+                    placeholder="Tìm mã phiếu, IMEI, laptop, khách hàng..." oninput="filterAdminWarrantiesTable()" style="width: 100%; box-sizing: border-box;">
+                </div>
+
+                <div style="flex: 1; min-width: 160px; max-width: 240px;">
+                  <select class="select-admin" id="filterAdminWarrantyStatus" onchange="filterAdminWarrantiesTable()" style="width: 100%; box-sizing: border-box;">
+                    <option value="ALL">Tất cả trạng thái</option>
+                    <option value="ACTIVE">Còn hạn</option>
+                    <option value="EXPIRED">Hết hạn</option>
+                    <option value="REVOKED">Ngừng hiệu lực</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div class="admin-card-body" style="padding:0;">
+              <div class="table-responsive">
+                <table class="admin-table">
+                  <thead>
+                    <tr>
+                      <th style="width: 45px; text-align: center;">STT</th>
+                      <th style="width: 135px; font-weight:700;">Mã Phiếu BH</th>
+                      <th style="min-width: 180px; font-weight:700;">Tên Laptop</th>
+                      <th style="width: 140px; font-weight:700;">Số IMEI / Serial</th>
+                      <th style="min-width: 150px; font-weight:700;">Khách Hàng</th>
+                      <th style="width: 110px; text-align: center; font-weight:700;">Ngày Kích Hoạt</th>
+                      <th style="width: 110px; text-align: center; font-weight:700;">Ngày Hết Hạn</th>
+                      <th style="width: 120px; text-align: center; font-weight:700;">Trạng Thái</th>
+                      <th style="width: 95px; text-align: center; font-weight:700;">Thao Tác</th>
+                    </tr>
+                  </thead>
+                  <tbody id="adminWarrantiesTableBody">
+                    <!-- Rendered by warranty-admin.js -->
+                  </tbody>
+                </table>
+              </div>
+
+              <div id="adminWarrantiesEmptyState" style="display:none; padding: 40px; text-align:center; color: var(--admin-text-muted);">
+                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.5" style="margin:0 auto 10px; display:block;">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                </svg>
+                Không tìm thấy phiếu bảo hành nào phù hợp.
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================================================================
+             SECTION: QUẢN LÝ YÊU CẦU BẢO HÀNH (DÙNG CHUNG ADMIN & NHÂN VIÊN)
+             ================================================================== -->
+        <section id="tabPaneWarrantyRequests" class="admin-tab-pane">
+          <!-- Stats Grid -->
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-icon-box stat-icon-amber">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>
+              </div>
+              <div>
+                <div class="stat-value" id="statAdminReqPending" style="color: #d97706;">0</div>
+                <div class="stat-label">Chờ Tiếp Nhận</div>
+              </div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-icon-box stat-icon-blue">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+              </div>
+              <div>
+                <div class="stat-value" id="statAdminReqAccepted" style="color: #2563eb;">0</div>
+                <div class="stat-label">Đã Tiếp Nhận</div>
+              </div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-icon-box" style="background: linear-gradient(135deg, #7e22ce, #a855f7);">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                </svg>
+              </div>
+              <div>
+                <div class="stat-value" id="statAdminReqProcessing" style="color: #7e22ce;">0</div>
+                <div class="stat-label">Đang Xử Lý</div>
+              </div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-icon-box stat-icon-green">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                  <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                </svg>
+              </div>
+              <div>
+                <div class="stat-value" id="statAdminReqCompleted" style="color: #16a34a;">0</div>
+                <div class="stat-label">Hoàn Thành</div>
+              </div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-icon-box stat-icon-red">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="15" y1="9" x2="9" y2="15"></line>
+                  <line x1="9" y1="9" x2="15" y2="15"></line>
+                </svg>
+              </div>
+              <div>
+                <div class="stat-value" id="statAdminReqRejected" style="color: #dc2626;">0</div>
+                <div class="stat-label">Từ Chối</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Main Table Card -->
+          <div class="admin-card">
+            <div class="admin-card-header" style="flex-direction: column; align-items: stretch; gap: 14px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                <div class="admin-card-title">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                    <polyline points="10 9 9 9 8 9"></polyline>
+                  </svg>
+                  <span>Danh Sách Yêu Cầu Bảo Hành Tiếp Nhận</span>
+                  <span id="adminWarrantyReqCountBadge" style="font-size:0.75rem; background:#f1f5f9; color:var(--admin-text-muted); padding:2px 8px; border-radius:999px; margin-left:6px; font-weight:700;">0 yêu cầu</span>
+                </div>
+                <button class="btn-admin btn-outline btn-sm" onclick="initAdminWarrantyRequestsTab()" type="button" title="Làm mới">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M23 4v6h-6"></path><path d="M1 20v-6h6"></path>
+                    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                  </svg>
+                  <span>Làm mới</span>
+                </button>
+              </div>
+
+              <!-- Filter Bar Row -->
+              <div style="display: flex; flex-wrap: wrap; gap: 12px; align-items: center; width: 100%;">
+                <div style="flex: 2; min-width: 220px;">
+                  <input type="text" class="search-admin-input" id="searchAdminRequestInput"
+                    placeholder="Tìm mã yêu cầu, IMEI, laptop, khách hàng..." oninput="filterAdminWarrantyRequestsTable()" style="width: 100%; box-sizing: border-box;">
+                </div>
+
+                <div style="flex: 1; min-width: 160px; max-width: 240px;">
+                  <select class="select-admin" id="filterAdminRequestStatus" onchange="filterAdminWarrantyRequestsTable()" style="width: 100%; box-sizing: border-box;">
+                    <option value="ALL">Tất cả trạng thái</option>
+                    <option value="0">Chờ tiếp nhận</option>
+                    <option value="1">Đã tiếp nhận</option>
+                    <option value="2">Đang xử lý</option>
+                    <option value="3">Hoàn thành</option>
+                    <option value="4">Từ chối</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div class="admin-card-body" style="padding:0;">
+              <div class="table-responsive">
+                <table class="admin-table">
+                  <thead>
+                    <tr>
+                      <th style="width: 45px; text-align: center;">STT</th>
+                      <th style="width: 125px; font-weight:700;">Mã Yêu Cầu</th>
+                      <th style="min-width: 170px; font-weight:700;">Tên Laptop</th>
+                      <th style="width: 135px; font-weight:700;">Số IMEI / Serial</th>
+                      <th style="min-width: 140px; font-weight:700;">Khách Hàng</th>
+                      <th style="width: 125px; text-align: center; font-weight:700;">Ngày Gửi</th>
+                      <th style="min-width: 140px; font-weight:700;">NV Phụ Trách</th>
+                      <th style="width: 125px; text-align: center; font-weight:700;">Trạng Thái</th>
+                      <th style="width: 105px; text-align: center; font-weight:700;">Thao Tác</th>
+                    </tr>
+                  </thead>
+                  <tbody id="adminWarrantyRequestsTableBody">
+                    <!-- Rendered by warranty-admin.js -->
+                  </tbody>
+                </table>
+              </div>
+
+              <div id="adminWarrantyRequestsEmptyState" style="display:none; padding: 40px; text-align:center; color: var(--admin-text-muted);">
+                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.5" style="margin:0 auto 10px; display:block;">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                  <polyline points="14 2 14 8 20 8"></polyline>
+                </svg>
+                Không tìm thấy yêu cầu bảo hành nào phù hợp.
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================================================================
+             SECTION: QUẢN LÝ NGƯỜI DÙNG (DÙNG CHUNG ADMIN & NHÂN VIÊN)
+             ================================================================== -->
+        <section id="tabPaneUsers" class="admin-tab-pane">
+          <!-- Page Header Banner / Subtitle -->
+          <div style="margin-bottom: 20px;">
+            <div style="font-size: 1.35rem; font-weight: 800; color: #0f172a; margin-bottom: 4px;">
+              QUẢN LÝ NGƯỜI DÙNG
+            </div>
+            <div style="font-size: 0.9rem; color: #64748b;">
+              Quản lý thông tin, vai trò và trạng thái tài khoản trong hệ thống.
+            </div>
+          </div>
+
+          <!-- Stats Grid: 4 Cards -->
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-icon-box stat-icon-blue">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="9" cy="7" r="4"></circle>
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                </svg>
+              </div>
+              <div>
+                <div class="stat-value" id="statUserTotal">0</div>
+                <div class="stat-label">Tổng Số Tài Khoản</div>
+              </div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-icon-box" style="background: linear-gradient(135deg, #7e22ce, #a855f7); color: #fff;">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
+                </svg>
+              </div>
+              <div>
+                <div class="stat-value" id="statUserAdmin" style="color: #7e22ce;">0</div>
+                <div class="stat-label">Tài Khoản Admin</div>
+              </div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-icon-box" style="background: linear-gradient(135deg, #0284c7, #38bdf8); color: #fff;">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+                  <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+                </svg>
+              </div>
+              <div>
+                <div class="stat-value" id="statUserStaff" style="color: #0284c7;">0</div>
+                <div class="stat-label">Tài Khoản Nhân Viên</div>
+              </div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-icon-box stat-icon-green">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+              </div>
+              <div>
+                <div class="stat-value" id="statUserCustomer" style="color: #16a34a;">0</div>
+                <div class="stat-label">Tài Khoản Khách Hàng</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Main Table Card -->
+          <div class="admin-card">
+            <div class="admin-card-header" style="flex-direction: column; align-items: stretch; gap: 14px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; flex-wrap: wrap; gap: 10px;">
+                <div class="admin-card-title">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="9" cy="7" r="4"></circle>
+                  </svg>
+                  <span>Danh Sách Tài Khoản Hệ Thống</span>
+                </div>
+
+                <!-- Add Staff Button -->
+                <button type="button" class="btn-admin btn-primary" onclick="openAddStaffModal()" style="display: inline-flex; align-items: center; gap: 8px;">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                  </svg>
+                  <span>Thêm Nhân Viên</span>
+                </button>
+              </div>
+
+              <!-- Filter Toolbar -->
+              <div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center; width: 100%;">
+                <div style="flex: 1; min-width: 250px; position: relative;">
+                  <input
+                    type="text"
+                    class="pos-form-input"
+                    id="userSearchInput"
+                    placeholder="Tìm theo họ tên, username, email, số điện thoại..."
+                    oninput="onUserSearchInput()"
+                    style="padding-left: 36px;"
+                  />
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%);">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                  </svg>
+                </div>
+
+                <div style="min-width: 170px;">
+                  <select class="pos-form-input" id="userRoleFilter" onchange="onUserRoleFilterChange()">
+                    <option value="ALL">Tất cả vai trò</option>
+                    <option value="1">Quản trị viên (Admin)</option>
+                    <option value="2">Nhân viên (Staff)</option>
+                    <option value="3">Khách hàng</option>
+                  </select>
+                </div>
+
+                <div style="min-width: 170px;">
+                  <select class="pos-form-input" id="userStatusFilter" onchange="onUserStatusFilterChange()">
+                    <option value="ALL">Tất cả trạng thái</option>
+                    <option value="ACTIVE">Đang hoạt động</option>
+                  </select>
+                </div>
+
+                <button type="button" class="btn-admin btn-outline" onclick="resetUserFilters()" title="Làm mới bộ lọc" style="display: inline-flex; align-items: center; gap: 6px;">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M23 4v6h-6"></path>
+                    <path d="M1 20v-6h6"></path>
+                    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                  </svg>
+                  <span>Làm mới</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Table Card Body -->
+            <div class="admin-card-body" style="padding: 0;">
+              <div class="pos-table-responsive" style="max-height: none;">
+                <table class="pos-table">
+                  <thead>
+                    <tr>
+                      <th style="width: 50px; text-align: center; font-weight:700;">STT</th>
+                      <th style="min-width: 220px; font-weight:700;">Người Dùng</th>
+                      <th style="min-width: 180px; font-weight:700;">Email</th>
+                      <th style="width: 130px; font-weight:700;">Số Điện Thoại</th>
+                      <th style="min-width: 180px; font-weight:700;">Địa Chỉ</th>
+                      <th style="width: 140px; text-align: center; font-weight:700;">Vai Trò</th>
+                      <th style="width: 130px; text-align: center; font-weight:700;">Trạng Thái</th>
+                      <th style="width: 140px; text-align: center; font-weight:700;">Thao Tác</th>
+                    </tr>
+                  </thead>
+                  <tbody id="userTableBody">
+                    <!-- Rendered by user-admin.js -->
+                  </tbody>
+                </table>
+              </div>
+
+              <!-- Empty State -->
+              <div id="userEmptyState" style="display:none; padding: 48px 20px; text-align:center; color: var(--admin-text-muted);">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.5" style="margin:0 auto 12px; display:block;">
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="9" cy="7" r="4"></circle>
+                </svg>
+                <div style="font-size: 0.96rem; font-weight: 600; color: #475569;">Không tìm thấy người dùng nào phù hợp.</div>
+                <div style="font-size: 0.85rem; color: #94a3b8; margin-top: 4px;">Hãy thử thay đổi từ khóa tìm kiếm hoặc làm mới bộ lọc.</div>
+              </div>
+
+              <!-- Pagination Section -->
+              <div id="userPaginationSection" style="display: flex; justify-content: space-between; align-items: center; padding: 14px 20px; border-top: 1px solid var(--admin-border-color); flex-wrap: wrap; gap: 12px;">
+                <div id="userPaginationInfo" style="font-size: 0.88rem; color: #64748b; font-weight: 500;">
+                  Đang tải danh sách người dùng...
+                </div>
+                <div id="userPaginationControls" style="display: flex; gap: 6px; align-items: center;">
+                  <!-- Rendered dynamically -->
+                </div>
               </div>
             </div>
           </div>
@@ -2410,8 +2905,8 @@
       <div style="overflow-y: auto; padding: 22px; display: flex; flex-direction: column; gap: 18px; flex: 1;">
         <!-- Top banner: ảnh + thông tin chung -->
         <div style="display:flex; gap:16px; align-items:center; background:#f8fafc; padding:16px; border-radius:10px; border:1px solid #e2e8f0;">
-          <img id="imeiCtspThumb" src="" alt="Laptop Thumbnail"
-            style="width:90px; height:90px; object-fit:cover; border-radius:8px; border:1px solid #cbd5e1; background:#fff;">
+          <img id="imeiCtspThumb" src="../images/default-laptop.png" alt="Laptop Thumbnail"
+            style="width:90px; height:90px; object-fit:cover; border-radius:8px; border:1px solid #cbd5e1; background:#fff;" onerror="this.onerror=null; this.src='../images/default-laptop.png';">
           <div style="flex:1;">
             <div id="imeiCtspTenSp" style="font-size:1.15rem; font-weight:800; color:#0f172a; margin-bottom:4px;">-</div>
             <div style="display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-bottom:8px;">
@@ -2538,9 +3033,958 @@
   </div>
 
   <!-- ======================================================================
+       MODAL: CHI TIẾT PHIẾU BẢO HÀNH (ADMIN & NHÂN VIÊN)
+       ====================================================================== -->
+  <div class="admin-modal-overlay" id="modalAdminWarrantyDetail" style="z-index: 2250;">
+    <div class="admin-modal-container" style="max-width: 900px; max-height: 92vh; display: flex; flex-direction: column;">
+      <div class="admin-modal-header" style="background: #f8fafc; border-bottom: 1px solid var(--admin-border);">
+        <div class="admin-modal-title" style="display:flex; align-items:center; gap:8px; font-weight:800;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            <polyline points="9 12 11 14 15 10"/>
+          </svg>
+          <span>HỒ SƠ BẢO HÀNH THIẾT BỊ (THEO IMEI)</span>
+        </div>
+        <button class="admin-modal-close" onclick="closeAdminWarrantyDetailModal()" type="button">&times;</button>
+      </div>
+
+      <div style="overflow-y: auto; padding: 22px; display: flex; flex-direction: column; gap: 20px;">
+        <!-- Top 3 info columns -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px;">
+          <!-- Col 1: Laptop -->
+          <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px;">
+            <div style="font-weight: 800; font-size: 0.9rem; color: #0f172a; margin-bottom: 12px; display:flex; align-items:center; gap:6px;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
+              <span>Thông Tin Laptop</span>
+            </div>
+            <div style="width: 100%; height: 110px; border-radius: 6px; overflow: hidden; background: #fff; border: 1px solid #e2e8f0; margin-bottom: 10px;">
+              <img id="admWDetailLaptopImg" src="../images/default-laptop.png" alt="Laptop" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.onerror=null; this.src='../images/default-laptop.png';">
+            </div>
+            <div id="admWDetailLaptopName" style="font-weight: 800; font-size: 0.95rem; color: #0f172a; margin-bottom: 4px;">-</div>
+            <div id="admWDetailSpecs" style="font-size: 0.78rem; color: #64748b; margin-bottom: 10px; line-height: 1.4;">-</div>
+            <div style="font-size: 0.82rem; display: flex; flex-direction: column; gap: 4px; border-top: 1px dashed #cbd5e1; padding-top: 8px;">
+              <div>Số IMEI: <strong id="admWDetailImei" style="font-family: monospace; color: #0f172a;">-</strong></div>
+              <div>Hóa đơn: <strong id="admWDetailMaHoaDon">-</strong></div>
+            </div>
+          </div>
+
+          <!-- Col 2: Khách hàng -->
+          <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px;">
+            <div style="font-weight: 800; font-size: 0.9rem; color: #0f172a; margin-bottom: 12px; display:flex; align-items:center; gap:6px;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+              <span>Thông Tin Khách Hàng</span>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 10px; font-size: 0.85rem;">
+              <div>
+                <div style="color: #64748b; font-size: 0.75rem; text-transform: uppercase;">Họ tên khách hàng</div>
+                <div id="admWDetailCustName" style="font-weight: 800; font-size: 1rem; color: #0f172a; margin-top: 2px;">-</div>
+              </div>
+              <div>
+                <div style="color: #64748b; font-size: 0.75rem; text-transform: uppercase;">Số điện thoại</div>
+                <div id="admWDetailCustPhone" style="font-weight: 700; color: #2563eb; margin-top: 2px;">-</div>
+              </div>
+              <div>
+                <div style="color: #64748b; font-size: 0.75rem; text-transform: uppercase;">Email</div>
+                <div id="admWDetailCustEmail" style="font-weight: 600; color: #334155; margin-top: 2px;">-</div>
+              </div>
+              <div>
+                <div style="color: #64748b; font-size: 0.75rem; text-transform: uppercase;">Địa chỉ giao hàng</div>
+                <div id="admWDetailCustAddress" style="color: #475569; margin-top: 2px; line-height: 1.4;">-</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Col 3: Bảo hành -->
+          <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px;">
+            <div style="font-weight: 800; font-size: 0.9rem; color: #0f172a; margin-bottom: 12px; display:flex; align-items:center; gap:6px;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+              <span>Hiệu Lực Bảo Hành</span>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 10px; font-size: 0.85rem;">
+              <div>
+                <div style="color: #64748b; font-size: 0.75rem; text-transform: uppercase;">Mã phiếu bảo hành</div>
+                <div id="admWDetailMaPhieu" style="font-family: monospace; font-weight: 800; font-size: 1.05rem; color: #2563eb; margin-top: 2px;">-</div>
+              </div>
+              <div>
+                <div style="color: #64748b; font-size: 0.75rem; text-transform: uppercase;">Trạng thái hiện tại</div>
+                <div id="admWDetailStatusBadge" style="margin-top: 4px;">-</div>
+              </div>
+              <div style="display: flex; justify-content: space-between; gap: 10px;">
+                <div>
+                  <div style="color: #64748b; font-size: 0.75rem; text-transform: uppercase;">Kích hoạt</div>
+                  <div id="admWDetailNgayKichHoat" style="font-weight: 700; color: #0f172a; margin-top: 2px;">-</div>
+                </div>
+                <div>
+                  <div style="color: #64748b; font-size: 0.75rem; text-transform: uppercase;">Hết hạn</div>
+                  <div id="admWDetailNgayHetHan" style="font-weight: 700; color: #dc2626; margin-top: 2px;">-</div>
+                </div>
+              </div>
+              <div>
+                <div style="color: #64748b; font-size: 0.75rem; text-transform: uppercase;">Thời hạn tiêu chuẩn</div>
+                <div id="admWDetailThoiHan" style="font-weight: 700; color: #0f172a; margin-top: 2px;">12 tháng</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- History of requests for this IMEI -->
+        <div>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <div style="font-weight: 800; font-size: 0.95rem; color: #0f172a; display: flex; align-items: center; gap: 6px;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+              <span>LỊCH SỬ YÊU CẦU BẢO HÀNH CỦA THIẾT BỊ NÀY</span>
+            </div>
+            <span class="badge-status" id="admWDetailHistoryCount" style="background: #eff6ff; color: #1d4ed8; font-weight: 700;">0 yêu cầu</span>
+          </div>
+
+          <div class="table-responsive" style="border: 1px solid #e2e8f0; border-radius: 8px;">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th style="min-width: 110px;">Mã Yêu Cầu</th>
+                  <th style="width: 140px;">Ngày Gửi</th>
+                  <th style="min-width: 200px;">Mô Tả Lỗi</th>
+                  <th style="min-width: 140px;">NV Xử Lý</th>
+                  <th style="text-align: center; width: 120px;">Trạng Thái</th>
+                  <th style="width: 120px;">Ngày Xong</th>
+                  <th style="text-align: right; width: 110px;">Thao Tác</th>
+                </tr>
+              </thead>
+              <tbody id="admWDetailHistoryTbody">
+                <!-- Dynamically rendered -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="admin-modal-footer" style="padding: 14px 22px; border-top: 1px solid var(--admin-border); display: flex; justify-content: flex-end;">
+        <button class="btn-admin btn-outline" onclick="closeAdminWarrantyDetailModal()" type="button">Đóng</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================================
+       MODAL: CHI TIẾT YÊU CẦU BẢO HÀNH (ADMIN & NHÂN VIÊN - MINIMALIST CARD)
+       ====================================================================== -->
+  <style>
+    /* Admin Warranty Request Detail - Minimalist Card Design */
+    .warranty-detail-card {
+      max-width: 620px !important;
+      width: 95% !important;
+      max-height: 90vh !important;
+      overflow-y: auto !important;
+      border-radius: 16px !important;
+      padding: 26px 30px !important;
+      background: #ffffff !important;
+      box-shadow: 0 20px 45px -15px rgba(15, 23, 42, 0.2), 0 0 1px 1px rgba(15, 23, 42, 0.05) !important;
+      font-family: inherit;
+      color: #0f172a;
+    }
+    .warranty-detail-card::-webkit-scrollbar {
+      width: 6px;
+    }
+    .warranty-detail-card::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 3px;
+    }
+    .admin-modal-overlay.active {
+      display: flex !important;
+      opacity: 1 !important;
+      visibility: visible !important;
+      pointer-events: auto !important;
+    }
+    .warranty-detail-divider {
+      border: 0;
+      border-top: 1px solid #f1f5f9;
+      margin: 18px 0;
+    }
+    /* Vertical Stepper */
+    .warranty-vstep {
+      display: flex;
+      gap: 14px;
+      position: relative;
+    }
+    .warranty-vstep-axis {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 18px;
+      flex-shrink: 0;
+    }
+    .warranty-vstep-num {
+      font-size: 14px;
+      line-height: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .warranty-vstep-num.active {
+      font-weight: 700;
+      color: #0f172a;
+    }
+    .warranty-vstep-num.inactive {
+      font-weight: 500;
+      color: #94a3b8;
+    }
+    .warranty-vstep-line {
+      width: 1.5px;
+      background: #cbd5e1;
+      flex-grow: 1;
+      margin: 6px 0;
+      min-height: 24px;
+    }
+    .warranty-vstep-content {
+      padding-bottom: 12px;
+      flex-grow: 1;
+    }
+    .warranty-vstep-title {
+      font-size: 14px;
+      line-height: 1.2;
+    }
+    .warranty-vstep-title.active {
+      font-weight: 700;
+      color: #0f172a;
+    }
+    .warranty-vstep-title.inactive {
+      font-weight: 500;
+      color: #64748b;
+    }
+    .warranty-vstep-desc {
+      font-size: 12.5px;
+      color: #64748b;
+      margin-top: 6px;
+      line-height: 1.4;
+    }
+    /* Pill Buttons */
+    .btn-step5-pill-outline {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      color: #334155;
+      border-radius: 9999px;
+      padding: 7px 22px;
+      font-weight: 500;
+      font-size: 13.5px;
+      cursor: pointer;
+      transition: all 0.15s ease-in-out;
+    }
+    .btn-step5-pill-outline:hover {
+      background: #f8fafc;
+      border-color: #cbd5e1;
+      color: #0f172a;
+    }
+    .btn-step5-pill-dark {
+      background: #0f172a;
+      border: 1px solid #0f172a;
+      color: #ffffff;
+      border-radius: 9999px;
+      padding: 7px 22px;
+      font-weight: 700;
+      font-size: 13.5px;
+      cursor: pointer;
+      transition: all 0.15s ease-in-out;
+    }
+    .btn-step5-pill-dark:hover {
+      background: #1e293b;
+      border-color: #1e293b;
+    }
+  </style>
+
+  <div class="admin-modal-overlay" id="modalAdminWarrantyRequestDetail" style="z-index: 2260;" onclick="if(event.target === this) closeAdminWarrantyRequestDetailModal()">
+    <div class="admin-modal-container warranty-detail-card">
+      <!-- Header: Title, NgayGui, Status Badge -->
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 16px;">
+        <div>
+          <h2 style="margin: 0; font-size: 1.25rem; font-weight: 700; color: #0f172a; line-height: 1.3;">
+            Chi tiết yêu cầu <span id="admRDetailMa">YCBH-000001</span>
+          </h2>
+          <div style="font-size: 0.85rem; color: #64748b; margin-top: 4px;">
+            Ngày gửi: <span id="admRDetailNgayGui">--:-- --/--/----</span>
+          </div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 10px; flex-shrink: 0;">
+          <span id="admRDetailStatusBadge" style="display: inline-block;"></span>
+          <button type="button" onclick="closeAdminWarrantyRequestDetailModal()" title="Đóng" style="border: none; background: transparent; font-size: 24px; line-height: 1; color: #94a3b8; cursor: pointer; padding: 0 4px; transition: color 0.15s;" onmouseover="this.style.color='#0f172a'" onmouseout="this.style.color='#94a3b8'">&times;</button>
+        </div>
+      </div>
+
+      <hr class="warranty-detail-divider" />
+
+      <!-- Section 1: Thông tin khách hàng -->
+      <div style="margin-bottom: 18px;">
+        <div style="font-size: 0.96rem; font-weight: 700; color: #0f172a; margin-bottom: 12px;">Thông tin khách hàng</div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+          <div>
+            <div style="font-size: 0.82rem; color: #64748b; margin-bottom: 3px;">Họ tên</div>
+            <div id="admRDetailCustName" style="font-size: 0.95rem; font-weight: 700; color: #0f172a;">-</div>
+          </div>
+          <div>
+            <div style="font-size: 0.82rem; color: #64748b; margin-bottom: 3px;">Số điện thoại</div>
+            <div id="admRDetailCustPhone" style="font-size: 0.95rem; font-weight: 700; color: #0f172a;">-</div>
+          </div>
+        </div>
+      </div>
+
+      <hr class="warranty-detail-divider" />
+
+      <!-- Section 2: Thông tin laptop và bảo hành -->
+      <div style="margin-bottom: 18px;">
+        <div style="font-size: 0.96rem; font-weight: 700; color: #0f172a; margin-bottom: 14px;">Thông tin laptop và bảo hành</div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px 20px;">
+          <div>
+            <div style="font-size: 0.82rem; color: #64748b; margin-bottom: 3px;">Tên laptop</div>
+            <div id="admRDetailLaptopName" style="font-size: 0.95rem; font-weight: 700; color: #0f172a;">-</div>
+          </div>
+          <div>
+            <div style="font-size: 0.82rem; color: #64748b; margin-bottom: 3px;">IMEI / Serial</div>
+            <div>
+              <span id="admRDetailImei" style="background: #f1f5f9; padding: 2px 8px; border-radius: 4px; font-family: monospace; font-size: 0.88rem; font-weight: 700; color: #1e293b; display: inline-block;">-</span>
+            </div>
+          </div>
+          <div>
+            <div style="font-size: 0.82rem; color: #64748b; margin-bottom: 3px;">Mã phiếu bảo hành</div>
+            <div id="admRDetailMaPhieu" style="font-size: 0.88rem; color: #475569; font-style: italic;">Đọc từ Database</div>
+          </div>
+          <div>
+            <div style="font-size: 0.82rem; color: #64748b; margin-bottom: 3px;">Thời hạn bảo hành</div>
+            <div id="admRDetailThoiHan" style="font-size: 0.88rem; color: #475569; font-style: italic;">Đọc từ Database</div>
+          </div>
+        </div>
+      </div>
+
+      <hr class="warranty-detail-divider" />
+
+      <!-- Section 3: Nội dung yêu cầu -->
+      <div style="margin-bottom: 18px;">
+        <div style="font-size: 0.96rem; font-weight: 700; color: #0f172a; margin-bottom: 12px;">Nội dung yêu cầu</div>
+        <div style="margin-bottom: 14px;">
+          <div style="font-size: 0.85rem; font-weight: 600; color: #334155; margin-bottom: 4px;">Mô tả lỗi khách hàng</div>
+          <div id="admRDetailMoTaLoi" style="font-size: 0.88rem; color: #475569; font-style: italic; line-height: 1.5; white-space: pre-line;">Hiển thị nội dung mo_ta_loi từ Database</div>
+        </div>
+        <div>
+          <div style="font-size: 0.85rem; font-weight: 600; color: #334155; margin-bottom: 4px;">Ghi chú khách hàng</div>
+          <div id="admRDetailGhiChuKhach" style="font-size: 0.88rem; color: #64748b; font-style: italic; white-space: pre-line;">Hiển thị ghi chú nếu có</div>
+        </div>
+      </div>
+
+      <hr class="warranty-detail-divider" />
+
+      <!-- Section 4: Tiến trình xử lý -->
+      <div style="margin-bottom: 22px;">
+        <div style="font-size: 0.96rem; font-weight: 700; color: #0f172a; margin-bottom: 16px;">Tiến trình xử lý</div>
+        <div id="admRDetailStepper">
+          <!-- Dynamically populated vertical stepper -->
+        </div>
+      </div>
+
+      <!-- Footer: Action Buttons -->
+      <div style="display: flex; align-items: center; justify-content: flex-end; padding-top: 8px;">
+        <div id="admRDetailActionButtons" style="display: flex; align-items: center; gap: 10px;">
+          <!-- Dynamically populated buttons -->
+        </div>
+      </div>
+
+      <!-- Collapsible Previous IMEI Warranty History (kept for full functionality) -->
+      <details id="admRDetailHistoryContainer" style="margin-top: 18px; border-top: 1px dashed #e2e8f0; padding-top: 10px; font-size: 0.8rem; color: #94a3b8;">
+        <summary style="cursor: pointer; user-select: none;">Lịch sử bảo hành trước đó của IMEI này</summary>
+        <div style="margin-top: 8px; overflow-x: auto;">
+          <table class="admin-table" style="font-size: 0.8rem; width: 100%;">
+            <thead>
+              <tr>
+                <th>Mã Yêu Cầu</th>
+                <th>Ngày Gửi</th>
+                <th>Lỗi</th>
+                <th>NV Xử Lý</th>
+                <th>Kết Quả</th>
+                <th>Trạng Thái</th>
+              </tr>
+            </thead>
+            <tbody id="admRDetailHistoryTbody"></tbody>
+          </table>
+        </div>
+      </details>
+    </div>
+  </div>
+
+  <!-- ======================================================================
+       SUB-MODAL 1: TIẾP NHẬN YÊU CẦU BẢO HÀNH
+       ====================================================================== -->
+  <div class="admin-modal-overlay" id="modalAdminTiepNhan" style="z-index: 2300;" onclick="if(event.target === this) closeAdminTiepNhanModal()">
+    <div class="admin-modal-container" style="max-width: 580px; background: #ffffff; border-radius: 14px; border: 1px solid #e2e8f0; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.06); padding: 0; overflow: hidden;">
+      
+      <!-- Header -->
+      <div style="padding: 18px 24px; border-bottom: 1px solid #f1f5f9; display: flex; align-items: center; justify-content: space-between;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <span style="display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 50%; border: 1.8px solid #2563eb; color: #2563eb; flex-shrink: 0;">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+          </span>
+          <span style="font-size: 1.05rem; font-weight: 700; color: #0f172a; letter-spacing: 0.02em;">TIẾP NHẬN BẢO HÀNH</span>
+        </div>
+      </div>
+
+      <!-- Body -->
+      <div style="padding: 22px 24px 20px 24px;">
+        <div style="font-size: 0.95rem; color: #1e293b; margin-bottom: 20px; line-height: 1.5;">
+          Bạn đang tiếp nhận yêu cầu bảo hành <strong id="modalTiepNhanMaDisplay" style="font-weight: 700; color: #0f172a;">YCBH-000002</strong>.
+        </div>
+
+        <!-- Info helper -->
+        <div style="display: flex; gap: 10px; align-items: flex-start; margin-bottom: 22px;">
+          <div style="color: #2563eb; margin-top: 2px; flex-shrink: 0;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="16" x2="12" y2="12"></line>
+              <line x1="12" y1="8" x2="12.01" y2="8"></line>
+            </svg>
+          </div>
+          <div>
+            <div style="font-size: 0.94rem; font-weight: 700; color: #0f172a; margin-bottom: 4px;">
+              Xác nhận đã nhận laptop từ khách hàng
+            </div>
+            <div style="font-size: 0.86rem; color: #64748b; line-height: 1.5;">
+              Chỉ xác nhận tiếp nhận khi nhân viên đã nhận máy thực tế và kiểm tra đúng IMEI/Serial của yêu cầu bảo hành.
+            </div>
+          </div>
+        </div>
+
+        <!-- Checkbox confirmation -->
+        <div style="margin-bottom: 24px;">
+          <label id="lblAdminTiepNhanCheck" style="display: inline-flex; align-items: center; gap: 10px; cursor: pointer; user-select: none;">
+            <input type="checkbox" id="chkAdminTiepNhanConfirm" style="display: none;" onchange="toggleAdminTiepNhanCheck(this)">
+            <span id="iconAdminTiepNhanCheck" style="display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 50%; background: #ffffff; border: 1.8px solid #cbd5e1; color: #ffffff; flex-shrink: 0; transition: all 0.15s ease;"></span>
+            <span style="font-size: 0.92rem; font-weight: 600; color: #1e293b;">
+              Tôi xác nhận đã nhận laptop và kiểm tra đúng IMEI/Serial.
+            </span>
+          </label>
+        </div>
+
+        <!-- Action buttons -->
+        <div style="display: flex; justify-content: flex-end; align-items: center; gap: 12px; margin-bottom: 0;">
+          <button type="button" onclick="closeAdminTiepNhanModal()" style="padding: 8px 24px; border-radius: 9999px; border: 1px solid #d1d5db; background: #ffffff; color: #374151; font-size: 0.9rem; font-weight: 500; cursor: pointer; transition: all 0.15s ease;" onmouseover="this.style.background='#f9fafb'; this.style.borderColor='#9ca3af';" onmouseout="this.style.background='#ffffff'; this.style.borderColor='#d1d5db';">
+            Hủy
+          </button>
+          <button type="button" id="btnAdminConfirmTiepNhan" class="btn-primary" onclick="confirmAdminTiepNhan()" disabled style="padding: 8px 22px; border-radius: 9999px; border: none; background: #0f172a; color: #ffffff; font-size: 0.9rem; font-weight: 600; cursor: not-allowed; opacity: 0.5; transition: all 0.15s ease;" onmouseover="if(!this.disabled) this.style.background='#1e293b';" onmouseout="if(!this.disabled) this.style.background='#0f172a';">
+            Xác nhận tiếp nhận
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================================
+       SUB-MODAL 2: BẮT ĐẦU XỬ LÝ KỸ THUẬT
+       ====================================================================== -->
+  <div class="admin-modal-overlay" id="modalAdminBatDauXuLy" style="z-index: 2300;" onclick="if(event.target === this) closeAdminBatDauXuLyModal()">
+    <div class="admin-modal-container" style="max-width: 480px;">
+      <div class="admin-modal-header" style="background: #faf5ff; border-bottom: 1px solid #e9d5ff;">
+        <div class="admin-modal-title" style="color: #7e22ce; font-weight: 800; display:flex; align-items:center; gap:8px;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+          <span>BẮT ĐẦU XỬ LÝ KỸ THUẬT</span>
+        </div>
+        <button class="admin-modal-close" onclick="closeAdminBatDauXuLyModal()" type="button">&times;</button>
+      </div>
+      <div style="padding: 22px; font-size: 0.92rem; color: #334155; line-height: 1.6;">
+        <div>Chuyển yêu cầu bảo hành sang tiến trình kỹ thuật:</div>
+        <div id="modalBatDauXuLyMaDisplay" style="font-family: monospace; font-size: 1.25rem; font-weight: 800; color: #7e22ce; margin: 8px 0 12px 0;">-</div>
+        <p style="font-size: 0.85rem; color: #64748b; margin: 0;">
+          Yêu cầu sẽ được chuyển sang trạng thái <strong>Đang xử lý</strong> để bộ phận kỹ thuật tiến hành kiểm tra, đo đạc và thay thế linh kiện.
+        </p>
+      </div>
+      <div class="admin-modal-footer" style="padding: 12px 20px; border-top: 1px solid #e2e8f0; display: flex; justify-content: flex-end; gap: 10px;">
+        <button class="btn-admin btn-outline" onclick="closeAdminBatDauXuLyModal()" type="button">Hủy</button>
+        <button class="btn-admin btn-primary" onclick="confirmAdminBatDauXuLy()" type="button" style="background:#7e22ce; border-color:#7e22ce;">
+          Bắt Đầu Xử Lý
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================================
+       SUB-MODAL 3: HOÀN THÀNH YÊU CẦU BẢO HÀNH (BẮT BUỘC KẾT QUẢ XỬ LÝ)
+       ====================================================================== -->
+  <div class="admin-modal-overlay" id="modalAdminHoanThanh" style="z-index: 2300;" onclick="if(event.target === this) closeAdminHoanThanhModal()">
+    <div class="admin-modal-container" style="max-width: 580px; background: #ffffff; border-radius: 14px; border: 1px solid #e2e8f0; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.06); padding: 0; overflow: hidden;">
+      
+      <!-- Header -->
+      <div style="padding: 18px 24px; border-bottom: 1px solid #f1f5f9; display: flex; align-items: center; justify-content: space-between;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <span style="display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 50%; border: 1.8px solid #16a34a; color: #16a34a; flex-shrink: 0;">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+          </span>
+          <span style="font-size: 1.05rem; font-weight: 700; color: #0f172a; letter-spacing: 0.02em;">HOÀN THÀNH XỬ LÝ BẢO HÀNH</span>
+        </div>
+      </div>
+
+      <!-- Body -->
+      <div style="padding: 22px 24px 20px 24px;">
+        <div style="font-size: 0.92rem; color: #475569; margin-bottom: 6px;">Hoàn thành xử lý cho yêu cầu:</div>
+        <div id="modalHoanThanhMaDisplay" style="font-size: 1.25rem; font-weight: 800; color: #16a34a; margin-bottom: 18px;">YCBH-000002</div>
+
+        <div style="margin-bottom: 20px;">
+          <label style="display:block; font-weight:700; font-size:0.92rem; color:#0f172a; margin-bottom:8px;">
+            Kết quả kiểm tra và xử lý <span style="color:#ef4444;">*</span>
+          </label>
+          <textarea
+            id="modalHoanThanhKetQuaInput"
+            rows="4"
+            style="width: 100%; box-sizing: border-box; border: 1px solid #cbd5e1; border-radius: 8px; padding: 12px 14px; font-size: 0.9rem; color: #1e293b; line-height: 1.5; resize: vertical; font-family: inherit; outline: none; background: #ffffff;"
+            onfocus="this.style.borderColor='#16a34a'; this.style.boxShadow='0 0 0 3px rgba(22, 163, 74, 0.1)';"
+            onblur="this.style.borderColor='#cbd5e1'; this.style.boxShadow='none';"
+            oninput="onHoanThanhInputChange()"
+          ></textarea>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 6px;">
+            <span style="font-size: 0.84rem; color: #64748b;">Tối thiểu 10 ký tự, tối đa 1000 ký tự.</span>
+            <span id="modalHoanThanhCharCount" style="font-size: 0.8rem; color: #94a3b8;">0/1000</span>
+          </div>
+          <div id="modalHoanThanhError" style="display:none; color:#dc2626; font-size:0.82rem; font-weight:600; margin-top:6px;"></div>
+        </div>
+
+        <!-- Checkbox confirmation -->
+        <div style="margin-bottom: 24px;">
+          <label id="lblAdminHoanThanhCheck" style="display: inline-flex; align-items: center; gap: 10px; cursor: pointer; user-select: none;">
+            <input type="checkbox" id="chkAdminHoanThanhConfirm" style="display: none;" onchange="toggleAdminHoanThanhCheck(this)">
+            <span id="iconAdminHoanThanhCheck" style="display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 50%; background: #ffffff; border: 1.8px solid #cbd5e1; color: #ffffff; flex-shrink: 0; transition: all 0.15s ease;"></span>
+            <span style="font-size: 0.92rem; font-weight: 500; color: #1e293b;">
+              Tôi xác nhận đã hoàn tất xử lý và kiểm tra lại tình trạng hoạt động của laptop.
+            </span>
+          </label>
+        </div>
+
+        <!-- Action buttons -->
+        <div style="display: flex; justify-content: flex-end; align-items: center; gap: 12px; margin-bottom: 0;">
+          <button type="button" onclick="closeAdminHoanThanhModal()" style="padding: 8px 24px; border-radius: 9999px; border: 1px solid #d1d5db; background: #ffffff; color: #374151; font-size: 0.9rem; font-weight: 500; cursor: pointer; transition: all 0.15s ease;" onmouseover="this.style.background='#f9fafb'; this.style.borderColor='#9ca3af';" onmouseout="this.style.background='#ffffff'; this.style.borderColor='#d1d5db';">
+            Hủy
+          </button>
+          <button type="button" id="btnAdminConfirmHoanThanh" class="btn-success" onclick="confirmAdminHoanThanh()" disabled style="padding: 8px 22px; border-radius: 9999px; border: none; background: #f1f5f9; color: #94a3b8; font-size: 0.9rem; font-weight: 600; cursor: not-allowed; transition: all 0.15s ease;">
+            Xác nhận hoàn thành
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================================
+       SUB-MODAL 4: TỪ CHỐI TIẾP NHẬN BẢO HÀNH (BẮT BUỘC LÝ DO TỪ CHỐI)
+       ====================================================================== -->
+  <div class="admin-modal-overlay" id="modalAdminTuChoi" style="z-index: 2300;" onclick="if(event.target === this) closeAdminTuChoiModal()">
+    <div class="admin-modal-container" style="max-width: 540px;">
+      <div class="admin-modal-header" style="background: #fef2f2; border-bottom: 1px solid #fecaca;">
+        <div class="admin-modal-title" style="color: #991b1b; font-weight: 800; display:flex; align-items:center; gap:8px;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
+          <span>TỪ CHỐI YÊU CẦU BẢO HÀNH</span>
+        </div>
+        <button class="admin-modal-close" onclick="closeAdminTuChoiModal()" type="button">&times;</button>
+      </div>
+      <div style="padding: 22px;">
+        <div style="font-size: 0.92rem; color: #334155; margin-bottom: 4px;">Từ chối tiếp nhận cho yêu cầu:</div>
+        <div id="modalTuChoiMaDisplay" style="font-family: monospace; font-size: 1.25rem; font-weight: 800; color: #dc2626; margin-bottom: 14px;">-</div>
+
+        <div style="margin-bottom: 6px;">
+          <label style="display:block; font-weight:700; font-size:0.88rem; color:#0f172a; margin-bottom:6px;">
+            Lý do từ chối bảo hành <span style="color:#dc2626;">(*)</span>
+          </label>
+          <textarea
+            class="pos-form-input"
+            id="modalTuChoiLyDoInput"
+            rows="4"
+            placeholder="Nêu rõ lý do từ chối (ví dụ: máy bị vô nước, tem bảo hành rách, lỗi do người dùng tự ý tháo linh kiện... để giải thích cho khách hàng)..."
+          ></textarea>
+          <div id="modalTuChoiError" style="display:none; color:#dc2626; font-size:0.8rem; font-weight:600; margin-top:4px;"></div>
+        </div>
+      </div>
+      <div class="admin-modal-footer" style="padding: 12px 20px; border-top: 1px solid #e2e8f0; display: flex; justify-content: flex-end; gap: 10px;">
+        <button class="btn-admin btn-outline" onclick="closeAdminTuChoiModal()" type="button">Hủy</button>
+        <button class="btn-admin btn-danger" onclick="confirmAdminTuChoi()" type="button" style="background:#dc2626; border-color:#b91c1c; color:#fff;">
+          Xác Nhận Từ Chối
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================================
+       USER MANAGEMENT MODALS (DÙNG CHUNG ADMIN & NHÂN VIÊN)
+       ====================================================================== -->
+
+  <!-- MODAL 1: CHI TIẾT NGƯỜI DÙNG -->
+  <div class="admin-modal-overlay" id="modalUserDetail" style="z-index: 2280;" onclick="if(event.target === this) closeUserDetailModal()">
+    <div class="admin-modal-container" style="max-width: 580px; background: #ffffff; border-radius: 14px; border: 1px solid #e2e8f0; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.06); padding: 0; overflow: hidden;">
+      
+      <!-- Modal Header -->
+      <div style="padding: 18px 24px; border-bottom: 1px solid #f1f5f9; display: flex; align-items: center; justify-content: space-between;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <span style="display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 50%; background: #eff6ff; color: #2563eb; flex-shrink: 0;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+          </span>
+          <span style="font-size: 1.05rem; font-weight: 700; color: #0f172a; letter-spacing: 0.02em;">CHI TIẾT TÀI KHOẢN NGƯỜI DÙNG</span>
+        </div>
+        <button type="button" onclick="closeUserDetailModal()" title="Đóng" style="border: none; background: transparent; font-size: 24px; line-height: 1; color: #94a3b8; cursor: pointer; padding: 0 4px; transition: color 0.15s;" onmouseover="this.style.color='#0f172a'" onmouseout="this.style.color='#94a3b8'">&times;</button>
+      </div>
+
+      <!-- Modal Body -->
+      <div style="padding: 22px 24px 20px 24px;">
+        <!-- User Top Info Header -->
+        <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 20px; padding-bottom: 18px; border-bottom: 1px solid #f1f5f9;">
+          <div id="detailUserAvatar" style="width: 52px; height: 52px; border-radius: 50%; background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: #fff; font-size: 1.15rem; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 4px 6px -1px rgba(59,130,246,0.25);">
+            ND
+          </div>
+          <div style="flex: 1;">
+            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+              <span id="detailUserTen" style="font-size: 1.15rem; font-weight: 700; color: #0f172a;">---</span>
+              <span id="detailUserVaiTroBadge" style="background: #eff6ff; color: #2563eb; border-radius: 9999px; padding: 2px 10px; font-size: 0.76rem; font-weight: 600;">---</span>
+            </div>
+            <div style="font-size: 0.85rem; color: #64748b; margin-top: 3px;">
+              Tên đăng nhập: <strong id="detailUserUsername" style="color: #1e293b; font-family: monospace;">---</strong>
+            </div>
+          </div>
+        </div>
+
+        <!-- Information Grid -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 22px;">
+          <div style="background: #f8fafc; padding: 12px 14px; border-radius: 8px; border: 1px solid #f1f5f9;">
+            <div style="font-size: 0.78rem; font-weight: 600; color: #64748b; text-transform: uppercase; margin-bottom: 4px;">Mã Người Dùng</div>
+            <div id="detailUserMa" style="font-size: 0.95rem; font-weight: 700; color: #0f172a; font-family: monospace;">---</div>
+          </div>
+
+          <div style="background: #f8fafc; padding: 12px 14px; border-radius: 8px; border: 1px solid #f1f5f9;">
+            <div style="font-size: 0.78rem; font-weight: 600; color: #64748b; text-transform: uppercase; margin-bottom: 4px;">Trạng Thái Tài Khoản</div>
+            <div id="detailUserStatusBadge" style="font-size: 0.9rem; font-weight: 600; color: #16a34a;">Đang hoạt động</div>
+          </div>
+
+          <div style="background: #f8fafc; padding: 12px 14px; border-radius: 8px; border: 1px solid #f1f5f9;">
+            <div style="font-size: 0.78rem; font-weight: 600; color: #64748b; text-transform: uppercase; margin-bottom: 4px;">Email Liên Hệ</div>
+            <div id="detailUserEmail" style="font-size: 0.9rem; font-weight: 500; color: #1e293b; word-break: break-all;">---</div>
+          </div>
+
+          <div style="background: #f8fafc; padding: 12px 14px; border-radius: 8px; border: 1px solid #f1f5f9;">
+            <div style="font-size: 0.78rem; font-weight: 600; color: #64748b; text-transform: uppercase; margin-bottom: 4px;">Số Điện Thoại</div>
+            <div id="detailUserPhone" style="font-size: 0.9rem; font-weight: 600; color: #1e293b;">---</div>
+          </div>
+
+          <div style="grid-column: 1 / -1; background: #f8fafc; padding: 12px 14px; border-radius: 8px; border: 1px solid #f1f5f9;">
+            <div style="font-size: 0.78rem; font-weight: 600; color: #64748b; text-transform: uppercase; margin-bottom: 4px;">Địa Chỉ Thường Trú / Giao Hàng</div>
+            <div id="detailUserAddress" style="font-size: 0.9rem; color: #334155; line-height: 1.4;">---</div>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div style="display: flex; justify-content: flex-end; align-items: center; gap: 10px; flex-wrap: wrap; pt-2;">
+          <button type="button" class="btn-admin btn-outline btn-sm" onclick="openEditUserFromDetail()" style="display: inline-flex; align-items: center; gap: 6px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+            </svg>
+            <span>Chỉnh Sửa</span>
+          </button>
+
+          <button type="button" class="btn-admin btn-outline btn-sm" onclick="openChangeRoleFromDetail()" style="display: inline-flex; align-items: center; gap: 6px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+              <circle cx="8.5" cy="7" r="4"></circle>
+              <polyline points="17 11 19 13 23 9"></polyline>
+            </svg>
+            <span>Đổi Vai Trò</span>
+          </button>
+
+          <button type="button" class="btn-admin btn-outline btn-sm" onclick="openLockUserFromDetail()" style="color: #dc2626; border-color: #fca5a5; display: inline-flex; align-items: center; gap: 6px;" onmouseover="this.style.background='#fef2f2'" onmouseout="this.style.background='transparent'">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+            </svg>
+            <span>Khóa Tài Khoản</span>
+          </button>
+
+          <button type="button" class="btn-admin btn-outline btn-sm" onclick="closeUserDetailModal()">
+            Đóng
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 2: THÊM NHÂN VIÊN MỚI -->
+  <div class="admin-modal-overlay" id="modalAddStaff" style="z-index: 2280;" onclick="if(event.target === this) closeAddStaffModal()">
+    <div class="admin-modal-container" style="max-width: 580px; background: #ffffff; border-radius: 14px; border: 1px solid #e2e8f0; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.06); padding: 0; overflow: hidden;">
+      
+      <!-- Modal Header -->
+      <div style="padding: 18px 24px; border-bottom: 1px solid #f1f5f9; display: flex; align-items: center; justify-content: space-between;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <span style="display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 50%; background: #eff6ff; color: #2563eb; flex-shrink: 0;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+          </span>
+          <span style="font-size: 1.05rem; font-weight: 700; color: #0f172a; letter-spacing: 0.02em;">THÊM TÀI KHOẢN NHÂN VIÊN MỚI</span>
+        </div>
+        <button type="button" onclick="closeAddStaffModal()" title="Đóng" style="border: none; background: transparent; font-size: 24px; line-height: 1; color: #94a3b8; cursor: pointer; padding: 0 4px; transition: color 0.15s;" onmouseover="this.style.color='#0f172a'" onmouseout="this.style.color='#94a3b8'">&times;</button>
+      </div>
+
+      <!-- Modal Body -->
+      <div style="padding: 22px 24px 20px 24px;">
+        <!-- Prototype notification notice -->
+        <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 10px 14px; margin-bottom: 18px; display: flex; align-items: flex-start; gap: 10px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" style="flex-shrink:0; margin-top: 2px;">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="16" x2="12" y2="12"></line>
+            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+          </svg>
+          <div style="font-size: 0.85rem; color: #1e40af; line-height: 1.45;">
+            <strong>Giao diện Bước 1:</strong> Form chuẩn bị sẵn để kiểm tra trường nhập liệu. Nghiệp vụ tạo tài khoản thật vào Database sẽ được kích hoạt ở Bước 2.
+          </div>
+        </div>
+
+        <form id="formAddStaff" onsubmit="event.preventDefault(); handleAddStaffSubmit();">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px;">
+            <div style="grid-column: 1 / -1;">
+              <label style="display:block; font-size: 0.88rem; font-weight: 600; color: #1e293b; margin-bottom: 5px;">
+                Họ và Tên Nhân Viên <span style="color: #ef4444;">*</span>
+              </label>
+              <input type="text" class="pos-form-input" id="addStaffTen" placeholder="Ví dụ: Nguyễn Văn Hùng" required>
+            </div>
+
+            <div>
+              <label style="display:block; font-size: 0.88rem; font-weight: 600; color: #1e293b; margin-bottom: 5px;">
+                Tên Đăng Nhập (Username) <span style="color: #ef4444;">*</span>
+              </label>
+              <input type="text" class="pos-form-input" id="addStaffUsername" placeholder="Ví dụ: vanhung" required>
+            </div>
+
+            <div>
+              <label style="display:block; font-size: 0.88rem; font-weight: 600; color: #1e293b; margin-bottom: 5px;">
+                Vai Trò Mặc Định
+              </label>
+              <div style="padding: 9px 12px; background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 0.88rem; font-weight: 700; color: #0284c7; display: flex; align-items: center; gap: 6px;">
+                <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #0284c7;"></span>
+                Nhân viên (Staff)
+              </div>
+            </div>
+
+            <div>
+              <label style="display:block; font-size: 0.88rem; font-weight: 600; color: #1e293b; margin-bottom: 5px;">
+                Email Liên Hệ <span style="color: #ef4444;">*</span>
+              </label>
+              <input type="email" class="pos-form-input" id="addStaffEmail" placeholder="vanhung@laptopstore.vn" required>
+            </div>
+
+            <div>
+              <label style="display:block; font-size: 0.88rem; font-weight: 600; color: #1e293b; margin-bottom: 5px;">
+                Số Điện Thoại <span style="color: #ef4444;">*</span>
+              </label>
+              <input type="tel" class="pos-form-input" id="addStaffPhone" placeholder="0987654321 (10 số)" required>
+            </div>
+
+            <div style="grid-column: 1 / -1;">
+              <label style="display:block; font-size: 0.88rem; font-weight: 600; color: #1e293b; margin-bottom: 5px;">
+                Địa Chỉ Thường Trú
+              </label>
+              <input type="text" class="pos-form-input" id="addStaffAddress" placeholder="Số nhà, tên đường, quận/huyện, tỉnh/TP">
+            </div>
+
+            <div>
+              <label style="display:block; font-size: 0.88rem; font-weight: 600; color: #1e293b; margin-bottom: 5px;">
+                Mật Khẩu <span style="color: #ef4444;">*</span>
+              </label>
+              <input type="password" class="pos-form-input" id="addStaffPassword" placeholder="Tối thiểu 6 ký tự" required>
+            </div>
+
+            <div>
+              <label style="display:block; font-size: 0.88rem; font-weight: 600; color: #1e293b; margin-bottom: 5px;">
+                Xác Nhận Mật Khẩu <span style="color: #ef4444;">*</span>
+              </label>
+              <input type="password" class="pos-form-input" id="addStaffConfirmPassword" placeholder="Nhập lại mật khẩu" required>
+            </div>
+          </div>
+
+          <div id="addStaffErrorMsg" style="display:none; color: #dc2626; font-size: 0.84rem; font-weight: 600; margin-bottom: 12px;"></div>
+
+          <!-- Action buttons -->
+          <div style="display: flex; justify-content: flex-end; align-items: center; gap: 12px; margin-top: 18px;">
+            <button type="button" onclick="closeAddStaffModal()" class="btn-admin btn-outline">
+              Hủy
+            </button>
+            <button type="button" id="btnSubmitAddStaff" class="btn-admin btn-primary" onclick="handleAddStaffSubmit()" style="opacity: 0.7; cursor: not-allowed;" title="Tính năng sẽ được kích hoạt ở Bước 2">
+              Lưu Tài Khoản (Bước 2)
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 3: CHỈNH SỬA THÔNG TIN NGƯỜI DÙNG -->
+  <div class="admin-modal-overlay" id="modalEditUser" style="z-index: 2280;" onclick="if(event.target === this) closeEditUserModal()">
+    <div class="admin-modal-container" style="max-width: 540px; background: #ffffff; border-radius: 14px; border: 1px solid #e2e8f0; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.06); padding: 0; overflow: hidden;">
+      
+      <!-- Modal Header -->
+      <div style="padding: 18px 24px; border-bottom: 1px solid #f1f5f9; display: flex; align-items: center; justify-content: space-between;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <span style="display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 50%; background: #fef3c7; color: #d97706; flex-shrink: 0;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+            </svg>
+          </span>
+          <span style="font-size: 1.05rem; font-weight: 700; color: #0f172a; letter-spacing: 0.02em;">CHỈNH SỬA THÔNG TIN NGƯỜI DÙNG</span>
+        </div>
+        <button type="button" onclick="closeEditUserModal()" title="Đóng" style="border: none; background: transparent; font-size: 24px; line-height: 1; color: #94a3b8; cursor: pointer; padding: 0 4px; transition: color 0.15s;" onmouseover="this.style.color='#0f172a'" onmouseout="this.style.color='#94a3b8'">&times;</button>
+      </div>
+
+      <!-- Modal Body -->
+      <div style="padding: 22px 24px 20px 24px;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px;">
+          <div>
+            <label style="display:block; font-size: 0.85rem; font-weight: 600; color: #64748b; margin-bottom: 5px;">Mã Người Dùng</label>
+            <input type="text" class="pos-form-input" id="editUserMa" readonly style="background: #f8fafc; color: #64748b; cursor: not-allowed; font-family: monospace;">
+          </div>
+          <div>
+            <label style="display:block; font-size: 0.85rem; font-weight: 600; color: #64748b; margin-bottom: 5px;">Tên Đăng Nhập</label>
+            <input type="text" class="pos-form-input" id="editUserUsername" readonly style="background: #f8fafc; color: #64748b; cursor: not-allowed; font-family: monospace;">
+          </div>
+          <div style="grid-column: 1 / -1;">
+            <label style="display:block; font-size: 0.88rem; font-weight: 600; color: #1e293b; margin-bottom: 5px;">Họ và Tên <span style="color: #ef4444;">*</span></label>
+            <input type="text" class="pos-form-input" id="editUserTen" required>
+          </div>
+          <div>
+            <label style="display:block; font-size: 0.88rem; font-weight: 600; color: #1e293b; margin-bottom: 5px;">Email</label>
+            <input type="email" class="pos-form-input" id="editUserEmail">
+          </div>
+          <div>
+            <label style="display:block; font-size: 0.88rem; font-weight: 600; color: #1e293b; margin-bottom: 5px;">Số Điện Thoại</label>
+            <input type="tel" class="pos-form-input" id="editUserPhone">
+          </div>
+          <div style="grid-column: 1 / -1;">
+            <label style="display:block; font-size: 0.88rem; font-weight: 600; color: #1e293b; margin-bottom: 5px;">Địa Chỉ</label>
+            <input type="text" class="pos-form-input" id="editUserAddress">
+          </div>
+        </div>
+
+  
+        <!-- Action buttons -->
+        <div style="display: flex; justify-content: flex-end; align-items: center; gap: 12px;">
+          <button type="button" onclick="closeEditUserModal()" class="btn-admin btn-outline">
+            Hủy
+          </button>
+          <button type="button" id="btnSubmitEditUser" class="btn-admin btn-primary" onclick="handleEditUserSubmit()" style="opacity: 0.7; cursor: not-allowed;" title="Tính năng sẽ được kích hoạt ở Bước 2">
+            Lưu Thay Đổi (Bước 2)
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 4: THAY ĐỔI VAI TRÒ -->
+  <div class="admin-modal-overlay" id="modalChangeRole" style="z-index: 2280;" onclick="if(event.target === this) closeChangeRoleModal()">
+    <div class="admin-modal-container" style="max-width: 480px; background: #ffffff; border-radius: 14px; border: 1px solid #e2e8f0; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.06); padding: 0; overflow: hidden;">
+      
+      <!-- Modal Header -->
+      <div style="padding: 18px 24px; border-bottom: 1px solid #f1f5f9; display: flex; align-items: center; justify-content: space-between;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <span style="display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 50%; background: #f3e8ff; color: #7e22ce; flex-shrink: 0;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+              <circle cx="8.5" cy="7" r="4"></circle>
+              <polyline points="17 11 19 13 23 9"></polyline>
+            </svg>
+          </span>
+          <span style="font-size: 1.05rem; font-weight: 700; color: #0f172a; letter-spacing: 0.02em;">THAY ĐỔI VAI TRÒ NGƯỜI DÙNG</span>
+        </div>
+        <button type="button" onclick="closeChangeRoleModal()" title="Đóng" style="border: none; background: transparent; font-size: 24px; line-height: 1; color: #94a3b8; cursor: pointer; padding: 0 4px; transition: color 0.15s;" onmouseover="this.style.color='#0f172a'" onmouseout="this.style.color='#94a3b8'">&times;</button>
+      </div>
+
+      <!-- Modal Body -->
+      <div style="padding: 22px 24px 20px 24px;">
+        <div style="margin-bottom: 14px;">
+          <div style="font-size: 0.88rem; color: #64748b; margin-bottom: 2px;">Tài khoản được chọn:</div>
+          <div id="changeRoleUserName" style="font-size: 1.05rem; font-weight: 700; color: #0f172a;">---</div>
+        </div>
+
+        <div style="display: flex; gap: 14px; margin-bottom: 18px;">
+          <div style="flex: 1;">
+            <label style="display:block; font-size: 0.82rem; font-weight: 600; color: #64748b; margin-bottom: 4px;">Vai trò hiện tại</label>
+            <div id="changeRoleCurrentBadge" style="padding: 8px 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 0.88rem; font-weight: 600; color: #334155;">---</div>
+          </div>
+
+          <div style="flex: 1;">
+            <label style="display:block; font-size: 0.82rem; font-weight: 600; color: #1e293b; margin-bottom: 4px;">Vai trò muốn thay đổi <span style="color: #ef4444;">*</span></label>
+            <select class="pos-form-input" id="changeRoleNewSelect">
+              <option value="1">Quản trị viên (Admin)</option>
+              <option value="2">Nhân viên (Staff)</option>
+              <option value="3">Khách hàng</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="background: #fffbeb; border: 1px solid #fef3c7; border-radius: 8px; padding: 10px 14px; margin-bottom: 18px; font-size: 0.84rem; color: #b45309; line-height: 1.45;">
+           <strong>Cảnh báo:</strong> Thay đổi vai trò sẽ ảnh hưởng trực tiếp đến quyền truy cập các tính năng bán hàng và quản trị hệ thống của tài khoản này.
+        </div>
+
+        <!-- Action buttons -->
+        <div style="display: flex; justify-content: flex-end; align-items: center; gap: 12px;">
+          <button type="button" onclick="closeChangeRoleModal()" class="btn-admin btn-outline">
+            Hủy
+          </button>
+          <button type="button" id="btnSubmitChangeRole" class="btn-admin btn-primary" onclick="handleChangeRoleSubmit()" style="opacity: 0.7; cursor: not-allowed;" title="Tính năng sẽ được kích hoạt ở Bước 2">
+            Xác Nhận Thay Đổi (Bước 2)
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 5: KHÓA / MỞ KHÓA TÀI KHOẢN -->
+  <div class="admin-modal-overlay" id="modalToggleLockUser" style="z-index: 2280;" onclick="if(event.target === this) closeToggleLockUserModal()">
+    <div class="admin-modal-container" style="max-width: 480px; background: #ffffff; border-radius: 14px; border: 1px solid #e2e8f0; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.06); padding: 0; overflow: hidden;">
+      
+      <!-- Modal Header -->
+      <div style="padding: 18px 24px; border-bottom: 1px solid #f1f5f9; display: flex; align-items: center; justify-content: space-between;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <span id="lockModalIcon" style="display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 50%; background: #fee2e2; color: #dc2626; flex-shrink: 0;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+            </svg>
+          </span>
+          <span id="lockModalTitle" style="font-size: 1.05rem; font-weight: 700; color: #0f172a; letter-spacing: 0.02em;">XÁC NHẬN KHÓA TÀI KHOẢN</span>
+        </div>
+        <button type="button" onclick="closeToggleLockUserModal()" title="Đóng" style="border: none; background: transparent; font-size: 24px; line-height: 1; color: #94a3b8; cursor: pointer; padding: 0 4px; transition: color 0.15s;" onmouseover="this.style.color='#0f172a'" onmouseout="this.style.color='#94a3b8'">&times;</button>
+      </div>
+
+      <!-- Modal Body -->
+      <div style="padding: 22px 24px 20px 24px;">
+        <div id="lockModalMessage" style="font-size: 0.95rem; color: #334155; line-height: 1.55; margin-bottom: 24px;">
+          Bạn có chắc chắn muốn khóa tài khoản này? Tài khoản bị khóa sẽ không thể đăng nhập vào hệ thống.
+        </div>
+
+        <!-- Action buttons -->
+        <div style="display: flex; justify-content: flex-end; align-items: center; gap: 12px;">
+          <button type="button" onclick="closeToggleLockUserModal()" class="btn-admin btn-outline">
+            Hủy
+          </button>
+          <button type="button" id="btnSubmitLockUser" class="btn-admin btn-danger" onclick="handleLockUserSubmit()" style="opacity: 0.7; cursor: not-allowed;" title="Tính năng sẽ được kích hoạt ở Bước 2">
+            Xác Nhận Khóa (Bước 2)
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================================
        PRINT RECEIPT CONTAINER (VISIBLE ONLY DURING PRINT)
        ====================================================================== -->
   <div id="printReceiptSection" style="display:none;"></div>
+
+  <!-- ======================================================================
+       WARRANTY MODULE LOGIC (STEP 2: REAL API)
+       ====================================================================== -->
+  <script src="../js/warranty-admin.js?v=20261010_0245"></script>
+  <script src="../js/user-admin.js?v=20261010_0300"></script>
 
   <!-- ======================================================================
        ADMIN JAVASCRIPT LOGIC

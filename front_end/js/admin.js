@@ -416,7 +416,10 @@ window.switchAdminTab = function(tabName, options = {}) {
     'promotions': document.getElementById('navPromotions'),
     'vouchers': document.getElementById('navVouchers'),
     'attributes': document.getElementById('navAttributes'),
-    'imeis': document.getElementById('navImeis')
+    'imeis': document.getElementById('navImeis'),
+    'warranties': document.getElementById('navWarranties'),
+    'warranty-requests': document.getElementById('navWarrantyRequests'),
+    'users': document.getElementById('navUsers')
   }[tabName];
   if (activeNav) activeNav.classList.add('active');
 
@@ -444,7 +447,10 @@ window.switchAdminTab = function(tabName, options = {}) {
         'promotions': 'Quản Lý Khuyến Mãi Sản Phẩm',
         'vouchers': 'Quản Lý Voucher Hóa Đơn',
         'attributes': 'Quản Lý Thuộc Tính Laptop',
-        'imeis': 'Quản Lý IMEI'
+        'imeis': 'Quản Lý IMEI',
+        'warranties': 'Quản Lý Phiếu Bảo Hành (Admin & Nhân Viên)',
+        'warranty-requests': 'Quản Lý Yêu Cầu Bảo Hành (Admin & Nhân Viên)',
+        'users': 'Quản Lý Người Dùng'
       }[tabName] || 'Quản Trị';
     }
   }
@@ -459,7 +465,10 @@ window.switchAdminTab = function(tabName, options = {}) {
     'promotions': document.getElementById('tabPanePromotions'),
     'vouchers': document.getElementById('tabPaneVouchers'),
     'attributes': document.getElementById('tabPaneAttributes'),
-    'imeis': document.getElementById('tabPaneImeis')
+    'imeis': document.getElementById('tabPaneImeis'),
+    'warranties': document.getElementById('tabPaneWarranties'),
+    'warranty-requests': document.getElementById('tabPaneWarrantyRequests'),
+    'users': document.getElementById('tabPaneUsers')
   }[tabName];
   if (targetPane) targetPane.classList.add('active');
 
@@ -478,6 +487,12 @@ window.switchAdminTab = function(tabName, options = {}) {
     switchAttrType(state.activeAttrType);
   } else if (tabName === 'imeis') {
     loadImeisTable();
+  } else if (tabName === 'warranties') {
+    if (typeof initAdminWarrantiesTab === 'function') initAdminWarrantiesTab();
+  } else if (tabName === 'warranty-requests') {
+    if (typeof initAdminWarrantyRequestsTab === 'function') initAdminWarrantyRequestsTab();
+  } else if (tabName === 'users') {
+    if (typeof initUserAdminTab === 'function') initUserAdminTab();
   }
 };
 
@@ -3960,7 +3975,7 @@ function renderProductImagesPreview() {
 
   grid.innerHTML = state.productModalImages.map((img, idx) => `
     <div class="variant-img-card" style="position:relative; flex:0 0 80px; width:80px; height:80px; min-width:80px; max-width:80px; min-height:80px; max-height:80px; border-radius:8px; overflow:hidden; border:1.5px solid #cbd5e1; background:#f1f5f9; box-shadow:0 1px 3px rgba(0,0,0,0.08);" title="${img.file ? img.file.name : ('Hình ảnh ' + (idx + 1))}">
-      <img src="${img.url}" alt="Ảnh ${idx + 1}" style="width:80px; height:80px; min-width:80px; max-width:80px; min-height:80px; max-height:80px; object-fit:cover; display:block;" onerror="this.src='https://placehold.co/80x80?text=Loi+Anh'">
+      <img src="${img.url}" alt="Ảnh ${idx + 1}" style="width:80px; height:80px; min-width:80px; max-width:80px; min-height:80px; max-height:80px; object-fit:cover; display:block;" onerror="this.onerror=null; this.src='../images/default-laptop.png'">
       <button type="button" class="variant-img-remove-btn" onclick="removeProductImage(${idx})" title="Xóa ảnh này" style="position:absolute; top:3px; right:3px; width:20px; height:20px; border-radius:50%; background:rgba(220,38,38,0.95); color:#fff; border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; line-height:1; box-shadow:0 2px 4px rgba(0,0,0,0.25); z-index:10;">✕</button>
     </div>
   `).join('');
@@ -4517,7 +4532,7 @@ function renderVariantImagesPreview() {
 
   grid.innerHTML = state.variantModalImages.map((img, idx) => `
     <div class="variant-img-card" style="position:relative; flex:0 0 80px; width:80px; height:80px; min-width:80px; max-width:80px; min-height:80px; max-height:80px; border-radius:8px; overflow:hidden; border:1.5px solid #cbd5e1; background:#f1f5f9; box-shadow:0 1px 3px rgba(0,0,0,0.08);" title="${img.file ? img.file.name : ('Hình ảnh ' + (idx + 1))}">
-      <img src="${img.url}" alt="Ảnh ${idx + 1}" style="width:80px; height:80px; min-width:80px; max-width:80px; min-height:80px; max-height:80px; object-fit:cover; display:block;" onerror="this.src='https://placehold.co/80x80?text=Loi+Anh'">
+      <img src="${img.url}" alt="Ảnh ${idx + 1}" style="width:80px; height:80px; min-width:80px; max-width:80px; min-height:80px; max-height:80px; object-fit:cover; display:block;" onerror="this.onerror=null; this.src='../images/default-laptop.png'">
       <button type="button" class="variant-img-remove-btn" onclick="removeVariantImage(${idx})" title="Xóa ảnh này" style="position:absolute; top:3px; right:3px; width:20px; height:20px; border-radius:50%; background:rgba(220,38,38,0.95); color:#fff; border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; line-height:1; box-shadow:0 2px 4px rgba(0,0,0,0.25); z-index:10;">✕</button>
     </div>
   `).join('');

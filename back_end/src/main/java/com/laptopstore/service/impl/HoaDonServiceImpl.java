@@ -38,6 +38,7 @@ public class HoaDonServiceImpl implements HoaDonService {
     private final KhuyenMaiService khuyenMaiService;
     private final HinhAnhRepository hinhAnhRepository;
     private final LichSuHoaDonRepository lichSuHoaDonRepository;
+    private final com.laptopstore.service.BaoHanhService baoHanhService;
 
     private NguoiDung resolveNhanVien(String username, Integer nhanVienId, NguoiDung fallbackNv) {
         NguoiDung nv = null;
@@ -417,6 +418,7 @@ public class HoaDonServiceImpl implements HoaDonService {
 
         HoaDon saved = hoaDonRepository.save(existing);
         logLichSuHoaDon(saved, 3, nv, nv != null ? nv.getTen() : null, "Giao hàng & thu tiền thành công");
+        baoHanhService.kichHoatBaoHanhTheoHoaDon(saved.getId());
         return saved;
     }
 
@@ -455,6 +457,7 @@ public class HoaDonServiceImpl implements HoaDonService {
 
         HoaDon saved = hoaDonRepository.save(existing);
         logLichSuHoaDon(saved, 3, nv, nv != null ? nv.getTen() : null, "Giao hàng thành công (Đã thanh toán trước)");
+        baoHanhService.kichHoatBaoHanhTheoHoaDon(saved.getId());
         return saved;
     }
 
@@ -859,6 +862,7 @@ public class HoaDonServiceImpl implements HoaDonService {
         } else if (targetHoaDonStatus == 3) {
             logLichSuHoaDon(savedHoaDon, 1, nhanVien, nhanVien != null ? nhanVien.getTen() : null, "Xác nhận đơn hàng tại quầy");
             logLichSuHoaDon(savedHoaDon, 3, nhanVien, nhanVien != null ? nhanVien.getTen() : null, "Hoàn thành thanh toán và giao máy tại quầy");
+            baoHanhService.kichHoatBaoHanhTheoHoaDon(savedHoaDon.getId());
         }
 
         return savedHoaDon;
@@ -903,6 +907,7 @@ public class HoaDonServiceImpl implements HoaDonService {
             updateInvoiceImeisStatus(id, 1); // 1 = Đã bán
             HoaDon saved = hoaDonRepository.save(existing);
             logLichSuHoaDon(saved, 3, nv, nv != null ? nv.getTen() : null, "Thanh toán & nhận hàng tại quầy thành công");
+            baoHanhService.kichHoatBaoHanhTheoHoaDon(saved.getId());
             return saved;
         }
 

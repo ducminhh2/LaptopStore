@@ -147,7 +147,7 @@ function renderCheckoutData(data, user) {
 
       return `
         <div class="checkout-item ${it.vuotTonKho ? 'item-has-warning' : ''}">
-          <img src="${imgUrl}" alt="${it.tenSanPham}" class="checkout-item-img" onerror="this.src='../images/placeholder-laptop.png'">
+          <img src="${imgUrl}" alt="${it.tenSanPham}" class="checkout-item-img" onerror="this.onerror=null; this.src='../images/placeholder-laptop.png';">
           <div class="checkout-item-details">
             <div>
               <div class="checkout-item-title" title="${it.tenSanPham}">${it.tenSanPham}</div>

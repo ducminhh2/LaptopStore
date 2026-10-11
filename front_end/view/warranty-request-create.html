@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gửi Yêu Cầu Bảo Hành - Laptop Store</title>
+  <meta name="description" content="Điền thông tin và mô tả sự cố để gửi yêu cầu hỗ trợ bảo hành laptop tại Laptop Store.">
+
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="../css/style.css?v=20261002_1845">
+  <link rel="stylesheet" href="../css/warranty.css?v=20261008_1200">
+</head>
+<body>
+
+  <!-- Main Header -->
+  <header class="main-header">
+    <div class="container">
+      <div class="header-inner">
+        <div class="category-btn-wrapper">
+          <a href="index.html" class="category-dropdown-btn">
+            <svg style="width: 18px; height: 18px;" fill="currentColor" viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+            <span>TRANG CHỦ</span>
+          </a>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <a href="index.html" style="text-decoration: none; color: #ffffff; font-size: 1.45rem; font-weight: 900; letter-spacing: -0.5px; display: flex; align-items: center; gap: 8px;">
+            <span style="color: var(--primary-red);">LAPTOP</span>STORE
+          </a>
+        </div>
+
+        <div class="header-actions">
+          <div class="action-item" onclick="window.location.href='index.html'">
+            <div class="action-icon-circle">
+              <svg fill="currentColor" viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>
+            </div>
+            <div class="action-text">
+              <span class="action-label">Giỏ hàng</span>
+              <span class="action-value">Mua sắm</span>
+            </div>
+          </div>
+
+          <div class="action-item" id="headerAuthAction" style="cursor: pointer;">
+            <!-- Rendered by auth helper -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Wrapper -->
+  <main class="warranty-page-wrapper">
+    <div class="container" style="max-width: 960px;">
+
+      <!-- Breadcrumb -->
+      <nav class="warranty-breadcrumb">
+        <a href="index.html">Trang chủ</a>
+        <span>›</span>
+        <a href="warranty-my.html">Bảo hành của tôi</a>
+        <span>›</span>
+        <span class="current">Gửi yêu cầu bảo hành</span>
+      </nav>
+
+      <!-- Header Bar -->
+      <div class="warranty-header-bar">
+        <h1 class="warranty-page-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+          </svg>
+          Gửi Yêu Cầu Hỗ Trợ Bảo Hành
+        </h1>
+
+        <a href="warranty-my.html" id="btnBackToDetail" class="btn-secondary-action">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
+          Quay lại
+        </a>
+      </div>
+
+      <!-- PHẦN A: THÔNG TIN LAPTOP & BẢO HÀNH (CHỈ ĐỌC) -->
+      <div class="form-card" style="background:#f8fafc; border: 1px solid #e2e8f0; margin-bottom: 24px;">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom: 16px; border-bottom: 1px solid #e2e8f0; padding-bottom: 12px;">
+          <h3 style="font-size: 1.05rem; font-weight:800; color:#0f172a; margin:0; display:flex; align-items:center; gap:8px;">
+            <span style="display:inline-flex; align-items:center; justify-content:center; width:24px; height:24px; border-radius:50%; background:#2563eb; color:#fff; font-size:0.75rem;">A</span>
+            Thông Tin Thiết Bị & Phiếu Bảo Hành
+          </h3>
+          <span style="font-size:0.8rem; color:#64748b; font-style:italic;">Hệ thống tự động liên kết theo IMEI</span>
+        </div>
+
+        <div style="display:flex; gap: 20px; align-items: center; flex-wrap: wrap;">
+          <div style="width: 100px; height: 85px; border-radius:8px; overflow:hidden; border:1px solid #cbd5e1; background:#fff; flex-shrink:0;">
+            <img id="reqLaptopImg" src="../images/default-laptop.png" alt="Laptop" style="width:100%; height:100%; object-fit:cover;" onerror="this.onerror=null; this.src='../images/default-laptop.png';">
+          </div>
+
+          <div style="flex:1; min-width: 260px;">
+            <h4 id="reqLaptopName" style="font-size: 1.15rem; font-weight:800; color:#0f172a; margin-bottom: 6px;">---</h4>
+            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 8px; font-size: 0.85rem;">
+              <div>
+                <span style="color:#64748b;">Số IMEI/Serial:</span>
+                <span id="reqImei" style="font-weight:700; font-family:monospace; color:#0f172a;">---</span>
+              </div>
+              <div>
+                <span style="color:#64748b;">Mã phiếu BH:</span>
+                <span id="reqMaPhieu" style="font-weight:700; font-family:monospace; color:#2563eb;">---</span>
+              </div>
+              <div>
+                <span style="color:#64748b;">Kích hoạt:</span>
+                <span id="reqNgayKichHoat" style="font-weight:600; color:#0f172a;">---</span>
+              </div>
+              <div>
+                <span style="color:#64748b;">Hết hạn:</span>
+                <span id="reqNgayHetHan" style="font-weight:700; color:#ea2828;">---</span>
+              </div>
+            </div>
+          </div>
+
+          <div id="reqStatusBadge" style="flex-shrink:0;">
+            <!-- Badge -->
+          </div>
+        </div>
+      </div>
+
+      <!-- PHẦN B: FORM NHẬP THÔNG TIN YÊU CẦU BẢO HÀNH -->
+      <div class="form-card">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom: 20px; border-bottom: 1px solid #e2e8f0; padding-bottom: 12px;">
+          <h3 style="font-size: 1.05rem; font-weight:800; color:#0f172a; margin:0; display:flex; align-items:center; gap:8px;">
+            <span style="display:inline-flex; align-items:center; justify-content:center; width:24px; height:24px; border-radius:50%; background:#ea2828; color:#fff; font-size:0.75rem;">B</span>
+            Thông Tin Chi Tiết Yêu Cầu Bảo Hành
+          </h3>
+          <span style="font-size:0.8rem; color:#ea2828;">* Các trường có dấu sao là bắt buộc</span>
+        </div>
+
+        <!-- Thông báo kiểm tra / Validation Alert -->
+        <div class="form-alert" id="formValidationAlert"></div>
+
+        <form id="warrantyRequestForm" novalidate>
+          
+          <!-- Trường 1: Mô tả lỗi -->
+          <div class="form-group">
+            <label class="form-label" for="reqFaultInput">
+              Mô tả chi tiết sự cố / lỗi phần cứng gặp phải <span class="required-star">*</span>
+            </label>
+            <textarea
+              class="form-control"
+              id="reqFaultInput"
+              rows="4"
+              maxlength="1000"
+              placeholder="Vui lòng mô tả cụ thể tình trạng lỗi của laptop "
+            ></textarea>
+            <div class="field-error-text" id="reqFaultInputError"></div>
+            <div class="field-char-count" id="reqFaultCount">0/1000 ký tự (Tối thiểu 10 ký tự)</div>
+          </div>
+
+          <!-- Trường 2: Số điện thoại liên hệ -->
+          <div class="form-group">
+            <label class="form-label" for="reqPhoneInput">
+              Số điện thoại người liên hệ để kỹ thuật viên phản hồi <span class="required-star">*</span>
+            </label>
+            <input
+              type="tel"
+              class="form-control"
+              id="reqPhoneInput"
+              placeholder="Ví dụ: 0987654321 (10 chữ số, bắt đầu bằng số 0)"
+              maxlength="10"
+            >
+            <div class="field-error-text" id="reqPhoneInputError"></div>
+            <div style="font-size:0.78rem; color:#64748b; margin-top:4px;">
+              Nhân viên tiếp nhận sẽ gọi trực tiếp đến số này để xác nhận tình trạng máy.
+            </div>
+          </div>
+
+          <!-- Trường 3: Ghi chú bổ sung -->
+          <div class="form-group">
+            <label class="form-label" for="reqNoteInput">
+              Ghi chú bổ sung cho cửa hàng (Không bắt buộc)
+            </label>
+            <textarea
+              class="form-control"
+              id="reqNoteInput"
+              rows="2"
+              maxlength="500"
+              placeholder="..."
+            ></textarea>
+            <div class="field-error-text" id="reqNoteInputError"></div>
+            <div class="field-char-count" id="reqNoteCount">0/500 ký tự</div>
+          </div>
+
+          <!-- Khối Lưu Ý Quy Định -->
+          <div class="form-notice-box">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="8" x2="12" y2="12"></line>
+              <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
+            <p>
+              <strong>LƯU Ý:</strong><br>
+              Nhân viên sẽ tiếp nhận và hướng dẫn khách hàng mang laptop đến cửa hàng để kiểm tra trực tiếp.
+            </p>
+          </div>
+
+          <!-- Các nút hành động -->
+          <div class="form-actions-bar">
+            <a href="warranty-my.html" class="btn-secondary-action">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
+              Quay lại
+            </a>
+
+            <button type="submit" class="btn-create-request" id="btnSubmitRequest">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+              <span>Gửi Yêu Cầu Bảo Hành</span>
+            </button>
+          </div>
+
+        </form>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Scripts -->
+  <script src="../js/warranty-customer.js?v=20261010_0201"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      if (typeof window.initWarrantyRequestCreatePage === 'function') {
+        window.initWarrantyRequestCreatePage();
+      }
+      renderCreateHeaderAuth();
+    });
+
+    function renderCreateHeaderAuth() {
+      const userStr = localStorage.getItem('laptop_store_user') || sessionStorage.getItem('laptop_store_user');
+      let user = null;
+      try { user = userStr ? JSON.parse(userStr) : null; } catch(e){}
+
+      const headerAuth = document.getElementById('headerAuthAction');
+      if (!headerAuth) return;
+
+      if (user && user.id) {
+        const isStaffOrAdmin = user.roleCode === 'ADMIN' || user.roleCode === 'NHAN_VIEN';
+        headerAuth.innerHTML = `
+          <div class="user-dropdown-wrapper" id="userAvatarContainer" onclick="toggleUserDropdown(event)">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <div class="action-icon-circle" style="background:#2563eb; color:#ffffff; border-color:#2563eb;">
+                <svg style="width:20px; height:20px;" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                </svg>
+              </div>
+              <div class="action-text">
+                <span class="action-label" style="font-weight:700; color:#1e293b; max-width:120px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+                  ${user.ten || user.username}
+                </span>
+                <span class="action-value" style="font-size:0.75rem; color:#64748b;">Tài khoản ▼</span>
+              </div>
+            </div>
+
+            <div class="user-dropdown-menu" id="userDropdownMenu">
+              <div class="user-dropdown-header">
+                <div class="user-dropdown-name">${user.ten || user.username}</div>
+                <div class="user-dropdown-role">${user.roleCode === 'ADMIN' ? 'Quản trị viên' : (user.roleCode === 'NHAN_VIEN' ? 'Nhân viên' : 'Khách hàng')}</div>
+              </div>
+              <a class="user-dropdown-item" href="order-history.html" onclick="event.stopPropagation();">
+                <svg style="width:16px; height:16px;" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                <span>Đơn hàng của tôi</span>
+              </a>
+              <a class="user-dropdown-item active" href="warranty-my.html" onclick="event.stopPropagation();">
+                <svg style="width:16px; height:16px;" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+                <span style="font-weight:700; color:#ea2828;">Bảo hành của tôi</span>
+              </a>
+              <a class="user-dropdown-item" href="warranty-requests-my.html" onclick="event.stopPropagation();">
+                <svg style="width:16px; height:16px;" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/></svg>
+                <span>Yêu cầu bảo hành</span>
+              </a>
+              ${isStaffOrAdmin ? `
+                <a class="user-dropdown-item" href="admin.html" onclick="event.stopPropagation();">
+                  <svg style="width:16px; height:16px;" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                  <span>Quản trị / POS</span>
+                </a>
+              ` : ''}
+              <div class="user-dropdown-divider"></div>
+              <button type="button" class="user-dropdown-item logout-item" onclick="event.stopPropagation(); logoutUser();">
+                <svg style="width:16px; height:16px;" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+                <span>Đăng xuất</span>
+              </button>
+            </div>
+          </div>
+        `;
+      } else {
+        headerAuth.innerHTML = `
+          <div class="action-icon-circle">
+            <svg style="width:18px; height:18px;" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+            </svg>
+          </div>
+          <div class="action-text">
+            <span class="action-label">Tài khoản</span>
+            <span class="action-value">Đăng nhập</span>
+          </div>
+        `;
+        headerAuth.onclick = () => window.location.href = 'login.html?redirect=warranty-my.html';
+      }
+    }
+
+    function toggleUserDropdown(e) {
+      e.stopPropagation();
+      const menu = document.getElementById('userDropdownMenu');
+      if (menu) menu.classList.toggle('show');
+    }
+
+    document.addEventListener('click', (e) => {
+      const menu = document.getElementById('userDropdownMenu');
+      if (menu && !e.target.closest('#userAvatarContainer')) {
+        menu.classList.remove('show');
+      }
+    });
+
+    function logoutUser() {
+      localStorage.removeItem('laptop_store_user');
+      sessionStorage.removeItem('laptop_store_user');
+      window.location.href = 'login.html';
+    }
+  </script>
+</body>
+</html>
